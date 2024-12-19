@@ -1,0 +1,17 @@
+{
+  "name": "yeet",
+  "version": "1.0.0",
+  "description": "File upload application with React frontend and Express backend",
+  "scripts": {
+    "client": "cd client && npm run dev",
+    "server": "cd backend && npm run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install-all": "npm install && cd client && npm install && cd ../backend && npm install",
+    "generate": "cd backend && npm run generate",
+    "migrate": "cd backend && npm run migrate",
+    "init-db": "cd backend && npm run init-db"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
