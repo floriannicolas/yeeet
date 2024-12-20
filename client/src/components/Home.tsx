@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { UploadProgress } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -159,12 +159,12 @@ export const Home = () => {
     <div className="grid min-h-svh">
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
-          <a href="#" className="flex items-center gap-2 font-medium">
+          <Link to="/" className="flex items-center gap-2 font-medium">
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <FlameKindling className="size-4" />
             </div>
             Yeeet
-          </a>
+          </Link>
           <div className="flex items-center gap-2 font-medium ml-auto">
             <Button onClick={handleLogout}>Logout</Button>
           </div>

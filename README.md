@@ -33,7 +33,7 @@ YEEET is a secure file sharing platform built with modern web technologies. It f
 
 - Node.js (v18 or higher recommended)
 - PostgreSQL
-- pnpm (recommended) or npm
+- pnpm (recommended)
 
 ## 🔧 Installation
 
