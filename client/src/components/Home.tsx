@@ -38,6 +38,7 @@ interface FileInfo {
   createdAt: string;
   expiresAt?: string;
   downloadUrl: string;
+  viewUrl: string;
 }
 
 export const Home = () => {
@@ -180,9 +181,9 @@ export const Home = () => {
                   className="flex h-24 w-full cursor-pointer flex-col items-center justify-center bg-transparent rounded-lg border border-dashed border-gray-400 hover:border-white text-muted-foreground hover:text-white transition-all duration-300"
                 >
                   <div className="w-full flex flex-col items-center justify-center pb-6 pt-5"
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
                   >
                     <CloudUpload className="mb-2 h-8 w-8 text-gray-500" />
                     <p className="font-light">
@@ -227,6 +228,14 @@ export const Home = () => {
                     <TableCell>{format(new Date(file.createdAt), 'dd/MM/yyyy')}</TableCell>
                     <TableCell>{file.expiresAt ? format(new Date(file.expiresAt), 'dd/MM/yyyy') : ''}</TableCell>
                     <TableCell className="text-right gap-2 flex justify-end">
+                      <a
+                        className="text-primary underline-offset-4 hover:underline"
+                        href={file.viewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View
+                      </a>
                       <a
                         className="text-primary underline-offset-4 hover:underline"
                         href={file.downloadUrl}

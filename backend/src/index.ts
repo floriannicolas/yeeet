@@ -159,6 +159,93 @@ const generateDownloadToken = () => {
   return crypto.randomBytes(32).toString('hex');
 };
 
+app.get(`${API_PREFIX}/download/:token`, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const result = await db.select()
+      .from(filesTable)
+      .where(
+        and(
+          eq(filesTable.downloadToken, req.params.token)
+        )
+      )
+      .limit(1);
+
+    if (result.length === 0) {
+      res.status(404).json({ message: 'File not found' });
+      return;
+    }
+
+    const file = result[0];
+    res.download(file.filePath, file.originalName);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    res.status(500).json({ message: 'Error downloading file' });
+  }
+});
+
+app.get(`${API_PREFIX}/view/:token`, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const result = await db.select()
+      .from(filesTable)
+      .where(
+        and(
+          eq(filesTable.downloadToken, req.params.token)
+        )
+      )
+      .limit(1);
+
+    if (result.length === 0) {
+      res.status(404).json({ message: 'File not found' });
+      return;
+    }
+
+    const file = result[0];
+
+    // Liste des types MIME pour la visualisation en ligne
+    const viewableMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'image/svg+xml',
+      'application/pdf',
+      'text/plain',
+      'text/html',
+      'text/css',
+      'text/javascript',
+      'application/json',
+      'video/mp4',
+      'video/webm',
+      'audio/mpeg',
+      'audio/wav',
+      'audio/webm'
+    ];
+
+    if (!viewableMimeTypes.includes(file.mimeType ?? '')) {
+      res.status(400).json({ message: 'File type not supported for viewing' });
+      return;
+    }
+
+    // Configuration des en-têtes pour la visualisation
+    res.setHeader('Content-Type', file.mimeType ?? '');
+    
+    // Forcer la visualisation inline pour les PDF, notamment sur Firefox
+    if (file.mimeType === 'application/pdf') {
+      res.setHeader('Content-Disposition', 'inline');
+    } else {
+      res.setHeader('Content-Disposition', `inline; filename="${file.originalName}"`);
+    }
+    
+    res.sendFile(file.filePath);
+  } catch (error) {
+    console.error('Error viewing file:', error);
+    res.status(500).json({ message: 'Error viewing file' });
+  }
+});
+
+app.use(requireAuth, express.static('public'));
+
+
 app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req: Request, res: Response): Promise<void> => {
   if (!req.file) {
     res.status(400).json({ message: 'No file uploaded' });
@@ -255,35 +342,8 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
     res.status(200).json({ message: 'Chunk uploaded' });
   }
 });
-
 app.use('/socket.io', express.static('node_modules/socket.io/client-dist'));
-app.use(requireAuth, express.static('public'));
 
-
-app.get(`${API_PREFIX}/download/:token`, requireAuth, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const result = await db.select()
-      .from(filesTable)
-      .where(
-        and(
-          eq(filesTable.downloadToken, req.params.token),
-          eq(filesTable.userId, req.session.userId ?? 0)
-        )
-      )
-      .limit(1);
-
-    if (result.length === 0) {
-      res.status(404).json({ message: 'File not found' });
-      return;
-    }
-
-    const file = result[0];
-    res.download(file.filePath, file.originalName);
-  } catch (error) {
-    console.error('Error downloading file:', error);
-    res.status(500).json({ message: 'Error downloading file' });
-  }
-});
 
 app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
@@ -301,7 +361,8 @@ app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response):
 
     const filesWithUrls = result.map(file => ({
       ...file,
-      downloadUrl: `/api/download/${file.downloadUrl}`
+      downloadUrl: `${API_PREFIX}/download/${file.downloadUrl}`,
+      viewUrl: `${API_PREFIX}/view/${file.downloadUrl}`
     }));
 
     res.json(filesWithUrls);

@@ -68,7 +68,7 @@ export const Register = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     type="email"
-                    placeholder="jon.snow@nightswatch.com"
+                    placeholder="jon.snow@example.com"
                     required
                   />
                 </div>
