@@ -6,7 +6,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon --exec ts-node src/index.ts",
-    "init-db": "npm run generate && npm run migrate",
+    "init-db": "pnpm run generate && pnpm run migrate",
     "generate": "drizzle-kit generate:pg",
     "migrate": "ts-node -r dotenv/config src/db/migrate.ts"
   },

@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "description": "File upload application with React frontend and Express backend",
   "scripts": {
-    "client": "cd client && npm run dev",
-    "server": "cd backend && npm run dev",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "install-all": "npm install && cd client && npm install && cd ../backend && npm install",
-    "generate": "cd backend && npm run generate",
-    "migrate": "cd backend && npm run migrate",
-    "init-db": "cd backend && npm run init-db"
+    "client": "cd client && pnpm run dev",
+    "server": "cd backend && pnpm run dev",
+    "dev": "concurrently \"pnpm run server\" \"pnpm run client\"",
+    "install-all": "pnpm install && cd client && pnpm install && cd ../backend && pnpm install",
+    "generate": "cd backend && pnpm run generate",
+    "migrate": "cd backend && pnpm run migrate",
+    "init-db": "cd backend && pnpm run init-db"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
