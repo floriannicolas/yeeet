@@ -4,6 +4,7 @@ import axios from 'axios';
 
 export const Register = () => {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export const Register = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('/api/register', { username, password });
+      await axios.post('/api/register', { username, password, email });
       navigate('/login');
     } catch (err: any) {
       setError(err.response?.data || 'An error occurred');
@@ -29,6 +30,13 @@ export const Register = () => {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Username"
+          required
+        />
+        <input
+          type="text"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
           required
         />
         <input
