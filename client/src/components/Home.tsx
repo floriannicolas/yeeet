@@ -32,7 +32,11 @@ export const Home = () => {
   };
 
   useEffect(() => {
-    socketRef.current = io();
+    socketRef.current = io('http://localhost:3000', {
+      path: '/socket.io',
+      transports: ['websocket', 'polling'],
+      withCredentials: true
+    });
 
     socketRef.current.on('progress', (data: UploadProgress) => {
       setProgress((data.uploadedChunks / data.totalChunks) * 100);
@@ -91,7 +95,7 @@ export const Home = () => {
 
   return (
     <div>
-      <h1>YEET</h1>
+      <h1>YEEET</h1>
       <button onClick={handleLogout}>Logout</button>
       <br />
       <br />

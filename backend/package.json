@@ -1,7 +1,7 @@
 {
-  "name": "yeet-backend",
+  "name": "yeeet-backend",
   "version": "1.0.0",
-  "description": "Backend for Yeet file upload service",
+  "description": "Backend for Yeeet file upload service",
   "main": "src/index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
