@@ -54,7 +54,7 @@ app.use(cors({
 const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies?.session;
   if (token) {
-    const { user, session } = await validateSessionToken(token);
+    const { user } = await validateSessionToken(token);
     req.session.userId = user?.id ?? undefined;
   }
   if (!req.session.userId) {
@@ -122,7 +122,6 @@ app.get(`${API_PREFIX}/check-auth`, async(req: Request, res: Response) => {
 app.get(`${API_PREFIX}/logout`, (req: Request, res: Response) => {
   req.session.destroy((err) => {
     if (err) {
-      console.log('logout.err', err);
       res.status(500).json({ message: 'Error logging out' });
     } else {
       const token = req.cookies?.session;
@@ -144,7 +143,6 @@ const storage = multer.diskStorage({
     const userDir = path.join(UPLOAD_DIR, req.session.userId.toString());
     const dir = path.join(userDir, metadata.uploadId);
 
-    // Créer le dossier utilisateur s'il n'existe pas
     if (!fs.existsSync(userDir)) fs.mkdirSync(userDir, { recursive: true });
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
@@ -157,17 +155,16 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Fonction pour générer un token unique
 const generateDownloadToken = () => {
   return crypto.randomBytes(32).toString('hex');
 };
-// Route d'upload protégée
+
 app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req: Request, res: Response): Promise<void> => {
   if (!req.file) {
     res.status(400).json({ message: 'No file uploaded' });
     return;
   }
-  // We don't need to check req.session.userId here since it's already checked in requireAuth middleware
+
   const metadata = JSON.parse(decodeURIComponent(req.file.originalname));
   const { index, totalChunks, uploadId, originalName } = metadata;
   const userDir = path.join(UPLOAD_DIR, req.session.userId!.toString());
@@ -226,7 +223,7 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
             downloadToken: filesTable.downloadToken
           });
 
-          // Nettoyer les chunks
+          // Clear  chunks
           setTimeout(() => {
             fs.rmSync(dir, { recursive: true });
           }, 1000);
@@ -258,9 +255,8 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
   }
 });
 
-// Servir les fichiers statiques en dernier
-app.use('/socket.io', express.static('node_modules/socket.io/client-dist')); // Pour socket.io
-app.use(requireAuth, express.static('public')); // Protéger tous les fichiers statiques
+app.use('/socket.io', express.static('node_modules/socket.io/client-dist'));
+app.use(requireAuth, express.static('public'));
 
 
 app.get(`${API_PREFIX}/download/:token`, requireAuth, async (req: Request, res: Response): Promise<void> => {
