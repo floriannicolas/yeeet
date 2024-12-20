@@ -17,14 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 
 interface FileInfo {
   id: number;
@@ -129,10 +121,11 @@ export const Home = () => {
             <Button onClick={handleLogout}>Logout</Button>
           </div>
         </div>
+        <br />
         <div className="flex flex-1 justify-center">
           <div className="w-full">
             <h2 className="text-2xl font-bold mb-4">Upload a file</h2>
-            <div className="grid w-full max-w-sm items-center gap-1.5">
+            <div className="grid w-full max-w-md items-center gap-1.5">
               <Input ref={fileInputRef}
                 type="file"
                 onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
@@ -144,8 +137,7 @@ export const Home = () => {
             <br />
             <h2 className="text-2xl font-bold mb-4">Your Files</h2>
 
-            <Card>
-              <CardContent className="p-0">
+            
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -176,8 +168,6 @@ export const Home = () => {
                     ))}
                   </TableBody>
                 </Table>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
