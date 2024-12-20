@@ -57,18 +57,6 @@
     --chart-5: 340 75% 55%
   }
 }
-/*
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0px 1000px white inset !important;
-}
-
-input:autofill,
-input:autofill:hover,
-input:autofill:focus {
-    box-shadow: 0 0 0px 1000px white inset !important;
-}*/
 
 @layer base {
   * {

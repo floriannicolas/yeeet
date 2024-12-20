@@ -311,6 +311,37 @@ app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response):
   }
 });
 
+app.delete(`${API_PREFIX}/files/:id`, requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const file = await db.select()
+      .from(filesTable)
+      .where(
+        and(
+          eq(filesTable.id, parseInt(req.params.id)),
+          eq(filesTable.userId, req.session.userId ?? 0)
+        )
+      )
+      .limit(1);
+
+    if (file.length === 0) {
+      res.status(404).json({ message: 'File not found' });
+      return;
+    }
+
+    // Supprimer le fichier physique
+    fs.unlinkSync(file[0].filePath);
+
+    // Supprimer l'entrée dans la base de données
+    await db.delete(filesTable)
+      .where(eq(filesTable.id, parseInt(req.params.id)));
+
+    res.json({ message: 'File deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    res.status(500).json({ message: 'Error deleting file' });
+  }
+});
+
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 }); 

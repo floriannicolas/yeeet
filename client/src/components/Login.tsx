@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { GalleryVerticalEnd } from 'lucide-react';
+import { FlameKindling } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
@@ -31,7 +31,7 @@ export const Login = () => {
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <GalleryVerticalEnd className="size-4" />
+              <FlameKindling className="size-4" />
             </div>
             Yeeet
           </a>
