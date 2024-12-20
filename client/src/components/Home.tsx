@@ -3,7 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { UploadProgress } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { GalleryVerticalEnd } from 'lucide-react';
 import axios from 'axios';
+import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
+import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 interface FileInfo {
   id: number;
@@ -11,6 +23,7 @@ interface FileInfo {
   mimeType: string;
   size: number;
   createdAt: string;
+  expiresAt?: string;
   downloadUrl: string;
 }
 
@@ -94,45 +107,67 @@ export const Home = () => {
   };
 
   return (
-    <div>
-      <h1>YEEET</h1>
-      <button onClick={handleLogout}>Logout</button>
-      <br />
-      <br />
-      <h2>Upload a file</h2>
-      <input
-        ref={fileInputRef}
-        type="file"
-        onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])}
-      />
-      <progress value={progress} max="100" />
-      <br />
-      <br />
-      <h2>Your Files</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Size</th>
-            <th>Upload Date</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {files.map(file => (
-            <tr key={file.id}>
-              <td>{file.originalName}</td>
-              <td>{file.mimeType}</td>
-              <td>{Math.round(file.size / 1024)} KB</td>
-              <td>{new Date(file.createdAt).toLocaleString()}</td>
-              <td>
-                <a href={file.downloadUrl} download>Download</a>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="grid min-h-svh">
+      <div className="flex flex-col gap-4 p-6 md:p-10">
+        <div className="flex justify-center gap-2 md:justify-start">
+          <a href="#" className="flex items-center gap-2 font-medium">
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <GalleryVerticalEnd className="size-4" />
+            </div>
+            Yeeet
+          </a>
+          <div className="flex items-center gap-2 font-medium ml-auto">
+            <Button onClick={handleLogout}>Logout</Button>
+          </div>
+        </div>
+        <div className="flex flex-1 justify-center">
+          <div className="w-full">
+            <h2 className="text-2xl font-bold mb-4">Upload a file</h2>
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Input ref={fileInputRef}
+                type="file"
+                onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+              <br />
+              <Progress value={progress} />
+            </div>
+            <br />
+            <br />
+            <br />
+            <h2 className="text-2xl font-bold mb-4">Your Files</h2>
+
+            <div className="">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Filename</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Created At</TableHead>
+                    <TableHead>Expires At</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {files.map(file => (
+                    <TableRow key={file.id}>
+                      <TableCell className="font-bold">{file.originalName}</TableCell>
+                      <TableCell>{file.mimeType}</TableCell>
+                      <TableCell>{new Date(file.createdAt).toLocaleString()}</TableCell>
+                      <TableCell>{file.expiresAt ? new Date(file.createdAt).toLocaleString() : ''}</TableCell>
+                      <TableCell className="text-right">
+                        <a
+                          className="text-primary underline-offset-4 hover:underline"
+                          href={file.downloadUrl}
+                          download
+                        >Download</a>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }; 
