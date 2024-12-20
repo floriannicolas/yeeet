@@ -38,7 +38,7 @@ export const filesTable = pgTable('files', {
   mimeType: varchar('mime_type', { length: 255 }),
   size: bigint('size', { mode: 'number' }),
   downloadToken: varchar('download_token', { length: 64 }).unique(),
-  expireAt: timestamp('expire_at'),
+  expiresAt: timestamp('expires_at'),
   createdAt: timestamp('created_at').defaultNow().notNull()
 }); 
 

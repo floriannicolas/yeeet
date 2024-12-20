@@ -217,7 +217,8 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
             filePath: finalPath,
             mimeType: req.file?.mimetype,
             size: fileStats.size,
-            downloadToken: downloadToken
+            downloadToken: downloadToken,
+            expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30) // 30 days
           }).returning({
             id: filesTable.id,
             downloadToken: filesTable.downloadToken
@@ -292,6 +293,7 @@ app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response):
       mimeType: filesTable.mimeType,
       size: filesTable.size,
       createdAt: filesTable.createdAt,
+      expiresAt: filesTable.expiresAt,
       downloadUrl: filesTable.downloadToken
     })
       .from(filesTable)

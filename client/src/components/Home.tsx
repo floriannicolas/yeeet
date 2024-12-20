@@ -8,6 +8,7 @@ import axios from 'axios';
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
+import { format } from 'date-fns'
 import {
   Table,
   TableBody,
@@ -16,6 +17,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 
 interface FileInfo {
   id: number;
@@ -135,36 +144,40 @@ export const Home = () => {
             <br />
             <h2 className="text-2xl font-bold mb-4">Your Files</h2>
 
-            <div className="">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[100px]">Filename</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Created At</TableHead>
-                    <TableHead>Expires At</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {files.map(file => (
-                    <TableRow key={file.id}>
-                      <TableCell className="font-bold">{file.originalName}</TableCell>
-                      <TableCell>{file.mimeType}</TableCell>
-                      <TableCell>{new Date(file.createdAt).toLocaleString()}</TableCell>
-                      <TableCell>{file.expiresAt ? new Date(file.createdAt).toLocaleString() : ''}</TableCell>
-                      <TableCell className="text-right">
-                        <a
-                          className="text-primary underline-offset-4 hover:underline"
-                          href={file.downloadUrl}
-                          download
-                        >Download</a>
-                      </TableCell>
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[100px]">Filename</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Created At</TableHead>
+                      <TableHead>Expires At</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {files.map(file => (
+                      <TableRow key={file.id}>
+                        <TableCell className="font-bold">{file.originalName}</TableCell>
+                        <TableCell>{file.mimeType}</TableCell>
+                        <TableCell>{format(new Date(file.createdAt), 'dd/MM/yyyy')}</TableCell>
+                        <TableCell>{file.expiresAt ? format(new Date(file.expiresAt), 'dd/MM/yyyy') : ''}</TableCell>
+                        <TableCell className="text-right">
+                          <a
+                            className="text-primary underline-offset-4 hover:underline"
+                            href={file.downloadUrl}
+                            download
+                          >
+                            Download
+                          </a>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
