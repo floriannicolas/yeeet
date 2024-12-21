@@ -15,6 +15,7 @@
       {
         "title": "Yeeet",
         "width": 400,
+        "height": 450,
         "resizable": false,
         "decorations": false,
         "transparent": true,
