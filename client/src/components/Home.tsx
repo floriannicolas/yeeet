@@ -116,7 +116,10 @@ export const Home = () => {
 
   const handleLogout = async () => {
     console.log('logout');
-    await fetch('/api/logout');
+    await fetch('/api/logout', {
+      method: 'POST',
+      credentials: 'include',
+    });
     logout();
     navigate('/login');
   };

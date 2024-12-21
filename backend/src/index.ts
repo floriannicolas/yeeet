@@ -47,8 +47,10 @@ app.use(session({
 app.use(cookieParser());
 
 app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
+  origin: ['http://localhost:5173', 'http://localhost:1420','tauri://localhost'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
@@ -96,7 +98,7 @@ app.post(`${API_PREFIX}/login`, async (req: Request, res: Response) => {
         const token = generateSessionToken();
         const session = await createSession(token, user[0].id);
         setSessionTokenCookie(res as Response, token, session.expiresAt);
-        res.redirect('/');
+        res.status(200).send('Login successful');
       } else {
         res.status(401).send('Invalid password');
       }
@@ -119,7 +121,7 @@ app.get(`${API_PREFIX}/check-auth`, async(req: Request, res: Response) => {
   res.json({ isAuthenticated });
 });
 
-app.get(`${API_PREFIX}/logout`, (req: Request, res: Response) => {
+app.post(`${API_PREFIX}/logout`, (req: Request, res: Response) => {
   req.session.destroy((err) => {
     if (err) {
       res.status(500).json({ message: 'Error logging out' });

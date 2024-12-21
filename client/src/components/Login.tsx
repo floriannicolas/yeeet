@@ -53,7 +53,7 @@ export const Login = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     type="text"
-                    placeholder="m@example.com"
+                    placeholder="jon.snow@example.com"
                     required
                   />
                 </div>

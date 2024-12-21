@@ -29,11 +29,46 @@ YEEET is a secure file sharing platform built with modern web technologies. It f
 - Socket.IO Client
 - Axios
 
+### Desktop Application
+- Tauri
+- Rust
+- React
+- TypeScript
+- Vite
+- React Router v7
+- Socket.IO Client
+- Axios
+
 ## 📋 Prerequisites
 
 - Node.js (v18 or higher recommended)
+- pnpm
 - PostgreSQL
-- pnpm (recommended)
+- Rust (for Tauri desktop app)
+
+## 📁 Project Structure
+
+├── backend/
+│ ├── src/
+│ │ ├── db/ # Database schemas and migrations
+│ │ ├── index.ts # Main server file
+│ │ └── database.ts # Database configuration
+│ └── uploads/ # File storage directory
+│
+├── client/ # Web client application
+│ ├── src/
+│ │ ├── components/ # React components
+│ │ ├── contexts/ # React contexts
+│ │ ├── types/ # TypeScript types
+│ │ └── App.tsx # Main application component
+│ └── public/ # Static assets
+│
+└── app/ # Tauri desktop application
+├── src/
+│ ├── components/ # React components
+│ ├── contexts/ # React contexts
+│ └── App.tsx # Main application component
+└── src-tauri/ # Rust/Tauri backend
 
 ## 🔧 Installation
 
@@ -77,7 +112,13 @@ cd ../client
 pnpm install
 ```
 
-5. Run database migrations:
+5. Install app dependencies
+```bash
+cd ../app
+pnpm install
+```
+
+6. Run database migrations:
 
 Please note that you need to have a PostgreSQL database created.
 
@@ -97,23 +138,38 @@ The application will be available at:
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:3000
 
+### Desktop Application
 
-## 📁 Project Structure
+```bash
+cd app
+pnpm tauridev
+```
 
-├── backend/
-│ ├── src/
-│ │ ├── db/ # Database schemas and migrations
-│ │ ├── index.ts # Main server file
-│ │ └── database.ts # Database configuration
-│ └── uploads/ # File storage directory
-│
-└── client/
-├── src/
-│ ├── components/ # React components
-│ ├── contexts/ # React contexts
-│ ├── types/ # TypeScript types
-│ └── App.tsx # Main application component
-└── public/ # Static assets
+## 🏗️ Building
+
+### Web Application
+
+```bash
+cd client
+pnpm build
+```
+
+### Desktop Application
+
+```bash
+cd app
+pnpm tauri build
+``` 
+
+## 🔧 IDE Setup
+
+For the best development experience, we recommend:
+- VS Code with the following extensions:
+  - Tauri
+  - rust-analyzer
+  - ESLint
+  - Prettier
+
 
 
 ## 🔒 Security Features
