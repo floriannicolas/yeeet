@@ -10,16 +10,21 @@
     "frontendDist": "../dist"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "Yeeet",
         "width": 400,
         "resizable": false,
-        "decorations": true
+        "decorations": false,
+        "transparent": true,
+        "skipTaskbar": true,
+        "visible": false
       }
     ],
     "security": {
       "csp": null
-    }
+    },
+    "macOSPrivateApi": true
   }
 }
