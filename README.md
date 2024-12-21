@@ -48,6 +48,7 @@ YEEET is a secure file sharing platform built with modern web technologies. It f
 
 ## 📁 Project Structure
 
+```
 ├── backend/
 │ ├── src/
 │ │ ├── db/ # Database schemas and migrations
@@ -69,6 +70,7 @@ YEEET is a secure file sharing platform built with modern web technologies. It f
 │ ├── contexts/ # React contexts
 │ └── App.tsx # Main application component
 └── src-tauri/ # Rust/Tauri backend
+```
 
 ## 🔧 Installation
 
@@ -169,7 +171,6 @@ For the best development experience, we recommend:
   - rust-analyzer
   - ESLint
   - Prettier
-
 
 
 ## 🔒 Security Features

@@ -38,7 +38,7 @@ export const Home = () => {
                 </a>
                 <h1 className="text-xl font-bold">Welcome to Yeeet!</h1>
                 <div className="text-center text-sm">
-                  You are not logged in.
+                  You are logged in.
                 </div>
                 <Button onClick={handleLogout} className="w-full">Logout</Button>
               </div>
