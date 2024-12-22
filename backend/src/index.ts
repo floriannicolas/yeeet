@@ -10,7 +10,7 @@ import session from 'express-session';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import cors from 'cors';
-import { eq, and, or } from 'drizzle-orm';
+import { eq, and, or, desc } from 'drizzle-orm';
 import { db } from './database';
 import { usersTable, filesTable } from './db/schema';
 import type { Request, Response, NextFunction } from 'express';
@@ -349,22 +349,31 @@ app.use('/socket.io', express.static('node_modules/socket.io/client-dist'));
 
 app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
-    const result = await db.select({
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+    
+    let query = db.select({
       id: filesTable.id,
       originalName: filesTable.originalName,
       mimeType: filesTable.mimeType,
       size: filesTable.size,
       createdAt: filesTable.createdAt,
       expiresAt: filesTable.expiresAt,
-      downloadUrl: filesTable.downloadToken
+      downloadToken: filesTable.downloadToken
     })
       .from(filesTable)
-      .where(eq(filesTable.userId, req.session.userId ?? 0));
+      .where(eq(filesTable.userId, req.session.userId ?? 0))
+      .orderBy(desc(filesTable.createdAt));
+
+    if (limit) {
+      query.limit(limit);
+    }
+
+    const result = await query;
 
     const filesWithUrls = result.map(file => ({
       ...file,
-      downloadUrl: `${API_PREFIX}/download/${file.downloadUrl}`,
-      viewUrl: `${API_PREFIX}/view/${file.downloadUrl}`
+      downloadUrl: `${API_PREFIX}/download/${file.downloadToken}`,
+      viewUrl: `${API_PREFIX}/view/${file.downloadToken}`
     }));
 
     res.json(filesWithUrls);

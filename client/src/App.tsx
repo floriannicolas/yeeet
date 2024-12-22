@@ -4,14 +4,23 @@ import { Login } from './components/Login';
 import { Register } from './components/Register';
 import { Home } from './components/Home';
 import { AuthProvider } from './contexts/AuthContext';
+import { ProtectableRoute } from './components/ProtectableRoute';
 
 export const App = () => {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={
+            <ProtectableRoute>
+              <Login />
+            </ProtectableRoute>
+          } />
+          <Route path="/register" element={
+            <ProtectableRoute>
+              <Register />
+            </ProtectableRoute>
+          } />
           <Route
             path="/"
             element={

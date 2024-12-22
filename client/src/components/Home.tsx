@@ -41,6 +41,8 @@ interface FileInfo {
   viewUrl: string;
 }
 
+const FILES_LIMIT = 50;
+
 export const Home = () => {
   const [progress, setProgress] = useState(0);
   const socketRef = useRef<Socket>();
@@ -50,9 +52,10 @@ export const Home = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const fetchFiles = async () => {
+  const fetchFiles = async (limit?: number) => {
     try {
-      const response = await axios.get('/api/files');
+      const url = limit ? `/api/files?limit=${limit}` : '/api/files';
+      const response = await axios.get(url);
       setFiles(response.data);
     } catch (error) {
       console.error('Error fetching files:', error);
@@ -71,7 +74,7 @@ export const Home = () => {
     });
 
     socketRef.current.on('completed', () => {
-      fetchFiles();
+      fetchFiles(FILES_LIMIT);
       setProgress(0);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -85,7 +88,7 @@ export const Home = () => {
 
 
   useEffect(() => {
-    fetchFiles();
+    fetchFiles(FILES_LIMIT);
   }, []);
 
   const handleUpload = async (file: File) => {
@@ -127,7 +130,7 @@ export const Home = () => {
   const handleDelete = async (id: number) => {
     try {
       await axios.delete(`/api/files/${id}`);
-      fetchFiles();
+      fetchFiles(FILES_LIMIT);
     } catch (error) {
       console.error('Error deleting file:', error);
     }
