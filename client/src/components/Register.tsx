@@ -50,7 +50,7 @@ export const Register = () => {
                 <p className="text-balance text-sm text-muted-foreground">
                   Fill the form below to create an account.
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs">
                   <CircleAlert className="size-4 inline" /> You need an invitation key to create an account.
                 </p>
               </div>
