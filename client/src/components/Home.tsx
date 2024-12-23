@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { UploadProgress } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { FlameKindling, CloudUpload, LogOut, EllipsisVertical, User, Settings } from 'lucide-react';
+import { FlameKindling, CloudUpload, LogOut, EllipsisVertical, User, Settings, AppWindowMac } from 'lucide-react';
 import axios from 'axios';
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -37,6 +37,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
 
 interface FileInfo {
@@ -126,6 +127,10 @@ export const Home = () => {
     }
   };
 
+  const handleDownloadApp = () => {
+    window.open('https://github.com/floriannicolas/yeeet/releases/download/v0.0.1/Yeeet-app-v0.0.1.dmg', '_blank');
+  };
+
   const handleLogout = async () => {
     console.log('logout');
     await fetch('/api/logout', {
@@ -188,7 +193,7 @@ export const Home = () => {
                   <EllipsisVertical />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-40 -ml-12">
+              <DropdownMenuContent className="w-52 -ml-24">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
@@ -201,6 +206,12 @@ export const Home = () => {
                     <span>Settings</span>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleDownloadApp}>
+                  <AppWindowMac />
+                  <span>Download app</span>
+                  <DropdownMenuShortcut>v0.0.1</DropdownMenuShortcut>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut />
