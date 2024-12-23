@@ -9,6 +9,7 @@
     "core:default",
     "shell:allow-open",
     "opener:default",
+    "core:window:allow-set-visible-on-all-workspaces",
     "clipboard-manager:allow-write-text",
     "clipboard-manager:allow-read-image",
     {

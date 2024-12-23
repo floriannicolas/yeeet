@@ -36,6 +36,7 @@ pub fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<()> {
                 let app = tray.app_handle();
                 if let Some(window) = app.get_webview_window("main") {
                     tauri_plugin_positioner::on_tray_event(tray.app_handle(), &event);
+                    let _ = window.set_visible_on_all_workspaces(true);
                     let _ = window.move_window(Position::TrayBottomCenter).unwrap();
                     if window.is_visible().unwrap_or_default() {
                         let _ = window.hide();
