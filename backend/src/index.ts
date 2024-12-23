@@ -21,7 +21,9 @@ declare module 'express-session' {
     userId: number;
   }
 }
-
+const CLIENT_URL = 'http://localhost:5173';
+const TAURI_URL = 'tauri://localhost';
+const TAURI_URL_DEV = 'http://localhost:1420';
 const API_PREFIX = '/api';
 const app = express();
 app.use(express.json());
@@ -29,7 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: CLIENT_URL,
     methods: ["GET", "POST"]
   }
 });
@@ -47,7 +49,7 @@ app.use(session({
 app.use(cookieParser());
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:1420','tauri://localhost'],
+  origin: [CLIENT_URL, TAURI_URL, TAURI_URL_DEV],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -372,8 +374,8 @@ app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response):
 
     const filesWithUrls = result.map(file => ({
       ...file,
-      downloadUrl: `${API_PREFIX}/download/${file.downloadToken}`,
-      viewUrl: `${API_PREFIX}/view/${file.downloadToken}`
+      downloadUrl: `${CLIENT_URL}${API_PREFIX}/download/${file.downloadToken}`,
+      viewUrl: `${CLIENT_URL}${API_PREFIX}/view/${file.downloadToken}`
     }));
 
     res.json(filesWithUrls);

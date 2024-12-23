@@ -181,7 +181,7 @@ export const Home = () => {
           <div className="w-full">
             <h2 className="text-2xl font-bold mb-4">Upload a file</h2>
             <div className="grid w-full max-w-md items-center gap-1.5">
-              <div className="flex w-full items-center justify-center">
+              <div className="flex w-full items-center justify-center relative">
                 <Label
                   htmlFor="dropzone-file"
                   className="flex h-24 w-full cursor-pointer flex-col items-center justify-center bg-transparent rounded-lg border border-dashed border-gray-400 hover:border-white text-muted-foreground hover:text-white transition-all duration-300"
@@ -191,10 +191,14 @@ export const Home = () => {
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                   >
-                    <CloudUpload className="mb-2 h-8 w-8 text-gray-500" />
-                    <p className="font-light">
-                      <span className="font-semibold">Click to upload</span> or drag and drop
-                    </p>
+                    {progress <= 0 && (
+                      <>
+                        <CloudUpload className="mb-2 h-8 w-8 text-gray-500" />
+                        <p className="font-light">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                      </>
+                    )}
                   </div>
                   <Input
                     id="dropzone-file" className="hidden"
@@ -202,16 +206,17 @@ export const Home = () => {
                     type="file"
                     onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
                 </Label>
+                {(progress > 0) && (
+                  <div className="absolute w-full h-full flex flex-col border border-white rounded-lg items-center justify-center">
+                    <Progress value={progress} className="w-full h-full rounded-lg" />
+                    <div className="absolute w-full h-full flex flex-col items-center justify-center">
+                      <p className="text-sm text-center color-white">
+                        Uploading... {Math.round(progress)}%
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
-              <br />
-              {progress > 0 && (
-                <div className="mt-4">
-                  <Progress value={progress} className="w-full" />
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Uploading... {Math.round(progress)}%
-                  </p>
-                </div>
-              )}
             </div>
             <br />
             <br />
