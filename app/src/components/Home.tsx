@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { io, Socket } from 'socket.io-client';
 import { UploadProgress } from '../types';
-import { FlameKindling, CloudUpload } from 'lucide-react';
+import { FlameKindling, CloudUpload, LogOut, EllipsisVertical } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,12 @@ import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { listen } from '@tauri-apps/api/event';
 import { Command } from '@tauri-apps/plugin-shell';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface FileInfo {
   id: number;
@@ -180,7 +186,19 @@ export const Home = () => {
             Yeeet
           </a>
           <div className="flex items-center gap-2 font-medium ml-auto">
-            <Button onClick={handleLogout}>Logout</Button>
+          <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <EllipsisVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-32 -ml-12">
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         <div className="flex flex-col gap-2 divide-y pt-6">

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { UploadProgress } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { FlameKindling, CloudUpload } from 'lucide-react';
+import { FlameKindling, CloudUpload, LogOut, EllipsisVertical, User, Settings } from 'lucide-react';
 import axios from 'axios';
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -28,7 +28,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface FileInfo {
   id: number;
@@ -173,7 +182,32 @@ export const Home = () => {
             Yeeet
           </Link>
           <div className="flex items-center gap-2 font-medium ml-auto">
-            <Button onClick={handleLogout}>Logout</Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <EllipsisVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-40 -ml-12">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem>
+                    <User />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Settings />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         <br />
