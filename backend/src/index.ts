@@ -68,7 +68,11 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 app.post(`${API_PREFIX}/register`, async (req: Request, res: Response) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, invitationKey } = req.body;
+  if (invitationKey !== 'YEEEEEEEEEEEEET') {
+    res.status(401).send('Invalid invitation key. You need an invitation key to create an account.');
+    return;
+  }
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     await db.insert(usersTable).values({

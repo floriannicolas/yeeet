@@ -68,10 +68,10 @@ export const Home = () => {
     });
 
     socketRef.current.on('completed', async (result: any) => {
-      console.log('completed', result);
       await writeText(result.viewUrl);
       fetchFiles(FILES_LIMIT);
       setProgress(0);
+      new Audio("/yeeet.mp3").play();
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -237,7 +237,7 @@ export const Home = () => {
                 {files.map(file => (
                   <li key={file.id} className="-mx-2">
                     <a
-                      className="transition-all duration-300 text-sm text-muted-foreground hover:text-white text-ellipsis whitespace-nowrap block rounded p-2 cursor-pointer hover:bg-neutral-800"
+                      className="transition-all duration-300 text-sm text-muted-foreground hover:text-white text-ellipsis whitespace-nowrap overflow-hidden block rounded p-2 cursor-pointer hover:bg-neutral-800"
                       href={file.viewUrl}
                       target="_blank"
                       rel="noopener noreferrer"

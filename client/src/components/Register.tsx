@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { FlameKindling } from 'lucide-react';
+import { CircleAlert, FlameKindling } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 
 export const Register = () => {
   const [username, setUsername] = useState('');
+  const [invitationKey, setInvitationKey] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -16,7 +17,7 @@ export const Register = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('/api/register', { username, password, email });
+      await axios.post('/api/register', { username, password, email, invitationKey });
       navigate('/login');
     } catch (err: any) {
       setError(err.response?.data || 'An error occurred');
@@ -47,10 +48,23 @@ export const Register = () => {
               <div className="flex flex-col items-center gap-2 text-center">
                 <h1 className="text-2xl font-bold">Create an account</h1>
                 <p className="text-balance text-sm text-muted-foreground">
-                  Fill the form below to create an account
+                  Fill the form below to create an account.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  <CircleAlert className="size-4 inline" /> You need an invitation key to create an account.
                 </p>
               </div>
               <div className="grid gap-6">
+              <div className="grid gap-2">
+                  <Label htmlFor="invitationKey">Invitation key</Label>
+                  <Input
+                    id="invitationKey"
+                    value={invitationKey}
+                    onChange={(e) => setInvitationKey(e.target.value)}
+                    type="text"
+                    required
+                  />
+                </div>
                 <div className="grid gap-2">
                   <Label htmlFor="username">Username</Label>
                   <Input
