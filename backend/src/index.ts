@@ -322,7 +322,8 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
 
           io.emit('completed', {
             uploadId,
-            originalName: path.basename(finalPath)
+            originalName: path.basename(finalPath),
+            viewUrl: `${CLIENT_URL}${API_PREFIX}/view/${result[0].downloadToken}`
           });
 
           res.status(200).json({

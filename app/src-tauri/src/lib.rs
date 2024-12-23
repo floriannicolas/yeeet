@@ -8,6 +8,7 @@ use tauri_plugin_fs::FsExt;
 
 #[cfg(desktop)]
 mod tray;
+mod screenshot_watcher;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -29,7 +30,9 @@ pub fn run() {
             {
                 let handle = app.handle();
                 tray::create_tray(handle)?;
-            }
+                screenshot_watcher::watch_screenshots(handle.clone())?;
+            }            
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![greet])

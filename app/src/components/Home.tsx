@@ -10,7 +10,9 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { listen } from '@tauri-apps/api/event';
+import { readFile, remove } from '@tauri-apps/plugin-fs';
 import { Command } from '@tauri-apps/plugin-shell';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,7 +47,7 @@ export const Home = () => {
     try {
       const url = limit ? `/api/files?limit=${limit}` : '/api/files';
       const response = await axios.get(
-        `${API_URL}${url}`, 
+        `${API_URL}${url}`,
         { withCredentials: true }
       );
       setFiles(response.data || []);
@@ -65,7 +67,9 @@ export const Home = () => {
       setProgress((data.uploadedChunks / data.totalChunks) * 100);
     });
 
-    socketRef.current.on('completed', () => {
+    socketRef.current.on('completed', async (result: any) => {
+      console.log('completed', result);
+      await writeText(result.viewUrl);
       fetchFiles(FILES_LIMIT);
       setProgress(0);
       if (fileInputRef.current) {
@@ -78,6 +82,28 @@ export const Home = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const unlistenScreenshot = listen('screenshot-created', async (event) => {
+      try {
+        const path = (event.payload as string).replace('/.', '/');
+        const fileContent = await readFile(path);
+        const filename = path.split('/').pop() || 'screenshot.png';
+        const normalizedFilename = filename.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace('’', '');
+        const file = new File([fileContent], normalizedFilename, {
+          type: 'image/png'
+        });
+
+        await handleUpload(file);
+        await remove(path);
+      } catch (error) {
+        console.error('Error handling screenshot:', error);
+      }
+    });
+
+    return () => {
+      unlistenScreenshot.then(unlisten => unlisten());
+    };
+  }, []);
 
   useEffect(() => {
     const unlistenTauriFocus = listen('tauri://focus', () => {
@@ -186,7 +212,7 @@ export const Home = () => {
             Yeeet
           </a>
           <div className="flex items-center gap-2 font-medium ml-auto">
-          <DropdownMenu>
+            <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
                   <EllipsisVertical />
@@ -210,14 +236,14 @@ export const Home = () => {
               <ul className="list-none w-full">
                 {files.map(file => (
                   <li key={file.id} className="-mx-2">
-                      <a
-                        className="transition-all duration-300 text-sm text-muted-foreground hover:text-white text-ellipsis whitespace-nowrap block rounded p-2 cursor-pointer hover:bg-neutral-800"
-                        href={file.viewUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {file.originalName}
-                      </a>
+                    <a
+                      className="transition-all duration-300 text-sm text-muted-foreground hover:text-white text-ellipsis whitespace-nowrap block rounded p-2 cursor-pointer hover:bg-neutral-800"
+                      href={file.viewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {file.originalName}
+                    </a>
                   </li>
                 ))}
               </ul>
