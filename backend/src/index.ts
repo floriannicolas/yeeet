@@ -15,6 +15,14 @@ import { db } from './database';
 import { usersTable, filesTable } from './db/schema';
 import type { Request, Response, NextFunction } from 'express';
 import { createSession, deleteSessionTokenCookie, generateSessionToken, invalidateSession, setSessionTokenCookie, validateSessionToken } from './session';
+import cron from 'node-cron';
+import { cleanupExpiredFiles } from './tasks/cleanup';
+
+// Cleanup expired files every day at 3am
+cron.schedule('0 3 * * *', async () => {
+  console.log('Running cleanup task...');
+  await cleanupExpiredFiles();
+});
 
 declare module 'express-session' {
   interface SessionData {
