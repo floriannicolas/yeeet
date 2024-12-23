@@ -125,7 +125,7 @@ app.post(`${API_PREFIX}/login`, async (req: Request, res: Response) => {
   }
 });
 
-app.get(`${API_PREFIX}/check-auth`, async(req: Request, res: Response) => {
+app.get(`${API_PREFIX}/check-auth`, async (req: Request, res: Response) => {
   const token = req.cookies?.session;
   let isAuthenticated = false;
   if (token) {
@@ -244,14 +244,14 @@ app.get(`${API_PREFIX}/view/:token`, async (req: Request, res: Response): Promis
 
     // Configuration des en-têtes pour la visualisation
     res.setHeader('Content-Type', file.mimeType ?? '');
-    
+
     // Forcer la visualisation inline pour les PDF, notamment sur Firefox
     if (file.mimeType === 'application/pdf') {
       res.setHeader('Content-Disposition', 'inline');
     } else {
       res.setHeader('Content-Disposition', `inline; filename="${file.originalName}"`);
     }
-    
+
     res.sendFile(file.filePath);
   } catch (error) {
     console.error('Error viewing file:', error);
@@ -365,7 +365,7 @@ app.use('/socket.io', express.static('node_modules/socket.io/client-dist'));
 app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
-    
+
     let query = db.select({
       id: filesTable.id,
       originalName: filesTable.originalName,
@@ -416,7 +416,9 @@ app.delete(`${API_PREFIX}/files/:id`, requireAuth, async (req: Request, res: Res
     }
 
     // Supprimer le fichier physique
-    fs.unlinkSync(file[0].filePath);
+    if (fs.existsSync(file[0].filePath)) {
+      fs.unlinkSync(file[0].filePath);
+    }
 
     // Supprimer l'entrée dans la base de données
     await db.delete(filesTable)

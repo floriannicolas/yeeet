@@ -184,7 +184,7 @@ For the best development experience, we recommend:
 
 ## 📝 License
 
-[MIT License](LICENSE)
+[GPL License](https://www.gnu.org/licenses/gpl-3.0.html)
 
 ## 🤝 Contributing
 
