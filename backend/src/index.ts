@@ -36,7 +36,16 @@ const API_PREFIX = '/api';
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const server = http.createServer(app);
+let server;
+
+if (process.env.VERCEL) {
+  // En production sur Vercel
+  server = app;
+} else {
+  // En développement local
+  server = http.createServer(app);
+}
+
 const io = new Server(server, {
   cors: {
     origin: CLIENT_URL,
@@ -45,7 +54,9 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3000;
-const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
+const UPLOAD_DIR = process.env.VERCEL 
+  ? '/tmp' // Utiliser le stockage temporaire de Vercel
+  : path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 app.use(session({
@@ -56,8 +67,22 @@ app.use(session({
 
 app.use(cookieParser());
 
+// Configurer CORS avec les nouvelles origines
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:1420',
+  'tauri://localhost',
+  'https://votre-frontend-url.vercel.app'
+];
+
 app.use(cors({
-  origin: [CLIENT_URL, TAURI_URL, TAURI_URL_DEV],
+  origin: (origin, callback) => {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
