@@ -37,21 +37,17 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 let server;
-
+let io;
 if (process.env.VERCEL) {
   // En production sur Vercel
   server = app;
+  io = new Server();
 } else {
   // En développement local
   server = http.createServer(app);
+  io = new Server(server);
 }
 
-const io = new Server({
-  cors: {
-    origin: CLIENT_URL,
-    methods: ["GET", "POST"]
-  }
-});
 
 const PORT = process.env.PORT || 3000;
 const UPLOAD_DIR = process.env.VERCEL 
