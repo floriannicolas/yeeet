@@ -2,9 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { io, Socket } from 'socket.io-client';
 import { UploadProgress } from '../types';
-import { FlameKindling, CloudUpload, LogOut, EllipsisVertical } from 'lucide-react';
+import { FlameKindling, LogOut, EllipsisVertical, Upload } from 'lucide-react';
+import { PhysicalSize, LogicalSize, getCurrentWindow } from '@tauri-apps/api/window';
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEffect, useRef, useState } from 'react';
@@ -55,6 +55,18 @@ export const Home = () => {
       console.error('Error fetching files:', error);
     }
   };
+
+  useEffect(() => {
+    const resizeWindow = async () => {
+      try {
+        await getCurrentWindow().setSize(new LogicalSize(360, 390));
+      } catch (error) {
+        console.error('Failed to resize window:', error);
+      }
+    };
+  
+    resizeWindow();
+  }, []); 
 
   useEffect(() => {
     socketRef.current = io(API_URL, {
@@ -199,9 +211,14 @@ export const Home = () => {
   };
 
   return (
-    <div className="flex min-h-svh flex-col items-center gap-6 bg-background p-6 md:p-10">
-      <div className="w-full max-w-sm">
-        <div className="flex justify-center gap-2 md:justify-start">
+    <div
+      className="min-h-svh"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      <header className="flex sticky top-0 bg-background z-10 h-16 shrink-0 items-center gap-2 border-b px-6">
+        <div className="flex justify-center gap-2 md:justify-start w-full">
           <a
             href={CLIENT_URL}
             target="_blank"
@@ -214,7 +231,7 @@ export const Home = () => {
           <div className="flex items-center gap-2 font-medium ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">
+                <Button variant="ghost" className="rounded-full p-2.5">
                   <EllipsisVertical />
                 </Button>
               </DropdownMenuTrigger>
@@ -227,7 +244,14 @@ export const Home = () => {
             </DropdownMenu>
           </div>
         </div>
-        <div className="flex flex-col gap-2 divide-y pt-6">
+        {(progress > 0) && (
+          <div className="absolute left-0 right-0 top-full border-b border-t bg-background overflow-hidden">
+            <div className="left-0 right-0 top-full h-2 bg-gray-200 text-right" style={{ width: `${progress}%` }} />
+          </div>
+        )}
+      </header>
+      <div className="flex flex-col gap-4 p-6">
+        <div className="flex flex-col gap-2 divide-y">
           <div className="flex flex-col">
             <h2 className="text-1xl font-bold mb-2">
               Recent uploads
@@ -257,21 +281,13 @@ export const Home = () => {
             <div className="flex w-full items-center justify-center relative">
               <Label
                 htmlFor="dropzone-file"
-                className="flex h-24 w-full cursor-pointer flex-col items-center justify-center bg-transparent rounded-lg border border-dashed border-gray-400 hover:border-white text-muted-foreground hover:text-white transition-all duration-300"
+                className="w-full block flex cursor-pointer flex-col items-center justify-center bg-transparent transition-all duration-300"
               >
-                <div className="w-full flex flex-col items-center justify-center pb-4 pt-3"
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
+                <div
+                  className={`w-full block inline-flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground shadow font-medium rounded-lg focus:outline-none ${progress > 0 ? 'opacity-50 cursor-default' : 'hover:bg-primary/90 cursor-pointer'}`}
                 >
-                  {progress <= 0 && (
-                    <>
-                      <CloudUpload className="mb-2 h-6 w-8 text-gray-500" />
-                      <p className="font-light">
-                        <span className="font-semibold">Click to upload</span> or drag and drop
-                      </p>
-                    </>
-                  )}
+                  <Upload className="w-4 h-4 me-2" />
+                  Upload
                 </div>
                 <Input
                   id="dropzone-file" className="hidden"
@@ -279,16 +295,6 @@ export const Home = () => {
                   type="file"
                   onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
               </Label>
-              {(progress > 0) && (
-                <div className="absolute w-full h-full flex flex-col border border-white rounded-lg items-center justify-center">
-                  <Progress value={progress} className="w-full h-full rounded-lg" />
-                  <div className="absolute w-full h-full flex flex-col items-center justify-center">
-                    <p className="text-sm text-center color-white">
-                      Uploading... {Math.round(progress)}%
-                    </p>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
           <div className="flex flex-col pt-2">
@@ -309,6 +315,16 @@ export const Home = () => {
           </div>
         </div>
       </div>
+      {isDragging && (
+        <div className="fixed inset-0 bg-gray-600/50 z-50 p-12">
+          <div className="flex items-center justify-center h-full border-2 rounded-lg border-dashed border-white">
+            <div className="flex flex-col gap-4 items-center justify-center h-full">
+              <Upload className="w-16 h-16" />
+              <p className="text-white text-2xl">Drop your <span className="font-bold">file</span> here</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

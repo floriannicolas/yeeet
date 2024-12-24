@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { FlameKindling } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LogicalSize, getCurrentWindow } from '@tauri-apps/api/window';
 
 
 export const Login = () => {
@@ -13,6 +14,20 @@ export const Login = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
     const { login } = useAuth();
+
+    useEffect(() => {
+        const resizeWindow = async () => {
+            try {
+                await getCurrentWindow().setSize(new LogicalSize(360, 450));
+            } catch (error) {
+                console.error('Failed to resize window:', error);
+            }
+        };
+
+        resizeWindow();
+    }, []);
+
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
