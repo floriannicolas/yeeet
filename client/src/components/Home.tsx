@@ -22,7 +22,7 @@ import axios from 'axios';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { format } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -246,7 +246,7 @@ export const Home = () => {
                   <EllipsisVertical />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-52 -ml-24">
+              <DropdownMenuContent className="w-52 -ml-36">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
@@ -315,27 +315,27 @@ export const Home = () => {
             <p className="text-muted-foreground">No files yet…</p>
           </div>
         )}
-        <div className="grid grid-cols-4 grid-flow-row gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-flow-row gap-4 md:gap-6">
           {files.map(file => (
             <div className="flex flex-col gap-2 relative" key={file.id}>
               <a
                 href={file.viewUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative w-full h-44 rounded-lg flex items-center justify-center group"
+                className="relative overflow-hidden w-full h-44 rounded-lg flex items-center justify-center group"
               >
                 {isImageType(file.mimeType) ? (
                   <img
-                    className={`w-full h-44 object-cover rounded-lg ${getFileBackground(file.mimeType)} group-hover:opacity-70 transition-all duration-300`}
+                    className={`w-full h-44 object-cover rounded-lg ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-110 transition-all duration-300`}
                     src={file.viewUrl}
                     alt={file.originalName}
                   />
                 ) : (
-                  <div className={`w-full h-44 rounded-lg flex items-center justify-center ${getFileBackground(file.mimeType)} group-hover:opacity-70 transition-all duration-300`}>
+                  <div className={`w-full h-44 rounded-lg flex items-center justify-center ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-110 transition-all duration-300`}>
                     {getFileIcon(file.mimeType)}
                   </div>
                 )}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full bg-background p-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full bg-background p-4 opacity-0 group-hover:opacity-70 transition-all duration-300">
                   <Eye className="w-6 h-6" />
                 </div>
               </a>
@@ -391,7 +391,7 @@ export const Home = () => {
               <div className="flex justify-between gap-2">
                 <p className="flex-1 text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
                 <p className="text-sm text-muted-foreground">
-                  {file.expiresAt ? `Expires on ${format(new Date(file.expiresAt), 'dd/MM/yyyy')}` : ''}
+                  {file.expiresAt ? `Expires in ${formatDistanceToNow(new Date(file.expiresAt))}` : ''}
                 </p>
               </div>
             </div>
