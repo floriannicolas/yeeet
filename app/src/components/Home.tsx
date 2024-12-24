@@ -51,22 +51,40 @@ export const Home = () => {
         { withCredentials: true }
       );
       setFiles(response.data || []);
+      resizeWindow();
     } catch (error) {
       console.error('Error fetching files:', error);
     }
   };
 
-  useEffect(() => {
-    const resizeWindow = async () => {
+  const resizeWindow = async () => {
+    setTimeout(async () => {
+      let height = 390;
+      switch (files.length) {
+        case 0:
+          height = 310;
+          break;
+        case 1:
+          height = 320;
+          break;
+        case 2:
+          height = 360;
+          break;
+        case 3:
+          height = 390;
+          break;
+      }
       try {
-        await getCurrentWindow().setSize(new LogicalSize(360, 390));
+        await getCurrentWindow().setSize(new LogicalSize(360, height));
       } catch (error) {
         console.error('Failed to resize window:', error);
       }
-    };
-  
+    }, 100);
+  };
+
+  useEffect(() => {
     resizeWindow();
-  }, []); 
+  }, []);
 
   useEffect(() => {
     socketRef.current = io(API_URL, {
@@ -272,7 +290,7 @@ export const Home = () => {
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-center text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 No files uploaded yet
               </p>
             )}
