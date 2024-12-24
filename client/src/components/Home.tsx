@@ -3,10 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { UploadProgress } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { FlameKindling, CloudUpload, LogOut, EllipsisVertical, User, Settings, AppWindowMac } from 'lucide-react';
+import { FlameKindling, Upload, LogOut, EllipsisVertical, User, Settings, AppWindowMac } from 'lucide-react';
 import axios from 'axios';
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { format } from 'date-fns'
@@ -102,6 +101,10 @@ export const Home = () => {
   }, []);
 
   const handleUpload = async (file: File) => {
+    if (progress > 0) {
+      return;
+    }
+
     const chunkSize = 1024 * 1024; // 1MB
     const totalChunks = Math.ceil(file.size / chunkSize);
     const uploadId = Date.now().toString();
@@ -177,9 +180,13 @@ export const Home = () => {
   };
 
   return (
-    <div className="grid min-h-svh">
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
+    <div className="grid min-h-svh"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      <header className="flex sticky top-0 bg-background z-10 h-16 shrink-0 items-center gap-2 border-b px-6">
+        <div className="flex justify-center gap-2 md:justify-start w-full">
           <Link to="/" className="flex items-center gap-2 font-medium">
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <FlameKindling className="size-4" />
@@ -189,7 +196,7 @@ export const Home = () => {
           <div className="flex items-center gap-2 font-medium ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">
+                <Button variant="secondary">
                   <EllipsisVertical />
                 </Button>
               </DropdownMenuTrigger>
@@ -221,51 +228,44 @@ export const Home = () => {
             </DropdownMenu>
           </div>
         </div>
-        <br />
-        <div className="flex flex-1 justify-center">
-          <div className="w-full">
-            <h2 className="text-2xl font-bold mb-4">Upload a file</h2>
-            <div className="grid w-full max-w-md items-center gap-1.5">
+        {(progress > 0) && (
+          <div className="absolute left-0 right-0 top-full border-b border-t bg-background overflow-hidden">
+            <div className="left-0 right-0 top-full h-2 bg-gray-200 text-right" style={{ width: `${progress}%` }} />
+          </div>
+        )}
+      </header>
+      <div className="flex flex-col gap-4 p-6">
+        <div className="flex items-center justify-between space-y-2 mb-6">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Your files</h2>
+            <p className="text-muted-foreground">Here's a list of your files!</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="grid w-full items-center gap-1.5">
               <div className="flex w-full items-center justify-center relative">
                 <Label
                   htmlFor="dropzone-file"
-                  className="flex h-24 w-full cursor-pointer flex-col items-center justify-center bg-transparent rounded-lg border border-dashed border-gray-400 hover:border-white text-muted-foreground hover:text-white transition-all duration-300"
+                  className="flex cursor-pointer flex-col items-center justify-center bg-transparent transition-all duration-300"
                 >
-                  <div className="w-full flex flex-col items-center justify-center pb-6 pt-5"
-                    onDragOver={handleDragOver}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
+                  <div
+                    className={`inline-flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground shadow font-medium rounded-lg focus:outline-none ${progress > 0 ? 'opacity-50 cursor-default' : 'hover:bg-primary/90 cursor-pointer'}`}
                   >
-                    {progress <= 0 && (
-                      <>
-                        <CloudUpload className="mb-2 h-8 w-8 text-gray-500" />
-                        <p className="font-light">
-                          <span className="font-semibold">Click to upload</span> or drag and drop
-                        </p>
-                      </>
-                    )}
+                    <Upload className="w-4 h-4 me-2" />
+                    Upload
                   </div>
                   <Input
                     id="dropzone-file" className="hidden"
                     ref={fileInputRef}
+                    disabled={progress > 0}
                     type="file"
                     onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
                 </Label>
-                {(progress > 0) && (
-                  <div className="absolute w-full h-full flex flex-col border border-white rounded-lg items-center justify-center">
-                    <Progress value={progress} className="w-full h-full rounded-lg" />
-                    <div className="absolute w-full h-full flex flex-col items-center justify-center">
-                      <p className="text-sm text-center color-white">
-                        Uploading... {Math.round(progress)}%
-                      </p>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
-            <br />
-            <br />
-            <h2 className="text-2xl font-bold mb-4">Your Files</h2>
+          </div>
+        </div>
+        <div className="flex flex-1 justify-center">
+          <div className="w-full">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -324,6 +324,16 @@ export const Home = () => {
           </div>
         </div>
       </div>
+      {isDragging && (
+        <div className="fixed inset-0 bg-gray-600/50 z-50 p-12">
+          <div className="flex items-center justify-center h-full border-2 rounded-lg border-dashed border-white">
+            <div className="flex flex-col gap-4 items-center justify-center h-full">
+              <Upload className="w-16 h-16" />
+              <p className="text-white text-2xl">Drop your <span className="font-bold">file</span> here</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }; 
