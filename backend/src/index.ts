@@ -24,11 +24,6 @@ cron.schedule('0 3 * * *', async () => {
   await cleanupExpiredFiles();
 });
 
-declare module 'express-session' {
-  interface SessionData {
-    userId: number;
-  }
-}
 const CLIENT_URL = 'http://localhost:5173';
 const TAURI_URL = 'tauri://localhost';
 const TAURI_URL_DEV = 'http://localhost:1420';
@@ -88,15 +83,15 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies?.session;
   if (token) {
     const { user } = await validateSessionToken(token);
-    if (req.session) {
-      req.session.userId = user?.id ?? undefined;
+    if (!user || !user.id) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
     }
+  } else {
+    res.status(401).json({ message: 'Unauthorized' });
+    return;
   }
-  if (req.session) {
-    if (!req.session.userId) {
-      return res.redirect('/login');
-    }
-  }
+
   next();
 };
 
@@ -133,7 +128,6 @@ app.post(`${API_PREFIX}/login`, async (req: Request, res: Response) => {
     if (user.length > 0) {
       const isPasswordValid = await bcrypt.compare(password, user[0].password);
       if (isPasswordValid) {
-        req.session.userId = user[0].id;
         const token = generateSessionToken();
         const session = await createSession(token, user[0].id);
         setSessionTokenCookie(res as Response, token, session.expiresAt);
@@ -184,12 +178,20 @@ app.post(`${API_PREFIX}/logout`, (req: Request, res: Response) => {
 
 // Step 2: Multer setup for handling file chunks
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    if (!req.session.userId) {
+  destination: async (req, file, cb) => {
+    let userId = -1;
+    const token = req.cookies?.session;
+    if (token) {
+      const { user } = await validateSessionToken(token);
+      if (!user || !user.id) {
+        return cb(new Error('User not authenticated'), '');
+      }
+      userId = user.id;
+    } else {
       return cb(new Error('User not authenticated'), '');
     }
     const metadata = JSON.parse(decodeURIComponent(file.originalname));
-    const userDir = path.join(UPLOAD_DIR, req.session.userId.toString());
+    const userDir = path.join(UPLOAD_DIR, userId.toString());
     const dir = path.join(userDir, metadata.uploadId);
 
     if (!fs.existsSync(userDir)) fs.mkdirSync(userDir, { recursive: true });
@@ -301,9 +303,24 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
     return;
   }
 
+  let userId = -1;
+  const token = req.cookies?.session;
+  if (token) {
+    const { user } = await validateSessionToken(token);
+    if (!user || !user.id) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+    userId = user.id;
+  } else {
+    res.status(401).json({ message: 'Unauthorized' });
+    return;
+  }
+
+
   const metadata = JSON.parse(decodeURIComponent(req.file.originalname));
   const { index, totalChunks, uploadId, originalName } = metadata;
-  const userDir = path.join(UPLOAD_DIR, req.session.userId!.toString());
+  const userDir = path.join(UPLOAD_DIR, userId.toString());
   const dir = path.join(userDir, uploadId);
 
   if (!fs.existsSync(userDir)) {
@@ -348,7 +365,7 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
         try {
           const downloadToken = generateDownloadToken();
           const result = await db.insert(filesTable).values({
-            userId: req.session.userId,
+            userId: userId,
             originalName: path.basename(finalPath),
             filePath: finalPath,
             mimeType: req.file?.mimetype,
@@ -398,7 +415,19 @@ app.use('/socket.io', express.static('node_modules/socket.io/client-dist'));
 app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
-
+    let userId = -1;
+    const token = req.cookies?.session;
+    if (token) {
+      const { user } = await validateSessionToken(token);
+      if (!user || !user.id) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+      userId = user.id;
+    } else {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
     let query = db.select({
       id: filesTable.id,
       originalName: filesTable.originalName,
@@ -409,7 +438,7 @@ app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response):
       downloadToken: filesTable.downloadToken
     })
       .from(filesTable)
-      .where(eq(filesTable.userId, req.session.userId ?? 0))
+      .where(eq(filesTable.userId, userId))
       .orderBy(desc(filesTable.createdAt));
 
     if (limit) {
@@ -433,12 +462,26 @@ app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response):
 
 app.delete(`${API_PREFIX}/files/:id`, requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
+    let userId = -1;
+    const token = req.cookies?.session;
+    if (token) {
+      const { user } = await validateSessionToken(token);
+      if (!user || !user.id) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+      userId = user.id;
+    } else {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
     const file = await db.select()
       .from(filesTable)
       .where(
         and(
           eq(filesTable.id, parseInt(req.params.id)),
-          eq(filesTable.userId, req.session.userId ?? 0)
+          eq(filesTable.userId, userId)
         )
       )
       .limit(1);
