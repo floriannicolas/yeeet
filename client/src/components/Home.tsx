@@ -322,16 +322,16 @@ export const Home = () => {
                 href={file.viewUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative overflow-hidden w-full h-44 rounded-lg flex items-center justify-center group"
+                className="relative border overflow-hidden w-full h-44 rounded-lg flex items-center justify-center group"
               >
                 {isImageType(file.mimeType) ? (
                   <img
-                    className={`w-full h-44 object-cover rounded-lg ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-110 transition-all duration-300`}
+                    className={`w-full h-44 object-cover rounded-lg ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-125 transition-all duration-300`}
                     src={file.viewUrl}
                     alt={file.originalName}
                   />
                 ) : (
-                  <div className={`w-full h-44 rounded-lg flex items-center justify-center ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-110 transition-all duration-300`}>
+                  <div className={`w-full h-44 rounded-lg flex items-center justify-center ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-125 transition-all duration-300`}>
                     {getFileIcon(file.mimeType)}
                   </div>
                 )}
@@ -388,7 +388,7 @@ export const Home = () => {
                   </AlertDialog>
                 </p>
               </div>
-              <div className="flex justify-between gap-2">
+              <div className="flex justify-between items-center gap-2">
                 <p className="flex-1 text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
                 <p className="text-sm text-muted-foreground">
                   {file.expiresAt ? `Expires in ${formatDistanceToNow(new Date(file.expiresAt))}` : ''}
