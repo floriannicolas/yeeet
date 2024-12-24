@@ -3,20 +3,26 @@ import { Link, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { UploadProgress } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { FlameKindling, Upload, LogOut, EllipsisVertical, User, Settings, AppWindowMac } from 'lucide-react';
+import {
+  FlameKindling,
+  Upload,
+  LogOut,
+  EllipsisVertical,
+  User,
+  Settings,
+  AppWindowMac,
+  File as FileIcon,
+  FileVideo,
+  FileText,
+  Eye,
+  Download,
+  Trash,
+} from 'lucide-react';
 import axios from 'axios';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { format } from 'date-fns'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +44,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
+import { formatFileSize } from '../utils/format';
 
 interface FileInfo {
   id: number;
@@ -134,6 +141,10 @@ export const Home = () => {
     window.open('https://github.com/floriannicolas/yeeet/releases/download/v0.0.1/Yeeet-app-v0.0.1.dmg', '_blank');
   };
 
+  const handleOpenLink = (url: string) => {
+    window.open(url, '_blank');
+  };
+
   const handleLogout = async () => {
     console.log('logout');
     await fetch('/api/logout', {
@@ -179,8 +190,43 @@ export const Home = () => {
     }
   };
 
+  const isImageType = (mimeType: string) => {
+    return mimeType.startsWith('image/');
+  };
+
+  const getFileIcon = (mimeType: string) => {
+    if (mimeType.startsWith('video/')) {
+      return <FileVideo className="w-16 h-16 text-muted-foreground" />
+    }
+    switch (mimeType) {
+      case 'application/pdf':
+        return <FileText className="w-16 h-16 text-muted-foreground" />
+      default:
+        return <FileIcon className="w-16 h-16 text-muted-foreground" />
+    }
+  };
+
+  const getFileBackground = (mimeType: string): string => {
+    if (mimeType.startsWith('video/')) {
+      return 'bg-emerald-700';
+    }
+    switch (mimeType) {
+      case 'application/pdf':
+        return 'bg-indigo-800';
+      case 'application/zip':
+      case 'application/x-zip-compressed':
+        return 'bg-yellow-100 dark:bg-yellow-950';
+      case 'text/plain':
+        return 'bg-gray-100 dark:bg-gray-950';
+      case 'application/json':
+        return 'bg-purple-100 dark:bg-purple-950';
+      default:
+        return 'bg-muted';
+    }
+  };
+
   return (
-    <div className="grid min-h-svh"
+    <div className="min-h-svh"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -196,7 +242,7 @@ export const Home = () => {
           <div className="flex items-center gap-2 font-medium ml-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary">
+                <Button variant="ghost" className="rounded-full p-2.5">
                   <EllipsisVertical />
                 </Button>
               </DropdownMenuTrigger>
@@ -238,7 +284,7 @@ export const Home = () => {
         <div className="flex items-center justify-between space-y-2 mb-6">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Your files</h2>
-            <p className="text-muted-foreground">Here's a list of your files!</p>
+            <p className="text-muted-foreground">Your secure file sharing space…</p>
           </div>
           <div className="flex items-center space-x-2">
             <div className="grid w-full items-center gap-1.5">
@@ -264,64 +310,92 @@ export const Home = () => {
             </div>
           </div>
         </div>
-        <div className="flex flex-1 justify-center">
-          <div className="w-full">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">Filename</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead>Expires At</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {files.map(file => (
-                  <TableRow key={file.id}>
-                    <TableCell className="font-bold">{file.originalName}</TableCell>
-                    <TableCell>{file.mimeType}</TableCell>
-                    <TableCell>{format(new Date(file.createdAt), 'dd/MM/yyyy')}</TableCell>
-                    <TableCell>{file.expiresAt ? format(new Date(file.expiresAt), 'dd/MM/yyyy') : ''}</TableCell>
-                    <TableCell className="text-right gap-2 flex justify-end">
-                      <a
-                        className="text-primary underline-offset-4 hover:underline"
-                        href={file.viewUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View
-                      </a>
-                      <a
-                        className="text-primary underline-offset-4 hover:underline"
-                        href={file.downloadUrl}
-                        download
-                      >
-                        Download
-                      </a>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="link" className="p-0 h-auto">Delete</Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone.<br />The file "{file.originalName}" will be permanently deleted.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(file.id)}>Continue</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+        {files.length === 0 && (
+          <div className="flex h-full">
+            <p className="text-muted-foreground">No files yet…</p>
           </div>
+        )}
+        <div className="grid grid-cols-4 grid-flow-row gap-6">
+          {files.map(file => (
+            <div className="flex flex-col gap-2 relative" key={file.id}>
+              <a
+                href={file.viewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative w-full h-44 rounded-lg flex items-center justify-center group"
+              >
+                {isImageType(file.mimeType) ? (
+                  <img
+                    className={`w-full h-44 object-cover rounded-lg ${getFileBackground(file.mimeType)} group-hover:opacity-70 transition-all duration-300`}
+                    src={file.viewUrl}
+                    alt={file.originalName}
+                  />
+                ) : (
+                  <div className={`w-full h-44 rounded-lg flex items-center justify-center ${getFileBackground(file.mimeType)} group-hover:opacity-70 transition-all duration-300`}>
+                    {getFileIcon(file.mimeType)}
+                  </div>
+                )}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full bg-background p-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                  <Eye className="w-6 h-6" />
+                </div>
+              </a>
+              <div className="flex justify-between items-center gap-2">
+                <p className="flex-1 text-sm font-bold text-ellipsis whitespace-nowrap overflow-hidden block">{file.originalName}</p>
+                <p className="text-sm text-muted-foreground">
+                  <AlertDialog>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="rounded-full p-2.5">
+                          <EllipsisVertical />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="">
+                        <DropdownMenuGroup>
+                          <DropdownMenuItem onClick={() => handleOpenLink(file.viewUrl)}>
+                            <Eye />
+                            View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleOpenLink(file.downloadUrl)}>
+                            <Download />
+                            Download
+                          </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                          <AlertDialogTrigger asChild>
+                            <div className="w-full h-full text-red-500">
+                              <Trash className="w-4 h-4 inline-block mr-2 align-middle" />
+                              <span className="inline-block align-middle">Delete</span>
+                            </div>
+                          </AlertDialogTrigger>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription className="max-w-md">
+                          <p className="text-ellipsis overflow-hidden">
+                            This action cannot be undone.<br />The file <span className="text-slate-900 font-medium dark:text-slate-200">{file.originalName}</span> will be permanently deleted.
+                          </p>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete(file.id)}>Continue</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </p>
+              </div>
+              <div className="flex justify-between gap-2">
+                <p className="flex-1 text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                <p className="text-sm text-muted-foreground">
+                  {file.expiresAt ? `Expires on ${format(new Date(file.expiresAt), 'dd/MM/yyyy')}` : ''}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
       {isDragging && (
