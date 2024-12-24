@@ -50,7 +50,7 @@ if (process.env.VERCEL) {
 
 
 const PORT = process.env.PORT || 3000;
-const UPLOAD_DIR = process.env.VERCEL 
+const UPLOAD_DIR = process.env.VERCEL
   ? '/tmp' // Utiliser le stockage temporaire de Vercel
   : path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -88,10 +88,14 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies?.session;
   if (token) {
     const { user } = await validateSessionToken(token);
-    req.session.userId = user?.id ?? undefined;
+    if (req.session) {
+      req.session.userId = user?.id ?? undefined;
+    }
   }
-  if (!req.session.userId) {
-    return res.redirect('/login');
+  if (req.session) {
+    if (!req.session.userId) {
+      return res.redirect('/login');
+    }
   }
   next();
 };
@@ -147,7 +151,7 @@ app.post(`${API_PREFIX}/login`, async (req: Request, res: Response) => {
 });
 
 app.get(`${API_PREFIX}/heath-check`, async (req: Request, res: Response) => {
-  res.json({ 
+  res.json({
     status: 'ok',
     message: 'Server is running',
     uptime: process.uptime()
