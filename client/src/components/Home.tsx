@@ -180,12 +180,10 @@ export const Home = () => {
 
     const droppedFiles = Array.from(e.dataTransfer.files);
     if (droppedFiles.length > 0 && fileInputRef.current) {
-      // Créer un nouveau FileList à partir des fichiers déposés
       const dataTransfer = new DataTransfer();
       droppedFiles.forEach(file => dataTransfer.items.add(file));
       fileInputRef.current.files = dataTransfer.files;
 
-      // Déclencher l'upload
       handleUpload(droppedFiles[0]);
     }
   };
@@ -221,7 +219,7 @@ export const Home = () => {
       case 'application/json':
         return 'bg-purple-100 dark:bg-purple-950';
       default:
-        return 'bg-muted';
+        return 'bg-gray-950';
     }
   };
 
@@ -326,7 +324,7 @@ export const Home = () => {
               >
                 {isImageType(file.mimeType) ? (
                   <img
-                    className={`w-full h-44 object-cover rounded-lg ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-125 transition-all duration-300`}
+                    className={`w-full h-44 object-contain rounded-lg ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-125 transition-all duration-300`}
                     src={file.viewUrl}
                     alt={file.originalName}
                   />
