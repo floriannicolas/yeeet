@@ -17,6 +17,7 @@ import {
   Eye,
   Download,
   Trash,
+  ClipboardCopy,
 } from 'lucide-react';
 import axios from 'axios';
 import { Button } from "@/components/ui/button"
@@ -145,6 +146,10 @@ export const Home = () => {
     window.open(url, '_blank');
   };
 
+  const handleCopyLink = (url: string) => {
+    navigator.clipboard.writeText(url);
+  };
+
   const handleLogout = async () => {
     console.log('logout');
     await fetch('/api/logout', {
@@ -206,11 +211,11 @@ export const Home = () => {
 
   const getFileBackground = (mimeType: string): string => {
     if (mimeType.startsWith('video/')) {
-      return 'bg-emerald-700';
+      return 'bg-emerald-950';
     }
     switch (mimeType) {
       case 'application/pdf':
-        return 'bg-indigo-800';
+        return 'bg-blue-950';
       case 'application/zip':
       case 'application/x-zip-compressed':
         return 'bg-yellow-100 dark:bg-yellow-950';
@@ -349,6 +354,10 @@ export const Home = () => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="">
                         <DropdownMenuGroup>
+                        <DropdownMenuItem onClick={() => handleCopyLink(file.viewUrl)}>
+                            <ClipboardCopy />
+                            Copy link
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleOpenLink(file.viewUrl)}>
                             <Eye />
                             View
