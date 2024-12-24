@@ -36,9 +36,17 @@ const API_PREFIX = '/api';
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-let server = http.createServer(app);
+let server;
 
-const io = new Server(server, {
+if (process.env.VERCEL) {
+  // En production sur Vercel
+  server = app;
+} else {
+  // En développement local
+  server = http.createServer(app);
+}
+
+const io = new Server({
   cors: {
     origin: CLIENT_URL,
     methods: ["GET", "POST"]
