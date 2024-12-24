@@ -5,6 +5,7 @@ import { Register } from './components/Register';
 import { Home } from './components/Home';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectableRoute } from './components/ProtectableRoute';
+import { Toaster } from "@/components/ui/sonner"
 
 export const App = () => {
   return (
@@ -32,6 +33,7 @@ export const App = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      <Toaster />
     </AuthProvider>
   );
 }; 

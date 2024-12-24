@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { UploadProgress } from '../types';
 import { useAuth } from '../contexts/AuthContext';
+import { toast } from "sonner";
 import {
   FlameKindling,
   Upload,
@@ -93,6 +94,7 @@ export const Home = () => {
     socketRef.current.on('completed', () => {
       fetchFiles(FILES_LIMIT);
       setProgress(0);
+      toast("File uploaded");
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
