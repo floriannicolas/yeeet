@@ -45,6 +45,7 @@ export const Login = () => {
                   Enter your email or your username below to login to your account
                 </p>
               </div>
+              {error && <p className="text-red-500 mb-4">{error}</p>}
               <div className="grid gap-6">
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email (or username)</Label>
@@ -53,6 +54,7 @@ export const Login = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     type="text"
+                    error={!!error}
                     placeholder="jon.snow@example.com"
                     required
                   />
@@ -71,6 +73,7 @@ export const Login = () => {
                     id="password"
                     type="password"
                     value={password}
+                    error={!!error}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
@@ -79,7 +82,6 @@ export const Login = () => {
                   Login
                 </Button>
               </div>
-              {error && <p className="text-red-500 mb-4">{error}</p>}
               <div className="text-center text-sm">
                 Don&apos;t have an account?{" "}
                 <Link to="/register" className="underline underline-offset-4">

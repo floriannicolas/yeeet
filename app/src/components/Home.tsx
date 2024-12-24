@@ -51,16 +51,16 @@ export const Home = () => {
         { withCredentials: true }
       );
       setFiles(response.data || []);
-      resizeWindow();
+      resizeWindow(response.data.length || 0);
     } catch (error) {
       console.error('Error fetching files:', error);
     }
   };
 
-  const resizeWindow = async () => {
+  const resizeWindow = async (limit: number) => {
     setTimeout(async () => {
       let height = 390;
-      switch (files.length) {
+      switch (limit) {
         case 0:
           height = 310;
           break;
@@ -83,7 +83,7 @@ export const Home = () => {
   };
 
   useEffect(() => {
-    resizeWindow();
+    resizeWindow(3);
   }, []);
 
   useEffect(() => {

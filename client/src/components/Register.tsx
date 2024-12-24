@@ -34,7 +34,7 @@ export const Register = () => {
         />
       </div>
       <div className="flex flex-col gap-4 p-6 md:p-10">
-      <div className="flex justify-center gap-2 md:justify-start">
+        <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <FlameKindling className="size-4" />
@@ -54,14 +54,16 @@ export const Register = () => {
                   <CircleAlert className="size-4 inline" /> You need an invitation key to create an account.
                 </p>
               </div>
+              {error && <p className="text-red-500 mb-4">{error}</p>}
               <div className="grid gap-6">
-              <div className="grid gap-2">
+                <div className="grid gap-2">
                   <Label htmlFor="invitationKey">Invitation key</Label>
                   <Input
                     id="invitationKey"
                     value={invitationKey}
                     onChange={(e) => setInvitationKey(e.target.value)}
                     type="text"
+                    error={!!error}
                     required
                   />
                 </div>
@@ -72,6 +74,7 @@ export const Register = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     type="text"
+                    error={!!error}
                     required
                   />
                 </div>
@@ -82,6 +85,7 @@ export const Register = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     type="email"
+                    error={!!error}
                     placeholder="jon.snow@example.com"
                     required
                   />
@@ -93,6 +97,7 @@ export const Register = () => {
                   <Input
                     id="password"
                     type="password"
+                    error={!!error}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -102,7 +107,6 @@ export const Register = () => {
                   Register
                 </Button>
               </div>
-              {error && <p className="text-red-500 mb-4">{error}</p>}
               <div className="text-center text-sm">
                 Already have an account?{" "}
                 <Link to="/login" className="underline underline-offset-4">

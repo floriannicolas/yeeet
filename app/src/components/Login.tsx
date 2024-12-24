@@ -80,6 +80,7 @@ export const Login = () => {
                                     </a>
                                 </div>
                             </div>
+                            {error && (<p className="text-red-500 text-sm">{error}</p>)}
                             <div className="flex flex-col gap-6">
                                 <div className="grid gap-2">
                                     <Label htmlFor="email">Email (or username)</Label>
@@ -88,6 +89,7 @@ export const Login = () => {
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
                                         type="text"
+                                        error={!!error}
                                         placeholder="jon.snow@example.com"
                                         required
                                     />
@@ -106,11 +108,11 @@ export const Login = () => {
                                         id="password"
                                         type="password"
                                         value={password}
+                                        error={!!error}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                     />
                                 </div>
-                                {error && <p className="text-red-500 mb-4">{error}</p>}
                                 <Button type="submit" className="w-full">
                                     Login
                                 </Button>
