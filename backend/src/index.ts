@@ -143,7 +143,7 @@ app.post(`${API_PREFIX}/login`, async (req: Request, res: Response) => {
   }
 });
 
-app.get(`${API_PREFIX}/heath-check`, async (req: Request, res: Response) => {
+app.get(`/health-check`, async (req: Request, res: Response) => {
   res.json({
     status: 'ok',
     message: 'Server is running',
