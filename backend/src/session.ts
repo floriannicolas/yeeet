@@ -61,29 +61,30 @@ export type SessionValidationResult =
 	| { session: null; user: null };
 
 
-export function setSessionTokenCookie(response: Response, token: string, expiresAt: Date): void {
-	if (process.env.TRANSFERT_PROTOCOL === 'https') {
-		// When deployed over HTTPS
-		response.setHeader(
-			"Set-Cookie",
-			`session=${token}; HttpOnly; SameSite=Lax; Expires=${expiresAt.toUTCString()}; Path=/; Secure;`
-		);
-	} else {	
-		// When deployed over HTTP (localhost)
-		response.setHeader(
-			"Set-Cookie",
-			`session=${token}; HttpOnly; SameSite=Lax; Expires=${expiresAt.toUTCString()}; Path=/`
-		);
-	}
+export function setSessionTokenCookie(response: Response, token: string): void {
+	const cookieOptions = {
+		httpOnly: true,
+		secure: (process.env.TRANSFERT_PROTOCOL === 'https'),
+		sameSite: 'None' as const, // Permet le cross-origin
+		path: '/',
+		maxAge: 30 * 24 * 60 * 60 * 1000 // 30 jours
+	};
+
+	response.setHeader(
+		'Set-Cookie',
+		`session=${token}; ${Object.entries(cookieOptions)
+			.map(([key, value]) => `${key}=${value}`)
+			.join('; ')}`
+	);
 }
 
 export function deleteSessionTokenCookie(response: Response): void {
 	if (process.env.TRANSFERT_PROTOCOL === 'https') {
 		// When deployed over HTTPS
-		response.setHeader(
-			"Set-Cookie",
-			"session=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/; Secure;"
-		);
+			response.setHeader(
+				"Set-Cookie",
+				"session=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/; Secure;"
+			);
 	} else {
 		// When deployed over HTTP (localhost)
 		response.setHeader("Set-Cookie", "session=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/");
