@@ -50,11 +50,6 @@ io = new Server(server, {
   }
 });
 
-io.on('connection', socket => {
-	console.log('Connection', socket)
-});
-
-
 const PORT = process.env.PORT || 3000;
 const UPLOAD_DIR = process.env.VERCEL
   ? '/tmp' // Utiliser le stockage temporaire de Vercel
