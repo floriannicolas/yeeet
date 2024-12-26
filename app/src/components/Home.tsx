@@ -19,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getToken, removeToken, setToken } from '@/utils/token';
+import { getToken, removeToken } from '@/utils/token';
 
 interface FileInfo {
   id: number;

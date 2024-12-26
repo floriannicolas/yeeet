@@ -142,7 +142,7 @@ export const Home = () => {
   };
 
   const handleDownloadApp = () => {
-    window.open('https://github.com/floriannicolas/yeeet/releases/download/Yeeet_0.1.0_x64.dmg', '_blank');
+    window.open('https://github.com/floriannicolas/yeeet/blob/5127eac07373aecee8037f40e27e27a2d50e8aff/releases/download/Yeeet_0.1.0_x64.dmg', '_blank');
   };
 
   const handleOpenLink = (url: string) => {
