@@ -71,7 +71,7 @@ export const Login = () => {
                                 <div className="text-center text-sm">
                                     Don&apos;t have an account?{" "}
                                     <a
-                                        href={`${import.meta.env.VITE_CLIENT_URL}/register`}
+                                        href={`${import.meta.env.VITE_CLIENT_URL}/#/register`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="underline underline-offset-4"
