@@ -1,13 +1,20 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "yeeet-desktop",
+  "productName": "Yeeet",
   "version": "0.1.0",
-  "identifier": "com.yeeet-desktop.app",
+  "identifier": "com.yeeet.app",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
+  },
+  "bundle": {
+    "icon": [
+      "./icons/icon.png",
+      "./icons/icon.icns",
+      "./icons/tray-icon.ico"
+    ]
   },
   "app": {
     "withGlobalTauri": true,

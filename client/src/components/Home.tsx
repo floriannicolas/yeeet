@@ -142,7 +142,7 @@ export const Home = () => {
   };
 
   const handleDownloadApp = () => {
-    window.open('https://github.com/floriannicolas/yeeet/releases/download/v0.0.1/Yeeet-app-v0.0.1.dmg', '_blank');
+    window.open('https://github.com/floriannicolas/yeeet/releases/download/Yeeet_0.1.0_x64.dmg', '_blank');
   };
 
   const handleOpenLink = (url: string) => {
@@ -270,7 +270,7 @@ export const Home = () => {
                 <DropdownMenuItem onClick={handleDownloadApp}>
                   <AppWindowMac />
                   <span>Download app</span>
-                  <DropdownMenuShortcut>v0.0.1</DropdownMenuShortcut>
+                  <DropdownMenuShortcut>v0.1.0</DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
