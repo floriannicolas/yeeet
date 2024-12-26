@@ -35,7 +35,12 @@ let server;
 let io;
 // En développement local
 server = http.createServer(app);
-io = new Server(server);
+io = new Server(server, {
+  cors: {
+    origin: CLIENT_URL,
+    methods: ["GET", "POST"]
+  }
+});
 
 
 const PORT = process.env.PORT || 3000;
