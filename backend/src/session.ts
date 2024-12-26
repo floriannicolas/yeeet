@@ -68,6 +68,7 @@ export function setSessionTokenCookie(response: Response, token: string, expires
 		sameSite: 'None' as const, // Permet le cross-origin
 		path: '/',
 		maxAge: expiresAt.getTime() - Date.now(),
+		partitioned: true
 	};
 
 	response.setHeader(
@@ -83,7 +84,7 @@ export function deleteSessionTokenCookie(response: Response): void {
 		// When deployed over HTTPS
 			response.setHeader(
 				"Set-Cookie",
-				"session=; HttpOnly; SameSite=None; Max-Age=0; Path=/; Secure;"
+				"session=; HttpOnly; SameSite=None; Max-Age=0; Path=/; Secure; Partitioned;"
 			);
 	} else {
 		// When deployed over HTTP (localhost)
