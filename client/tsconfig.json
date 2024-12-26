@@ -9,5 +9,7 @@
     "paths": {
       "@/*": ["./src/*"]
     }
-  }
+  },
+  "include": ["vite-env.d.ts"],
+  "lib": ["WebWorker"]
 }
