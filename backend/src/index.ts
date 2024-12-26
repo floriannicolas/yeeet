@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import cookieParser from 'cookie-parser';
 import fs from 'fs';
@@ -13,7 +13,6 @@ import cors from 'cors';
 import { eq, and, or, desc } from 'drizzle-orm';
 import { db } from './database';
 import { usersTable, filesTable } from './db/schema';
-import type { Request, Response, NextFunction } from 'express';
 import { createSession, deleteSessionTokenCookie, generateSessionToken, invalidateSession, setSessionTokenCookie, validateSessionToken } from './session';
 import cron from 'node-cron';
 import { cleanupExpiredFiles } from './tasks/cleanup';
