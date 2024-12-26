@@ -61,13 +61,13 @@ export type SessionValidationResult =
 	| { session: null; user: null };
 
 
-export function setSessionTokenCookie(response: Response, token: string): void {
+export function setSessionTokenCookie(response: Response, token: string, expiresAt: Date): void {
 	const cookieOptions = {
 		httpOnly: true,
 		secure: (process.env.TRANSFERT_PROTOCOL === 'https'),
 		sameSite: 'None' as const, // Permet le cross-origin
 		path: '/',
-		maxAge: 30 * 24 * 60 * 60 * 1000 // 30 jours
+		maxAge: expiresAt.getTime() - Date.now(),
 	};
 
 	response.setHeader(
