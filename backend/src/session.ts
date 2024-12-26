@@ -62,7 +62,7 @@ export type SessionValidationResult =
 
 
 export function setSessionTokenCookie(response: Response, token: string, expiresAt: Date): void {
-	if (process.env.NODE_ENV === 'production') {
+	if (process.env.TRANSFERT_PROTOCOL === 'https') {
 		// When deployed over HTTPS
 		response.setHeader(
 			"Set-Cookie",
@@ -78,7 +78,7 @@ export function setSessionTokenCookie(response: Response, token: string, expires
 }
 
 export function deleteSessionTokenCookie(response: Response): void {
-	if (process.env.NODE_ENV === 'production') {
+	if (process.env.TRANSFERT_PROTOCOL === 'https') {
 		// When deployed over HTTPS
 		response.setHeader(
 			"Set-Cookie",
