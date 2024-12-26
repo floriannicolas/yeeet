@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { io, Socket } from 'socket.io-client';
 import { UploadProgress } from '../types';
 import { FlameKindling, LogOut, EllipsisVertical, Upload } from 'lucide-react';
-import { PhysicalSize, LogicalSize, getCurrentWindow } from '@tauri-apps/api/window';
+import { LogicalSize, getCurrentWindow } from '@tauri-apps/api/window';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,8 +30,8 @@ interface FileInfo {
   downloadUrl: string;
   viewUrl: string;
 }
-const API_URL = 'http://localhost:3000';
-const CLIENT_URL = 'http://localhost:5173';
+const API_URL = import.meta.env.VITE_API_URL;
+const CLIENT_URL = import.meta.env.VITE_CLIENT_URL;
 const FILES_LIMIT = 3;
 
 export const Home = () => {
@@ -50,40 +50,54 @@ export const Home = () => {
         `${API_URL}${url}`,
         { withCredentials: true }
       );
-      setFiles(response.data || []);
-      resizeWindow(response.data.length || 0);
+      const data = response.data || [];
+      setFiles(data);
+      resizeWindow(data.length || 0);
     } catch (error) {
       console.error('Error fetching files:', error);
     }
   };
 
   const resizeWindow = async (limit: number) => {
-    setTimeout(async () => {
-      let height = 390;
-      switch (limit) {
-        case 0:
-          height = 310;
-          break;
-        case 1:
-          height = 320;
-          break;
-        case 2:
-          height = 360;
-          break;
-        case 3:
-          height = 390;
-          break;
-      }
-      try {
-        await getCurrentWindow().setSize(new LogicalSize(360, height));
-      } catch (error) {
-        console.error('Failed to resize window:', error);
-      }
-    }, 100);
+    let height = 390;
+    switch (limit) {
+      case 0:
+        height = 310;
+        break;
+      case 1:
+        height = 320;
+        break;
+      case 2:
+        height = 360;
+        break;
+      case 3:
+        height = 390;
+        break;
+    }
+    try {
+      await getCurrentWindow().setSize(new LogicalSize(360, height));
+    } catch (error) {
+      console.error('Failed to resize window:', error);
+    }
   };
 
   useEffect(() => {
     resizeWindow(3);
+  }, []);
+
+  useEffect(() => {
+    const unlistenBlur = listen('tauri://blur', async () => {
+      try {
+        const window = getCurrentWindow();
+        await window.hide();
+      } catch (error) {
+        console.error('Error hiding window:', error);
+      }
+    });
+
+    return () => {
+      unlistenBlur.then(unlisten => unlisten());
+    };
   }, []);
 
   useEffect(() => {

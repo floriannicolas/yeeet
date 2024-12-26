@@ -17,7 +17,12 @@ export const Login = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('/api/login', { username, password });
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/login`, {
+        username,
+        password,
+      }, {
+        withCredentials: true,
+      });
       login();
       navigate('/');
     } catch (err: any) {

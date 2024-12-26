@@ -92,7 +92,6 @@ pnpm install
 Create a `.env` file in the backend directory:
 
 ```bash
-cd backend
 touch .env
 ```
 
@@ -106,6 +105,10 @@ DB_NAME=your_database_name
 DB_USER=your_database_user
 DB_PASSWORD=your_database_password
 SESSION_SECRET=your_session_secret
+BACKEND_URL=http://localhost:3000
+CLIENT_URL=http://localhost:5173
+TAURI_URL=tauri://localhost
+TAURI_URL_DEV=http://localhost:1420
 ```
 
 4. Install frontend dependencies
@@ -114,13 +117,45 @@ cd ../client
 pnpm install
 ```
 
-5. Install app dependencies
+5. Configure environment variables:
+
+Create a `.env` file in the client directory:
+
+```bash
+touch .env
+```
+
+Add the following variables:
+
+```bash
+VITE_SOCKET_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3000
+VITE_CLIENT_URL=http://localhost:5173
+```
+
+6. Install app dependencies
 ```bash
 cd ../app
 pnpm install
 ```
 
-6. Run database migrations:
+7. Configure environment variables:
+
+Create a `.env` file in the app directory:
+
+```bash
+touch .env
+```
+
+Add the following variables:
+
+```bash
+VITE_SOCKET_URL=http://localhost:3000
+VITE_API_URL=http://localhost:3000
+VITE_CLIENT_URL=http://localhost:5173
+```
+
+8. Run database migrations:
 
 Please note that you need to have a PostgreSQL database created.
 

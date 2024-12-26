@@ -24,9 +24,10 @@ cron.schedule('0 3 * * *', async () => {
   await cleanupExpiredFiles();
 });
 
-const CLIENT_URL = 'http://localhost:5173';
-const TAURI_URL = 'tauri://localhost';
-const TAURI_URL_DEV = 'http://localhost:1420';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const TAURI_URL = process.env.TAURI_URL || 'tauri://localhost';
+const TAURI_URL_DEV = process.env.TAURI_URL_DEV || 'http://localhost:1420';
 const API_PREFIX = '/api';
 const app = express();
 app.use(express.json());
@@ -60,10 +61,9 @@ app.use(cookieParser());
 
 // Configurer CORS avec les nouvelles origines
 const ALLOWED_ORIGINS = [
-  'http://localhost:5173',
-  'http://localhost:1420',
-  'tauri://localhost',
-  'https://votre-frontend-url.vercel.app'
+  CLIENT_URL,
+  TAURI_URL,
+  TAURI_URL_DEV,
 ];
 
 app.use(cors({
@@ -385,7 +385,7 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
           io.emit('completed', {
             uploadId,
             originalName: path.basename(finalPath),
-            viewUrl: `${CLIENT_URL}${API_PREFIX}/view/${result[0].downloadToken}`
+            viewUrl: `${BACKEND_URL}${API_PREFIX}/view/${result[0].downloadToken}`
           });
 
           res.status(200).json({
@@ -449,8 +449,8 @@ app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response):
 
     const filesWithUrls = result.map(file => ({
       ...file,
-      downloadUrl: `${CLIENT_URL}${API_PREFIX}/download/${file.downloadToken}`,
-      viewUrl: `${CLIENT_URL}${API_PREFIX}/view/${file.downloadToken}`
+      downloadUrl: `${BACKEND_URL}${API_PREFIX}/download/${file.downloadToken}`,
+      viewUrl: `${BACKEND_URL}${API_PREFIX}/view/${file.downloadToken}`
     }));
 
     res.json(filesWithUrls);

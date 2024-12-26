@@ -72,8 +72,8 @@ export const Home = () => {
 
   const fetchFiles = async (limit?: number) => {
     try {
-      const url = limit ? `/api/files?limit=${limit}` : '/api/files';
-      const response = await axios.get(url);
+      const url = limit ? `${import.meta.env.VITE_API_URL}/api/files?limit=${limit}` : `${import.meta.env.VITE_API_URL}/api/files`;
+      const response = await axios.get(url, { withCredentials: true });
       setFiles(response.data);
     } catch (error) {
       console.error('Error fetching files:', error);
@@ -81,7 +81,7 @@ export const Home = () => {
   };
 
   useEffect(() => {
-    socketRef.current = io('http://localhost:3000', {
+    socketRef.current = io(import.meta.env.VITE_SOCKET_URL, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
       withCredentials: true
@@ -133,9 +133,10 @@ export const Home = () => {
       });
       formData.append('chunk', new Blob([chunk], { type: file.type }), metadata);
 
-      await fetch('/api/upload', {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       });
     }
   };
@@ -153,8 +154,7 @@ export const Home = () => {
   };
 
   const handleLogout = async () => {
-    console.log('logout');
-    await fetch('/api/logout', {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/logout`, {
       method: 'POST',
       credentials: 'include',
     });
@@ -164,7 +164,9 @@ export const Home = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      await axios.delete(`/api/files/${id}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/files/${id}`, {
+        withCredentials: true,
+      });
       fetchFiles(FILES_LIMIT);
     } catch (error) {
       console.error('Error deleting file:', error);

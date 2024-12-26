@@ -17,6 +17,7 @@
     "core:webview:default",
     "core:window:default",
     "core:window:allow-set-size",
+    "core:window:allow-hide",
     "shell:allow-open",
     "opener:default",
     "core:window:allow-set-visible-on-all-workspaces",

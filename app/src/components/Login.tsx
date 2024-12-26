@@ -31,7 +31,7 @@ export const Login = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await fetch('http://localhost:3000/api/login', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ export const Login = () => {
                                 <div className="text-center text-sm">
                                     Don&apos;t have an account?{" "}
                                     <a
-                                        href="http://localhost:5173/register"
+                                        href={`${import.meta.env.VITE_CLIENT_URL}/register`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="underline underline-offset-4"

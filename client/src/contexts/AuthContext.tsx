@@ -17,7 +17,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.get('/api/check-auth');
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/check-auth`, 
+          { withCredentials: true }
+        );
         setIsAuthenticated(response.data.isAuthenticated);
       } catch (error) {
         setIsAuthenticated(false);

@@ -17,7 +17,11 @@ export const Register = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('/api/register', { username, password, email, invitationKey });
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/register`, 
+        { username, password, email, invitationKey },
+        { withCredentials: true }
+      );
       navigate('/login');
     } catch (err: any) {
       setError(err.response?.data || 'An error occurred');
