@@ -33,15 +33,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 let server;
 let io;
-if (process.env.VERCEL) {
-  // En production sur Vercel
-  server = app;
-  io = new Server();
-} else {
-  // En développement local
-  server = http.createServer(app);
-  io = new Server(server);
-}
+// En développement local
+server = http.createServer(app);
+io = new Server(server);
 
 
 const PORT = process.env.PORT || 3000;
