@@ -63,6 +63,29 @@ app.use(session({
   saveUninitialized: false
 }));
 
+/**
+ * Get the token from the request.
+ * @param req 
+ * @returns 
+ */
+const getTokenFromRequest = (req: Request) => {
+  const token = req.cookies?.session;
+
+  if (token) {
+    return token;
+  }
+
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    const [type, token] = authHeader.split(' ');
+    if (type === 'Bearer') {
+      return token;
+    }
+  }
+
+  return null;
+};
+
 app.use(cookieParser());
 
 app.use(cors({
@@ -79,7 +102,7 @@ app.use(cors({
 }));
 
 const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
-  const token = req.cookies?.session;
+  const token = getTokenFromRequest(req);
   if (token) {
     const { user } = await validateSessionToken(token);
     if (!user || !user.id) {
@@ -130,7 +153,7 @@ app.post(`${API_PREFIX}/login`, async (req: Request, res: Response) => {
         const token = generateSessionToken();
         const session = await createSession(token, user[0].id);
         setSessionTokenCookie(res as Response, token, session.expiresAt);
-        res.status(200).send('Login successful');
+        res.status(200).send({ message: 'Login successful', token: token });
       } else {
         res.status(401).send('Invalid password');
       }
@@ -152,7 +175,7 @@ app.get(`/health-check`, async (req: Request, res: Response) => {
 });
 
 app.get(`${API_PREFIX}/check-auth`, async (req: Request, res: Response) => {
-  const token = req.cookies?.session;
+  const token = getTokenFromRequest(req);
   let isAuthenticated = false;
   if (token) {
     const { user } = await validateSessionToken(token);
@@ -166,7 +189,7 @@ app.post(`${API_PREFIX}/logout`, (req: Request, res: Response) => {
     if (err) {
       res.status(500).json({ message: 'Error logging out' });
     } else {
-      const token = req.cookies?.session;
+      const token = getTokenFromRequest(req);
       invalidateSession(token);
       deleteSessionTokenCookie(res as Response);
       res.json({ message: 'Logged out successfully' });
@@ -179,7 +202,7 @@ app.post(`${API_PREFIX}/logout`, (req: Request, res: Response) => {
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
     let userId = -1;
-    const token = req.cookies?.session;
+    const token = getTokenFromRequest(req);
     if (token) {
       const { user } = await validateSessionToken(token);
       if (!user || !user.id) {
@@ -303,7 +326,7 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
   }
 
   let userId = -1;
-  const token = req.cookies?.session;
+  const token = getTokenFromRequest(req);
   if (token) {
     const { user } = await validateSessionToken(token);
     if (!user || !user.id) {
@@ -415,7 +438,7 @@ app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response):
   try {
     const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
     let userId = -1;
-    const token = req.cookies?.session;
+    const token = getTokenFromRequest(req);
     if (token) {
       const { user } = await validateSessionToken(token);
       if (!user || !user.id) {
@@ -462,7 +485,7 @@ app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response):
 app.delete(`${API_PREFIX}/files/:id`, requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     let userId = -1;
-    const token = req.cookies?.session;
+    const token = getTokenFromRequest(req);
     if (token) {
       const { user } = await validateSessionToken(token);
       if (!user || !user.id) {

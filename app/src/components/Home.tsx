@@ -54,6 +54,7 @@ export const Home = () => {
       setFiles(data);
       resizeWindow(data.length || 0);
     } catch (error) {
+      resizeWindow(0);
       console.error('Error fetching files:', error);
     }
   };
