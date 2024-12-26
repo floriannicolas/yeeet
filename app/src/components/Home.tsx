@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getToken, removeToken, setToken } from '@/utils/token';
 
 interface FileInfo {
   id: number;
@@ -48,14 +49,21 @@ export const Home = () => {
       const url = limit ? `/api/files?limit=${limit}` : '/api/files';
       const response = await axios.get(
         `${API_URL}${url}`,
-        { withCredentials: true }
+        { 
+          withCredentials: true,
+          headers: { Authorization: `Bearer ${getToken()}` } 
+        }
       );
       const data = response.data || [];
       setFiles(data);
       resizeWindow(data.length || 0);
-    } catch (error) {
+    } catch (error: any) {
       resizeWindow(0);
       console.error('Error fetching files:', error);
+      if (error.response.status === 401) {
+        removeToken();
+        navigate('/login');
+      }
     }
   };
 
@@ -184,6 +192,7 @@ export const Home = () => {
         method: 'POST',
         credentials: 'include',
         body: formData,
+        headers: { Authorization: `Bearer ${getToken()}` }
       });
     }
   };
@@ -193,7 +202,9 @@ export const Home = () => {
       await fetch(`${API_URL}/api/logout`, {
         method: 'POST',
         credentials: 'include',
+        headers: { Authorization: `Bearer ${getToken()}` }
       });
+      removeToken();
       logout();
       navigate('/login');
     } catch (err) {

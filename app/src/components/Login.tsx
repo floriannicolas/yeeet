@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LogicalSize, getCurrentWindow } from '@tauri-apps/api/window';
+import { setToken } from '@/utils/token';
 
 
 export const Login = () => {
@@ -44,6 +45,8 @@ export const Login = () => {
                 throw new Error(error);
             }
 
+            const data = await response.json();
+            setToken(data.token);
             login();
             navigate('/');
         } catch (err) {
