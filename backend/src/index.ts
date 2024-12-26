@@ -33,13 +33,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 let server;
 let io;
+
+// Configurer CORS avec les nouvelles origines
+const ALLOWED_ORIGINS = [
+  CLIENT_URL,
+  TAURI_URL,
+  TAURI_URL_DEV,
+];
+
 // En développement local
 server = http.createServer(app);
 io = new Server(server, {
   cors: {
-    origin: CLIENT_URL,
+    origin: ALLOWED_ORIGINS,
     methods: ["GET", "POST"]
   }
+});
+
+io.on('connection', socket => {
+	console.log('Connection', socket)
 });
 
 
@@ -56,13 +68,6 @@ app.use(session({
 }));
 
 app.use(cookieParser());
-
-// Configurer CORS avec les nouvelles origines
-const ALLOWED_ORIGINS = [
-  CLIENT_URL,
-  TAURI_URL,
-  TAURI_URL_DEV,
-];
 
 app.use(cors({
   origin: (origin, callback) => {
