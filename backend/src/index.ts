@@ -39,13 +39,14 @@ const ALLOWED_ORIGINS = [
   CLIENT_URL,
   TAURI_URL,
   TAURI_URL_DEV,
+  "*" // for tests
 ];
 
 // En développement local
 server = http.createServer(app);
 io = new Server(server, {
   cors: {
-    origin: ALLOWED_ORIGINS,
+    origin: "*",
     methods: ["GET", "POST"]
   }
 });
@@ -66,7 +67,7 @@ app.use(cookieParser());
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+    if (!origin || ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes("*")) {
       callback(null, true);
     } else {
       callback(new Error(`Not allowed by CORS: ${origin}`));
