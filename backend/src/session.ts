@@ -83,7 +83,7 @@ export function deleteSessionTokenCookie(response: Response): void {
 		// When deployed over HTTPS
 			response.setHeader(
 				"Set-Cookie",
-				"session=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/; Secure;"
+				"session=; HttpOnly; SameSite=None; Max-Age=0; Path=/; Secure;"
 			);
 	} else {
 		// When deployed over HTTP (localhost)
