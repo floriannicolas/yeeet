@@ -40,7 +40,6 @@ const ALLOWED_ORIGINS = [
   CLIENT_URL,
   TAURI_URL,
   TAURI_URL_DEV,
-  "*" // for tests
 ];
 
 // En développement local
