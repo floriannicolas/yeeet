@@ -211,6 +211,8 @@ export const Home = () => {
 
       if (diffDays < 0) {
         return "Expired";
+      } else if (diffDays === 0) {
+        return "Expires soon";
       } else if (diffDays === 1) {
         return "Expires tomorrow";
       } else {
