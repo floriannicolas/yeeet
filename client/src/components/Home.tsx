@@ -197,6 +197,30 @@ export const Home = () => {
     }
   };
 
+  const getFileExpiresAtLabel = (file: FileInfo) => {
+    if (file.expiresAt) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const expireDate = new Date(file.expiresAt);
+
+      if (expireDate.getTime() === today.getTime()) {
+        return "Expires today";
+      }
+
+      const diffTime = expireDate.getTime() - now.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays < 0) {
+        return "Expired";
+      } else if (diffDays === 1) {
+        return "Expires tomorrow";
+      } else {
+        return `Expires in ${diffDays} days`;
+      }
+    }
+    return 'Never expires';
+  }
+
   const isImageType = (mimeType: string) => {
     return mimeType.startsWith('image/');
   };
@@ -358,7 +382,7 @@ export const Home = () => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="">
                         <DropdownMenuGroup>
-                        <DropdownMenuItem onClick={() => handleCopyLink(file.viewUrl)}>
+                          <DropdownMenuItem onClick={() => handleCopyLink(file.viewUrl)}>
                             <ClipboardCopy />
                             Copy link
                           </DropdownMenuItem>
@@ -402,7 +426,7 @@ export const Home = () => {
               <div className="flex justify-between items-center gap-2">
                 <p className="flex-1 text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
                 <p className="text-sm text-muted-foreground">
-                  {file.expiresAt ? `Expires in ${formatDistanceToNow(new Date(file.expiresAt))}` : ''}
+                  {getFileExpiresAtLabel(file)}
                 </p>
               </div>
             </div>

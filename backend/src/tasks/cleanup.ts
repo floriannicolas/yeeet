@@ -3,32 +3,35 @@ import { filesTable } from '../db/schema';
 import { lt, eq } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
+import { createStorageProvider } from '../storage';
 
 export async function cleanupExpiredFiles() {
-  try {
-    // Récupérer tous les fichiers expirés
-    const expiredFiles = await db.select()
-      .from(filesTable)
-      .where(lt(filesTable.expiresAt, new Date()));
+    const storageProvider = createStorageProvider();
+    try {
+        const expiredFiles = await db.select()
+            .from(filesTable)
+            .where(lt(filesTable.expiresAt, new Date()));
 
-    for (const file of expiredFiles) {
-      try {
-        // Supprimer le fichier physique
-        const filePath = path.join(__dirname, '../../uploads', file.filePath);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
+        for (const file of expiredFiles) {
+            try {
+                const filePath = path.join(__dirname, '../../uploads', file.filePath);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+
+                if (file.s3Path) {
+                    await storageProvider.deleteFile(file.s3Path);
+                }
+
+                await db.delete(filesTable)
+                    .where(eq(filesTable.id, file.id));
+
+                console.log(`Deleted expired file: ${file.originalName}`);
+            } catch (error) {
+                console.error(`Error deleting file ${file.originalName}:`, error);
+            }
         }
-
-        // Supprimer l'entrée de la base de données
-        await db.delete(filesTable)
-          .where(eq(filesTable.id, file.id));
-
-        console.log(`Deleted expired file: ${file.originalName}`);
-      } catch (error) {
-        console.error(`Error deleting file ${file.originalName}:`, error);
-      }
+    } catch (error) {
+        console.error('Error in cleanup task:', error);
     }
-  } catch (error) {
-    console.error('Error in cleanup task:', error);
-  }
 } 

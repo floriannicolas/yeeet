@@ -109,6 +109,11 @@ BACKEND_URL=http://localhost:3000
 CLIENT_URL=http://localhost:5173
 TAURI_URL=tauri://localhost
 TAURI_URL_DEV=http://localhost:1420
+USE_S3_STORAGE=false # true or false
+AWS_BUCKET_NAME=your-bucket-name
+AWS_REGION=aws-region
+AWS_ACCESS_KEY_ID=your-access-key-id
+AWS_SECRET_ACCESS_KEY=your-secret-access-key
 ```
 
 4. Install frontend dependencies
