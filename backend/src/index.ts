@@ -16,6 +16,7 @@ import { usersTable, filesTable } from './db/schema';
 import { createSession, deleteSessionTokenCookie, generateSessionToken, invalidateSession, setSessionTokenCookie, validateSessionToken } from './session';
 import cron from 'node-cron';
 import { cleanupExpiredFiles } from './tasks/cleanup';
+import { createStorageProvider } from './storage/index';
 
 // Cleanup expired files every day at 3am
 cron.schedule('0 3 * * *', async () => {
@@ -52,10 +53,8 @@ io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3000;
-const UPLOAD_DIR = process.env.VERCEL
-  ? '/tmp' // Utiliser le stockage temporaire de Vercel
-  : path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
+const storageProvider = createStorageProvider();
 
 app.use(session({
   secret: process.env.SESSION_SECRET || 'votre_secret_key_très_sécurisée',
@@ -309,7 +308,17 @@ app.get(`${API_PREFIX}/view/:token`, async (req: Request, res: Response): Promis
       res.setHeader('Content-Disposition', `inline; filename="${file.originalName}"`);
     }
 
-    res.sendFile(file.filePath);
+    // Récupérer le fichier via le StorageProvider
+    const fileContent = await storageProvider.getFile(file.s3Path || file.filePath, file.filePath);
+    
+    // Si c'est un Readable Stream (depuis S3)
+    if (fileContent.pipe) {
+      fileContent.pipe(res);
+    } else {
+      // Si c'est un Buffer ou autre type de données
+      res.send(fileContent);
+    }
+
   } catch (error) {
     console.error('Error viewing file:', error);
     res.status(500).json({ message: 'Error viewing file' });
@@ -384,12 +393,17 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
 
       output.on('finish', async () => {
         const fileStats = fs.statSync(finalPath);
+        const s3Path = await storageProvider.saveFile(
+          finalPath,
+          path.join(userId.toString(), path.basename(finalPath))
+        );
         try {
           const downloadToken = generateDownloadToken();
           const result = await db.insert(filesTable).values({
             userId: userId,
             originalName: path.basename(finalPath),
             filePath: finalPath,
+            s3Path: s3Path,
             mimeType: req.file?.mimetype,
             size: fileStats.size,
             downloadToken: downloadToken,
@@ -516,6 +530,10 @@ app.delete(`${API_PREFIX}/files/:id`, requireAuth, async (req: Request, res: Res
     // Supprimer le fichier physique
     if (fs.existsSync(file[0].filePath)) {
       fs.unlinkSync(file[0].filePath);
+    }
+
+    if (file[0].s3Path) {
+      await storageProvider.deleteFile(file[0].s3Path);
     }
 
     // Supprimer l'entrée dans la base de données

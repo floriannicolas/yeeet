@@ -35,6 +35,7 @@ export const filesTable = pgTable('files', {
   userId: integer('user_id').references(() => usersTable.id),
   originalName: varchar('original_name', { length: 255 }).notNull(),
   filePath: varchar('file_path', { length: 255 }).notNull(),
+  s3Path: varchar('s3_path', { length: 255 }),
   mimeType: varchar('mime_type', { length: 255 }),
   size: bigint('size', { mode: 'number' }),
   downloadToken: varchar('download_token', { length: 64 }).unique(),
