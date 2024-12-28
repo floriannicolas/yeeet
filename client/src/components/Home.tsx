@@ -105,9 +105,9 @@ export const Home = () => {
     socketRef.current.on('completed', (data: UploadComplete) => {
       fetchFiles(FILES_LIMIT);
       setProgress(0);
-      toast({ 
-        title: "File uploaded successfully", 
-        description: <>Your file <span className="font-semibold">{data.originalName}</span> is now available.</> 
+      toast({
+        title: "File uploaded successfully",
+        description: <>Your file <span className="font-semibold">{data.originalName}</span> is now available.</>
       });
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -304,8 +304,10 @@ export const Home = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-52 -ml-36">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                {
+                  /*
                 <DropdownMenuGroup>
                   <DropdownMenuItem>
                     <User />
@@ -317,10 +319,12 @@ export const Home = () => {
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
+                  */
+                }
                 {storageInfo && (
                   <>
                     <DropdownMenuGroup>
-                      <div className="px-2 py-1.5 text-xm flex gap-2 items-center">
+                      <div className="px-2 py-1.5 text-sm flex gap-2 items-center">
                         <div className="text-semibold">
                           Usage
                         </div>
