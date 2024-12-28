@@ -259,11 +259,13 @@ app.get(`/health-check`, async (req: Request, res: Response) => {
 app.get(`${API_PREFIX}/check-auth`, async (req: Request, res: Response) => {
   const token = getTokenFromRequest(req);
   let isAuthenticated = false;
+  let userId = null;
   if (token) {
     const { user } = await validateSessionToken(token);
     isAuthenticated = !!user;
+    userId = user?.id;
   }
-  res.json({ isAuthenticated });
+  res.json({ isAuthenticated, userId });
 });
 
 app.post(`${API_PREFIX}/logout`, (req: Request, res: Response) => {
@@ -470,7 +472,7 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
   }
 
   const uploadedChunks = fs.readdirSync(dir).length;
-  io.emit('progress', { uploadId, uploadedChunks, totalChunks });
+  io.emit(`progress.${userId}`, { uploadId, uploadedChunks, totalChunks });
 
   if (uploadedChunks === parseInt(totalChunks)) {
     let finalPath = path.join(userDir, originalName);
@@ -514,7 +516,7 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
             fs.rmSync(dir, { recursive: true });
           }, 1000);
 
-          io.emit('completed', {
+          io.emit(`completed.${userId}`, {
             uploadId,
             originalName: path.basename(finalPath),
             viewUrl: `${BACKEND_URL}${API_PREFIX}/view/${result[0].downloadToken}`

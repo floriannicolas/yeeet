@@ -68,7 +68,7 @@ export const Home = () => {
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
   const socketRef = useRef<Socket>();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, userId } = useAuth();
   const [files, setFiles] = useState<FileInfo[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -100,12 +100,11 @@ export const Home = () => {
       withCredentials: true
     });
 
-    socketRef.current.on('progress', (data: UploadProgress) => {
+    socketRef.current.on(`progress.${userId}`, (data: UploadProgress) => {
       setProgress((data.uploadedChunks / data.totalChunks) * 100);
     });
 
-    socketRef.current.on('completed', (data: UploadComplete) => {
-      console.log('completed', data);
+    socketRef.current.on(`completed.${userId}`, (data: UploadComplete) => {
       fetchFiles(FILES_LIMIT);
       setProgress(0);
       toast({

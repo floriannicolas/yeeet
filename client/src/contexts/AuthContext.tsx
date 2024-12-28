@@ -4,6 +4,7 @@ import axios from 'axios';
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
+  userId: number | null;
   login: () => void;
   logout: () => void;
 }
@@ -12,6 +13,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userId, setUserId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -22,6 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           { withCredentials: true }
         );
         setIsAuthenticated(response.data.isAuthenticated);
+        setUserId(response.data.userId);
       } catch (error) {
         setIsAuthenticated(false);
       } finally {
@@ -36,7 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => setIsAuthenticated(false);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, userId, login, logout }}>
       {!isLoading && children}
     </AuthContext.Provider>
   );
