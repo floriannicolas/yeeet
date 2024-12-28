@@ -142,7 +142,7 @@ app.post(`${API_PREFIX}/register`, async (req: Request, res: Response) => {
       email,
       password: hashedPassword
     });
-    res.redirect('/login');
+    res.status(200).send({ message: 'Register successful' });
   } catch (error: any) {
     if (error.code === '23505') {
       res.status(400).send('Username already exists');
