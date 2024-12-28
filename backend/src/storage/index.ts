@@ -64,6 +64,7 @@ export const convertImageToWebp = async (filePath: string, mimeType: string | nu
         return filePath;
     }
     if (mimeType === 'image/heic') {
+        console.time('convertImageToWebp.heicConvert');
         const inputBuffer = await fs.readFileSync(filePath);
         const outputBuffer = await heicConvert({
             buffer: inputBuffer,
@@ -75,6 +76,7 @@ export const convertImageToWebp = async (filePath: string, mimeType: string | nu
         fs.unlinkSync(filePath);
         filePath = newFilePath;
         mimeType = 'image/jpeg';
+        console.timeEnd('convertImageToWebp.heicConvert');
     }
 
     console.time('convertImageToWebp');
