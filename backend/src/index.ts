@@ -23,7 +23,7 @@ import {
 } from './session';
 import cron from 'node-cron';
 import { cleanupExpiredFiles } from './tasks/cleanup';
-import { convertImageToAvif, createStorageProvider, getUniqueFilename } from './storage/index';
+import { convertImageToWebp, createStorageProvider, getUniqueFilename } from './storage/index';
 import {
   getMaxUserStorageSpace,
   convertBytesToMb,
@@ -414,7 +414,7 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
       let mimeType = req.file?.mimetype || null;
 
       output.on('finish', async () => {
-        const avifPath = await convertImageToAvif(finalPath, mimeType);
+        const avifPath = await convertImageToWebp(finalPath, mimeType);
         const fileStats = fs.statSync(avifPath);
         mimeType = mime.getType(avifPath);
         const s3Path = await storageProvider.saveFile(
