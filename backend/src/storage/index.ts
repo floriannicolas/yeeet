@@ -70,19 +70,12 @@ export const convertImageToWebp = async (filePath: string, mimeType: string | nu
         .toBuffer();
     console.timeEnd('convertImageToWebp.sharp.toBuffer');
     const newFilePath = getUniqueFilename(filePath.replace(/\.[^.]+$/, '.webp'));
-    console.time('convertImageToWebp.sharp.toFile');
-    await sharp(image).toFile(newFilePath);
-    console.timeEnd('convertImageToWebp.sharp.toFile');
-
-    const testNewFilePath = getUniqueFilename(newFilePath);
-    console.time('convertImageToWebp.fs.writeFile');
-    const fileStats = fs.statSync(newFilePath);
-    console.log('convertImageToWebp.sharp.fileSize', formatFileSize(fileStats.size));
-    await fs.writeFileSync(testNewFilePath, image);
-    console.timeEnd('convertImageToWebp.fs.writeFile');
-    const testFileStats = fs.statSync(testNewFilePath);
-    console.log('convertImageToWebp.fs.writeFileSync.fileSize', formatFileSize(testFileStats.size));
-    fs.unlinkSync(testNewFilePath);
+    // console.time('convertImageToWebp.sharp.toFile');
+    // await sharp(image).toFile(newFilePath);
+    // console.timeEnd('convertImageToWebp.sharp.toFile');
+    console.time('convertImageToWebp.writeFileSync');
+    await fs.writeFileSync(newFilePath, image);
+    console.timeEnd('convertImageToWebp.writeFileSync');
     fs.unlinkSync(filePath);
     console.timeEnd('convertImageToWebp');
 

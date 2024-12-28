@@ -287,7 +287,6 @@ app.get(`${API_PREFIX}/view/:token`, async (req: Request, res: Response): Promis
 
     const file = result[0];
 
-    // Liste des types MIME pour la visualisation en ligne
     const viewableMimeTypes = [
       'image/jpeg',
       'image/png',
