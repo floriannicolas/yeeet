@@ -717,6 +717,24 @@ app.delete(`${API_PREFIX}/files/:id`, requireAuth, async (req: Request, res: Res
   }
 });
 
+app.get(`${API_PREFIX}/user/settings`, requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { user } = await validateSessionToken(getTokenFromRequest(req)!);
+    if (!user || !user.id) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    res.json({
+      deleteScreenshotAfterUpload: user.deleteScreenshotAfterUpload,
+      screenshotPath: user.screenshotPath
+    });
+  } catch (error) {
+    console.error('Error fetching user settings:', error);
+    res.status(500).json({ message: 'Error fetching user settings' });
+  }
+});
+
 app.post(`${API_PREFIX}/user/update-settings`, requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     let userId = -1;
