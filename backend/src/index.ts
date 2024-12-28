@@ -12,7 +12,7 @@ import crypto from 'crypto';
 import cors from 'cors';
 import { eq, and, or, desc, gte, lt } from 'drizzle-orm';
 import { db } from './database';
-import { usersTable, filesTable, cronJobsTable } from './db/schema';
+import { usersTable, filesTable, cronJobsTable, passwordResetTokensTable } from './db/schema';
 import {
   createSession,
   deleteSessionTokenCookie,
@@ -26,12 +26,12 @@ import { cleanupExpiredFiles, CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES } from './task
 import { convertImageToWebp, createStorageProvider, getUniqueFilename } from './storage/index';
 import {
   getMaxUserStorageSpace,
-  convertBytesToMb,
   hasEnoughStorageSpace,
   getUserStorageUsed,
 } from './utils/storage';
 import { formatFileSize } from './utils/format';
 import mime from 'mime';
+import { sendPasswordResetEmail } from './utils/email';
 
 // Cleanup expired files every day at 3am
 cron.schedule('0 3 * * *', async () => {
@@ -240,7 +240,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-const generateDownloadToken = () => {
+const generateRandomToken = () => {
   return crypto.randomBytes(8).toString('hex');
 };
 
@@ -424,7 +424,7 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
           path.join(userId.toString(), path.basename(finalPath))
         );
         try {
-          const downloadToken = generateDownloadToken();
+          const downloadToken = generateRandomToken();
           const result = await db.insert(filesTable).values({
             userId: userId,
             originalName: path.basename(finalPath),
@@ -690,6 +690,39 @@ app.post(`${API_PREFIX}/files/:id/toggle-expiration`, requireAuth, async (req: R
   } catch (error) {
     console.error('Error toggling file expiration:', error);
     res.status(500).json({ message: 'Error toggling file expiration' });
+  }
+});
+
+
+app.post(`${API_PREFIX}/forgot-password`, async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    const user = await db.select()
+      .from(usersTable)
+      .where(eq(usersTable.email, email))
+      .limit(1);
+
+    if (user.length === 0) {
+      // Pour des raisons de sécurité, on renvoie toujours un succès
+      res.json({ message: 'If an account exists with that email, you will receive password reset instructions.' });
+      return;
+    }
+
+    const resetToken = generateRandomToken();
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 heure
+
+    await db.insert(passwordResetTokensTable).values({
+      userId: user[0].id,
+      token: resetToken,
+      expiresAt
+    });
+
+    await sendPasswordResetEmail(email, resetToken);
+    
+    res.json({ message: 'Password reset instructions sent' });
+  } catch (error) {
+    console.error('Error in forgot password:', error);
+    res.status(500).json({ message: 'An error occurred' });
   }
 });
 

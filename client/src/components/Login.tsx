@@ -67,12 +67,9 @@ export const Login = () => {
                 <div className="grid gap-2">
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
-                    <a
-                      href="#"
-                      className="ml-auto text-sm underline-offset-4 hover:underline"
-                    >
+                    <Link to="/forgot-password" className="ml-auto text-sm underline-offset-4 hover:underline">
                       Forgot your password?
-                    </a>
+                    </Link>
                   </div>
                   <Input
                     id="password"
@@ -107,7 +104,7 @@ export const Login = () => {
           <blockquote className="space-y-2">
             <p className="text-lg">“Yeeet has saved me countless hours of work by helping me share screenshots faster than ever before.”</p>
             <footer className="text-sm">Eric Martin</footer>
-        </blockquote>
+          </blockquote>
         </div>
       </div>
     </div>

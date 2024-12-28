@@ -52,7 +52,24 @@ export const cronJobsTable = pgTable('cron_jobs', {
   createdAt: timestamp('created_at').defaultNow().notNull()
 });
 
+export const passwordResetTokensTable = pgTable('password_reset_tokens', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => usersTable.id),
+  token: varchar('token', { length: 64 })
+    .notNull()
+    .unique(),
+  expiresAt: timestamp('expires_at', {
+    withTimezone: true,
+    mode: "date"
+  }).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  usedAt: timestamp('used_at')
+});
+
 export type User = InferSelectModel<typeof usersTable>;
 export type Session = InferSelectModel<typeof sessionsTable>;
 export type File = InferSelectModel<typeof filesTable>;
 export type CronJob = InferSelectModel<typeof cronJobsTable>;
+export type PasswordResetToken = InferSelectModel<typeof passwordResetTokensTable>;
