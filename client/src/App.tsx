@@ -7,6 +7,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ProtectableRoute } from './components/ProtectableRoute';
 import { Toaster } from "@/components/ui/toaster"
 import { ForgotPassword } from './components/ForgotPassword';
+import { ResetPassword } from './components/ResetPassword';
 
 export const App = () => {
   return (
@@ -32,6 +33,7 @@ export const App = () => {
             }
           />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </HashRouter>

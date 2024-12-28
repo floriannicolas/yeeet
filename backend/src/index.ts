@@ -10,7 +10,7 @@ import session from 'express-session';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import cors from 'cors';
-import { eq, and, or, desc, gte, lt } from 'drizzle-orm';
+import { eq, and, or, desc, gte, lt, gt, isNull } from 'drizzle-orm';
 import { db } from './database';
 import { usersTable, filesTable, cronJobsTable, passwordResetTokensTable } from './db/schema';
 import {
@@ -175,6 +175,76 @@ app.post(`${API_PREFIX}/login`, async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error(error);
     res.status(500).send('Server error');
+  }
+});
+
+app.post(`${API_PREFIX}/forgot-password`, async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    const user = await db.select()
+      .from(usersTable)
+      .where(eq(usersTable.email, email))
+      .limit(1);
+
+    if (user.length === 0) {
+      // Pour des raisons de sécurité, on renvoie toujours un succès
+      res.json({ message: 'If an account exists with that email, you will receive password reset instructions.' });
+      return;
+    }
+
+    const resetToken = generateRandomToken();
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 heure
+
+    await db.insert(passwordResetTokensTable).values({
+      userId: user[0].id,
+      token: resetToken,
+      expiresAt
+    });
+
+    await sendPasswordResetEmail(email, resetToken);
+    res.json({ message: 'If an account exists with that email, you will receive password reset instructions.' });
+  } catch (error) {
+    console.error('Error in forgot password:', error);
+    res.status(500).json({ message: 'An error occurred' });
+  }
+});
+
+app.post(`${API_PREFIX}/reset-password`, async (req: Request, res: Response) => {
+  try {
+      const { token, password } = req.body;
+
+      const resetToken = await db.select()
+          .from(passwordResetTokensTable)
+          .where(
+              and(
+                  eq(passwordResetTokensTable.token, token),
+                  isNull(passwordResetTokensTable.usedAt),
+                  gt(passwordResetTokensTable.expiresAt, new Date())
+              )
+          )
+          .limit(1);
+
+      if (resetToken.length === 0) {
+          res.status(400).json({ message: 'Invalid or expired reset token' });
+          return;
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      await db.transaction(async (tx) => {
+          await tx.update(usersTable)
+              .set({ password: hashedPassword })
+              .where(eq(usersTable.id, resetToken[0].userId));
+
+          await tx.update(passwordResetTokensTable)
+              .set({ usedAt: new Date() })
+              .where(eq(passwordResetTokensTable.id, resetToken[0].id));
+      });
+
+      res.json({ message: 'Password reset successful' });
+  } catch (error) {
+      console.error('Error resetting password:', error);
+      res.status(500).json({ message: 'An error occurred' });
   }
 });
 
@@ -693,38 +763,6 @@ app.post(`${API_PREFIX}/files/:id/toggle-expiration`, requireAuth, async (req: R
   }
 });
 
-
-app.post(`${API_PREFIX}/forgot-password`, async (req: Request, res: Response) => {
-  try {
-    const { email } = req.body;
-    const user = await db.select()
-      .from(usersTable)
-      .where(eq(usersTable.email, email))
-      .limit(1);
-
-    if (user.length === 0) {
-      // Pour des raisons de sécurité, on renvoie toujours un succès
-      res.json({ message: 'If an account exists with that email, you will receive password reset instructions.' });
-      return;
-    }
-
-    const resetToken = generateRandomToken();
-    const expiresAt = new Date(Date.now() + 1000 * 60 * 60); // 1 heure
-
-    await db.insert(passwordResetTokensTable).values({
-      userId: user[0].id,
-      token: resetToken,
-      expiresAt
-    });
-
-    await sendPasswordResetEmail(email, resetToken);
-    
-    res.json({ message: 'Password reset instructions sent' });
-  } catch (error) {
-    console.error('Error in forgot password:', error);
-    res.status(500).json({ message: 'An error occurred' });
-  }
-});
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

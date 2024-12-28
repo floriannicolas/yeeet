@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
+import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -25,17 +26,17 @@ export const ForgotPassword = () => {
         setError('');
 
         try {
-            const response = await fetch(`${API_URL}/api/forgot-password`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
+            const response = await axios.post(`${API_URL}/api/forgot-password`, {
+                email,
+              }, {
+                withCredentials: true,
+              });
 
-            if (response.ok) {
+            if (response.status === 200 ) {
                 setStatus('success');
+                setError(response.data.message);
             } else {
-                const data = await response.json();
-                setError(data.message);
+                setError(response.data.message);
                 setStatus('error');
             }
         } catch (err: any) {
@@ -65,12 +66,12 @@ export const ForgotPassword = () => {
                         </CardHeader>
                         <CardContent>
                             {status === 'success' ? (
-                                <div className="text-center text-green-600">
+                                <div className="text-center text-semibold">
                                     {error}
                                 </div>
                             ) : (
                                 <form onSubmit={handleSubmit}>
-                                    {error && <p className="text-red-500">{error}</p>}
+                                    {error && <p className="text-red-500 mb-4">{error}</p>}
                                     <div className="flex flex-col gap-6">
                                         <div className="grid gap-2">
                                             <Label htmlFor="email">Email</Label>
