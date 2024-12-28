@@ -94,6 +94,7 @@ class S3StorageProvider implements StorageProvider {
         });
 
         await upload.done();
+        fs.unlinkSync(filePath);
         return destinationPath;
     }
 
