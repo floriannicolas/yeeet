@@ -640,6 +640,54 @@ app.delete(`${API_PREFIX}/files/:id`, requireAuth, async (req: Request, res: Res
   }
 });
 
+app.post(`${API_PREFIX}/files/:id/toggle-expiration`, requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    let userId = -1;
+    const token = getTokenFromRequest(req);
+    if (token) {
+      const { user } = await validateSessionToken(token);
+      if (!user || !user.id) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+      userId = user.id;
+    } else {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    const file = await db.select()
+      .from(filesTable)
+      .where(
+        and(
+          eq(filesTable.id, parseInt(req.params.id)),
+          eq(filesTable.userId, userId)
+        )
+      )
+      .limit(1);
+
+    if (file.length === 0) {
+      res.status(404).json({ message: 'File not found' });
+      return;
+    }
+
+    if (file[0].expiresAt) {
+      await db.update(filesTable)
+        .set({ expiresAt: null })
+        .where(eq(filesTable.id, parseInt(req.params.id)));
+    } else {
+      await db.update(filesTable)
+        .set({ expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30) }) // 30 days
+        .where(eq(filesTable.id, parseInt(req.params.id)));
+    }
+
+    res.json({ message: 'File expiration toggled successfully' });
+  } catch (error) {
+    console.error('Error toggling file expiration:', error);
+    res.status(500).json({ message: 'Error toggling file expiration' });
+  }
+});
+
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 }); 

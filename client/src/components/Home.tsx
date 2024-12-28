@@ -17,6 +17,8 @@ import {
   Download,
   Trash,
   ClipboardCopy,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react';
 import axios from 'axios';
 import { Button } from "@/components/ui/button"
@@ -58,6 +60,7 @@ interface FileInfo {
 }
 
 const FILES_LIMIT = 50;
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const Home = () => {
   const [progress, setProgress] = useState(0);
@@ -72,7 +75,7 @@ export const Home = () => {
 
   const fetchFiles = async (limit?: number) => {
     try {
-      const url = limit ? `${import.meta.env.VITE_API_URL}/api/files?limit=${limit}` : `${import.meta.env.VITE_API_URL}/api/files`;
+      const url = limit ? `${API_URL}/api/files?limit=${limit}` : `${API_URL}/api/files`;
       const response = await axios.get(url, { withCredentials: true });
       setFiles(response.data);
       fetchStorageInfo();
@@ -83,7 +86,7 @@ export const Home = () => {
 
   const fetchStorageInfo = async () => {
     const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/api/storage-info`, {
+      `${API_URL}/api/storage-info`, {
       withCredentials: true
     });
     setStorageInfo(response.data);
@@ -146,7 +149,7 @@ export const Home = () => {
       });
       formData.append('chunk', new Blob([chunk], { type: file.type }), metadata);
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
+      const response = await fetch(`${API_URL}/api/upload`, {
         method: 'POST',
         body: formData,
         credentials: 'include',
@@ -176,7 +179,7 @@ export const Home = () => {
   };
 
   const handleLogout = async () => {
-    await fetch(`${import.meta.env.VITE_API_URL}/api/logout`, {
+    await fetch(`${API_URL}/api/logout`, {
       method: 'POST',
       credentials: 'include',
     });
@@ -186,12 +189,24 @@ export const Home = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/api/files/${id}`, {
+      await axios.delete(`${API_URL}/api/files/${id}`, {
         withCredentials: true,
       });
       fetchFiles(FILES_LIMIT);
     } catch (error) {
       console.error('Error deleting file:', error);
+    }
+  };
+
+  const handleToggleExpiration = async (id: number) => {
+    try {
+      await fetch(`${API_URL}/api/files/${id}/toggle-expiration`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      fetchFiles(FILES_LIMIT);
+    } catch (error) {
+      console.error('Error toggling file expiration:', error);
     }
   };
 
@@ -441,6 +456,22 @@ export const Home = () => {
                             Download
                           </DropdownMenuItem>
                         </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleToggleExpiration(file.id)}>
+                          {
+                            file.expiresAt ? (
+                              <>
+                                <ToggleRight />
+                                Expiring
+                              </>
+                            ) : (
+                              <>
+                                <ToggleLeft />
+                                Non-expiring
+                              </>
+                            )
+                          }
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem>
                           <AlertDialogTrigger asChild>
