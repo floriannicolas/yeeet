@@ -466,12 +466,12 @@ export const Home = () => {
                             file.expiresAt ? (
                               <>
                                 <ToggleRight />
-                                Expiring
+                                Make it non-expiring
                               </>
                             ) : (
                               <>
                                 <ToggleLeft />
-                                Non-expiring
+                                Make it expiring
                               </>
                             )
                           }
