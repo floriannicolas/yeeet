@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 import { formatFileSize } from '../utils/format';
+import heicConvert from 'heic-convert';
 
 
 export interface StorageProvider {
@@ -62,6 +63,20 @@ export const convertImageToWebp = async (filePath: string, mimeType: string | nu
     if (!mimeType || !mimeType.startsWith('image/')) {
         return filePath;
     }
+    if (mimeType === 'image/heic') {
+        const inputBuffer = await fs.readFileSync(filePath);
+        const outputBuffer = await heicConvert({
+            buffer: inputBuffer,
+            format: 'JPEG',
+            quality: 1
+        });
+        const newFilePath = getUniqueFilename(filePath.replace(/\.[^.]+$/, '.jpg'));
+        fs.writeFileSync(newFilePath, Buffer.from(outputBuffer));
+        fs.unlinkSync(filePath);
+        filePath = newFilePath;
+        mimeType = 'image/jpeg';
+    }
+
     console.time('convertImageToWebp');
     console.time('convertImageToWebp.sharp.toBuffer');
     const image = await sharp(filePath)
