@@ -9,8 +9,6 @@ import {
   Upload,
   LogOut,
   EllipsisVertical,
-  User,
-  Settings,
   AppWindowMac,
   File as FileIcon,
   FileVideo,
