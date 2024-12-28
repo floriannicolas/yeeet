@@ -99,8 +99,8 @@ export const Login = () => {
       </div>
       <div className="relative hidden bg-muted lg:block">
         <img
-          src="/login-bg.jpg"
-          alt="Image"
+          src="/login-bg.avif"
+          alt=""
           className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.7] dark:grayscale"
         />
       </div>

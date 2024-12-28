@@ -32,8 +32,8 @@ export const Register = () => {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="relative hidden bg-muted lg:block">
         <img
-          src="/register-bg.jpg"
-          alt="Image"
+          src="/register-bg.avif"
+          alt=""
           className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.7] dark:grayscale"
         />
       </div>

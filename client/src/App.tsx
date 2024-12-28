@@ -5,7 +5,7 @@ import { Register } from './components/Register';
 import { Home } from './components/Home';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectableRoute } from './components/ProtectableRoute';
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/toaster"
 
 export const App = () => {
   return (

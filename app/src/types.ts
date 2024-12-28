@@ -12,4 +12,11 @@ export interface UploadProgress {
 export interface UploadComplete {
   uploadId: string;
   originalName: string;
-} 
+}
+
+export interface StorageInfo {
+  used: number;
+  limit: number;
+  available: number;
+  usedPercentage: number;
+}

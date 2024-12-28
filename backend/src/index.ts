@@ -13,10 +13,24 @@ import cors from 'cors';
 import { eq, and, or, desc } from 'drizzle-orm';
 import { db } from './database';
 import { usersTable, filesTable } from './db/schema';
-import { createSession, deleteSessionTokenCookie, generateSessionToken, invalidateSession, setSessionTokenCookie, validateSessionToken } from './session';
+import {
+  createSession,
+  deleteSessionTokenCookie,
+  generateSessionToken,
+  invalidateSession,
+  setSessionTokenCookie,
+  validateSessionToken
+} from './session';
 import cron from 'node-cron';
 import { cleanupExpiredFiles } from './tasks/cleanup';
 import { createStorageProvider } from './storage/index';
+import {
+  getMaxUserStorageSpace,
+  convertBytesToMb,
+  hasEnoughStorageSpace,
+  getUserStorageUsed,
+} from './utils/storage';
+import { formatFileSize } from './utils/format';
 
 // Cleanup expired files every day at 3am
 cron.schedule('0 3 * * *', async () => {
@@ -35,6 +49,7 @@ app.use(express.urlencoded({ extended: true }));
 let server;
 let io;
 
+const USER_STORAGE_LIMIT = 250 * 1024 * 1024; // 250 MB en bytes
 // Configurer CORS avec les nouvelles origines
 const ALLOWED_ORIGINS = [
   CLIENT_URL,
@@ -68,7 +83,6 @@ app.use(session({
  */
 const getTokenFromRequest = (req: Request) => {
   const token = req.cookies?.session;
-
   if (token) {
     return token;
   }
@@ -334,6 +348,7 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
   }
 
   let userId = -1;
+  let currentUser = null;
   const token = getTokenFromRequest(req);
   if (token) {
     const { user } = await validateSessionToken(token);
@@ -341,15 +356,33 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
       res.status(401).json({ message: 'Unauthorized' });
       return;
     }
+    currentUser = user;
     userId = user.id;
   } else {
     res.status(401).json({ message: 'Unauthorized' });
     return;
   }
 
-
   const metadata = JSON.parse(decodeURIComponent(req.file.originalname));
-  const { index, totalChunks, uploadId, originalName } = metadata;
+  const { index, totalChunks, uploadId, originalName, originalSize } = metadata;
+
+  if (!originalSize) {
+    res.status(400).json({ message: 'metadata.originalSize is required' });
+    return;
+  }
+
+  const userStorageLimit = 250 * 1024 * 1024; // TODO replace by user storage limit
+  const hasSpace = await hasEnoughStorageSpace(currentUser.id, userStorageLimit, originalSize);
+  if (!hasSpace) {
+    const maximumStorageSpace = await getMaxUserStorageSpace(currentUser.id, userStorageLimit);
+    const storageInMb = formatFileSize(maximumStorageSpace);
+    res.status(400).json({
+      message: `You have ${storageInMb} of storage space left and you want to upload ${formatFileSize(originalSize)}.`,
+      code: 'STORAGE_LIMIT_EXCEEDED'
+    });
+    return;
+  }
+
   const userDir = path.join(UPLOAD_DIR, userId.toString());
   const dir = path.join(userDir, uploadId);
 
@@ -445,6 +478,27 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
   }
 });
 app.use('/socket.io', express.static('node_modules/socket.io/client-dist'));
+
+app.get(`${API_PREFIX}/storage-info`, requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { user } = await validateSessionToken(getTokenFromRequest(req)!);
+    if (!user || !user.id) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    const usedStorage = await getUserStorageUsed(user.id);
+    res.json({
+      used: usedStorage,
+      limit: USER_STORAGE_LIMIT,
+      available: USER_STORAGE_LIMIT - usedStorage,
+      usedPercentage: Math.round((usedStorage / USER_STORAGE_LIMIT) * 100)
+    });
+  } catch (error) {
+    console.error('Error getting storage info:', error);
+    res.status(500).json({ message: 'Error getting storage info' });
+  }
+});
 
 
 app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response): Promise<void> => {

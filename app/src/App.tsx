@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Home } from './components/Home';
 import { LoaderCircle } from 'lucide-react';
 import './styles/global.css';
+import { Toaster } from "@/components/ui/toaster";
 
 const AppRoutes = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -30,6 +31,7 @@ function App() {
       <Router>
         <AppRoutes />
       </Router>
+      <Toaster />
     </AuthProvider>
   );
 }

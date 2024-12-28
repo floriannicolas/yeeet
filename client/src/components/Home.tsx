@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
-import { UploadProgress } from '../types';
+import { StorageInfo, UploadProgress } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import {
   FlameKindling,
   Upload,
@@ -24,6 +24,7 @@ import axios from 'axios';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Progress } from "@/components/ui/progress"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,21 +63,32 @@ const FILES_LIMIT = 50;
 
 export const Home = () => {
   const [progress, setProgress] = useState(0);
+  const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
   const socketRef = useRef<Socket>();
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [files, setFiles] = useState<FileInfo[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const { toast } = useToast();
 
   const fetchFiles = async (limit?: number) => {
     try {
       const url = limit ? `${import.meta.env.VITE_API_URL}/api/files?limit=${limit}` : `${import.meta.env.VITE_API_URL}/api/files`;
       const response = await axios.get(url, { withCredentials: true });
       setFiles(response.data);
+      fetchStorageInfo();
     } catch (error) {
       console.error('Error fetching files:', error);
     }
+  };
+
+  const fetchStorageInfo = async () => {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/api/storage-info`, {
+      withCredentials: true
+    });
+    setStorageInfo(response.data);
   };
 
   useEffect(() => {
@@ -93,7 +105,7 @@ export const Home = () => {
     socketRef.current.on('completed', () => {
       fetchFiles(FILES_LIMIT);
       setProgress(0);
-      toast("File uploaded");
+      toast({ title: "File uploaded" });
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -128,15 +140,25 @@ export const Home = () => {
         index: i.toString(),
         totalChunks: totalChunks.toString(),
         uploadId,
+        originalSize: file.size,
         originalName: file.name,
       });
       formData.append('chunk', new Blob([chunk], { type: file.type }), metadata);
 
-      await fetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
         method: 'POST',
         body: formData,
         credentials: 'include',
       });
+      if (!response.ok) {
+        const error = await response.json();
+        const title = error.code === 'STORAGE_LIMIT_EXCEEDED' ? 'Storage limit exceeded' : 'Error uploading file';
+        toast({
+          title,
+          description: error.message,
+        });
+        break;
+      }
     }
   };
 
@@ -292,6 +314,24 @@ export const Home = () => {
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
+                {storageInfo && (
+                  <>
+                    <DropdownMenuGroup>
+                      <div className="px-2 py-1.5 text-xm flex gap-2 items-center">
+                        <div className="text-semibold">
+                          Usage
+                        </div>
+                        <div className="ml-auto text-xs tracking-widest opacity-60">
+                          {formatFileSize(storageInfo.used)} / {formatFileSize(storageInfo.limit)}
+                        </div>
+                      </div>
+                      <div className="px-2 py-1.5">
+                        <Progress value={storageInfo.usedPercentage} className="h-2" />
+                      </div>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem onClick={handleDownloadApp}>
                   <AppWindowMac />
                   <span>Download app</span>

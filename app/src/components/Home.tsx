@@ -1,12 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { io, Socket } from 'socket.io-client';
-import { UploadProgress } from '../types';
+import { StorageInfo, UploadProgress } from '../types';
 import { FlameKindling, LogOut, EllipsisVertical, Upload } from 'lucide-react';
 import { LogicalSize, getCurrentWindow } from '@tauri-apps/api/window';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { listen } from '@tauri-apps/api/event';
@@ -18,8 +19,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { getToken, removeToken } from '@/utils/token';
+import { useToast } from "@/hooks/use-toast";
+import { formatFileSize } from '../utils/format';
 
 interface FileInfo {
   id: number;
@@ -37,26 +42,29 @@ const FILES_LIMIT = 3;
 
 export const Home = () => {
   const [progress, setProgress] = useState(0);
+  const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
   const socketRef = useRef<Socket>();
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [files, setFiles] = useState<FileInfo[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const { toast } = useToast();
 
   const fetchFiles = async (limit?: number) => {
     try {
       const url = limit ? `/api/files?limit=${limit}` : '/api/files';
       const response = await axios.get(
         `${API_URL}${url}`,
-        { 
+        {
           withCredentials: true,
-          headers: { Authorization: `Bearer ${getToken()}` } 
+          headers: { Authorization: `Bearer ${getToken()}` }
         }
       );
       const data = response.data || [];
       setFiles(data);
       resizeWindow(data.length || 0);
+      fetchStorageInfo();
     } catch (error: any) {
       resizeWindow(0);
       console.error('Error fetching files:', error);
@@ -65,6 +73,15 @@ export const Home = () => {
         navigate('/login');
       }
     }
+  };
+
+  const fetchStorageInfo = async () => {
+    const response = await axios.get(
+      `${API_URL}/api/storage-info`, {
+      withCredentials: true,
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    setStorageInfo(response.data);
   };
 
   const resizeWindow = async (limit: number) => {
@@ -184,16 +201,27 @@ export const Home = () => {
         index: i.toString(),
         totalChunks: totalChunks.toString(),
         uploadId,
+        originalSize: file.size,
         originalName: file.name,
       });
       formData.append('chunk', new Blob([chunk], { type: file.type }), metadata);
 
-      await fetch(`${API_URL}/api/upload`, {
+
+      const response = await fetch(`${API_URL}/api/upload`, {
         method: 'POST',
         credentials: 'include',
         body: formData,
         headers: { Authorization: `Bearer ${getToken()}` }
       });
+      if (!response.ok) {
+        const error = await response.json();
+        const title = error.code === 'STORAGE_LIMIT_EXCEEDED' ? 'Storage limit exceeded' : 'Error uploading file';
+        toast({
+          title,
+          description: error.message,
+        });
+        break;
+      }
     }
   };
 
@@ -279,7 +307,25 @@ export const Home = () => {
                   <EllipsisVertical />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-32 -ml-12">
+              <DropdownMenuContent className="w-52 -ml-36">
+                {storageInfo && (
+                  <>
+                    <DropdownMenuGroup>
+                      <div className="px-2 py-1.5 text-xm flex gap-2 items-center">
+                        <div className="text-semibold">
+                          Usage
+                        </div>
+                        <div className="ml-auto text-xs tracking-widest opacity-60">
+                          {formatFileSize(storageInfo.used)} / {formatFileSize(storageInfo.limit)}
+                        </div>
+                      </div>
+                      <div className="px-2 py-1.5">
+                        <Progress value={storageInfo.usedPercentage} className="h-2" />
+                      </div>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut />
                   <span>Log out</span>
