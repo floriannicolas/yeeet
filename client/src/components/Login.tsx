@@ -97,12 +97,18 @@ export const Login = () => {
           </div>
         </div>
       </div>
-      <div className="relative hidden bg-muted lg:block">
+      <div className="relative hidden bg-muted lg:block p-10 lg:flex">
         <img
-          src="/login-bg.avif"
+          src="/login-bg.webp"
           alt=""
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.7] dark:grayscale"
+          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.5] dark:grayscale"
         />
+        <div className="relative z-20 mt-auto">
+          <blockquote className="space-y-2">
+            <p className="text-lg">“Yeeet has saved me countless hours of work by helping me share screenshots faster than ever before.”</p>
+            <footer className="text-sm">Eric Martin</footer>
+        </blockquote>
+        </div>
       </div>
     </div>
   );

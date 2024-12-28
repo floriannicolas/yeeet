@@ -261,7 +261,16 @@ app.get(`${API_PREFIX}/download/:token`, async (req: Request, res: Response): Pr
     }
 
     const file = result[0];
-    res.download(file.filePath, file.originalName);
+
+    res.setHeader('Content-Type', file.mimeType ?? 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="${file.originalName}"`);
+
+    const fileContent = await storageProvider.getFile(file.s3Path || file.filePath, file.filePath);
+    if (fileContent.pipe) {
+      fileContent.pipe(res);
+    } else {
+      res.send(fileContent);
+    }
   } catch (error) {
     console.error('Error downloading file:', error);
     res.status(500).json({ message: 'Error downloading file' });
@@ -321,14 +330,10 @@ app.get(`${API_PREFIX}/view/:token`, async (req: Request, res: Response): Promis
       res.setHeader('Content-Disposition', `inline; filename="${file.originalName}"`);
     }
 
-    // Récupérer le fichier via le StorageProvider
     const fileContent = await storageProvider.getFile(file.s3Path || file.filePath, file.filePath);
-    
-    // Si c'est un Readable Stream (depuis S3)
     if (fileContent.pipe) {
       fileContent.pipe(res);
     } else {
-      // Si c'est un Buffer ou autre type de données
       res.send(fileContent);
     }
 
