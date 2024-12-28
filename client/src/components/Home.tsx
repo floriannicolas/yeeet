@@ -355,7 +355,7 @@ export const Home = () => {
         </div>
         {(progress > 0) && (
           <div className="absolute left-0 right-0 top-full border-b border-t bg-background overflow-hidden">
-            <div className="left-0 right-0 top-full h-2 bg-gray-200 text-right" style={{ width: `${progress}%` }} />
+            <div className="left-0 right-0 top-full h-2 bg-gray-200 text-right transition-all" style={{ width: `${progress}%` }} />
           </div>
         )}
       </header>
