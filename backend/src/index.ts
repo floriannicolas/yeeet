@@ -50,7 +50,6 @@ app.use(express.urlencoded({ extended: true }));
 let server;
 let io;
 
-const USER_STORAGE_LIMIT = 250 * 1024 * 1024; // 250 MB en bytes
 // Configurer CORS avec les nouvelles origines
 const ALLOWED_ORIGINS = [
   CLIENT_URL,
@@ -372,10 +371,9 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
     return;
   }
 
-  const userStorageLimit = 250 * 1024 * 1024; // TODO replace by user storage limit
-  const hasSpace = await hasEnoughStorageSpace(currentUser.id, userStorageLimit, originalSize);
+  const hasSpace = await hasEnoughStorageSpace(currentUser.id, currentUser.storageLimit, originalSize);
   if (!hasSpace) {
-    const maximumStorageSpace = await getMaxUserStorageSpace(currentUser.id, userStorageLimit);
+    const maximumStorageSpace = await getMaxUserStorageSpace(currentUser.id, currentUser.storageLimit);
     const storageInMb = formatFileSize(maximumStorageSpace);
     res.status(400).json({
       message: `You have ${storageInMb} of storage space left and you want to upload ${formatFileSize(originalSize)}.`,
@@ -481,9 +479,9 @@ app.get(`${API_PREFIX}/storage-info`, requireAuth, async (req: Request, res: Res
     const usedStorage = await getUserStorageUsed(user.id);
     res.json({
       used: usedStorage,
-      limit: USER_STORAGE_LIMIT,
-      available: USER_STORAGE_LIMIT - usedStorage,
-      usedPercentage: Math.round((usedStorage / USER_STORAGE_LIMIT) * 100)
+      limit: user.storageLimit,
+      available: user.storageLimit - usedStorage,
+      usedPercentage: Math.round((usedStorage / user.storageLimit) * 100)
     });
   } catch (error) {
     console.error('Error getting storage info:', error);

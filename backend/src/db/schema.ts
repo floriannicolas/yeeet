@@ -5,12 +5,15 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import type { InferSelectModel } from 'drizzle-orm';
 import { SQL, sql } from 'drizzle-orm';
 
+const USER_STORAGE_LIMIT = 50 * 1024 * 1024; // 50 MB en bytes
+
 export const usersTable = pgTable('users', {
   id: serial('id').primaryKey(),
   username: varchar('username', { length: 255 }).notNull().unique(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   password: varchar('password', { length: 255 }).notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull()
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  storageLimit: bigint('storage_limit', { mode: 'number' }).default(USER_STORAGE_LIMIT).notNull()
 }, (table) => ({
      emailUniqueIndex: uniqueIndex('emailUniqueIndex').on(lower(table.email)),
 }));
