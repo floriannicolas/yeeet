@@ -46,6 +46,13 @@ export const filesTable = pgTable('files', {
   createdAt: timestamp('created_at').defaultNow().notNull()
 }); 
 
+export const cronJobsTable = pgTable('cron_jobs', {
+  id: serial('id').primaryKey(),
+  type: varchar('type', { length: 255 }).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+});
+
 export type User = InferSelectModel<typeof usersTable>;
 export type Session = InferSelectModel<typeof sessionsTable>;
 export type File = InferSelectModel<typeof filesTable>;
+export type CronJob = InferSelectModel<typeof cronJobsTable>;

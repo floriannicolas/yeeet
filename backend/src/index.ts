@@ -10,9 +10,9 @@ import session from 'express-session';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import cors from 'cors';
-import { eq, and, or, desc } from 'drizzle-orm';
+import { eq, and, or, desc, gte, lt } from 'drizzle-orm';
 import { db } from './database';
-import { usersTable, filesTable } from './db/schema';
+import { usersTable, filesTable, cronJobsTable } from './db/schema';
 import {
   createSession,
   deleteSessionTokenCookie,
@@ -22,7 +22,7 @@ import {
   validateSessionToken
 } from './session';
 import cron from 'node-cron';
-import { cleanupExpiredFiles } from './tasks/cleanup';
+import { cleanupExpiredFiles, CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES } from './tasks/cleanup';
 import { convertImageToWebp, createStorageProvider, getUniqueFilename } from './storage/index';
 import {
   getMaxUserStorageSpace,
@@ -482,6 +482,52 @@ app.get(`${API_PREFIX}/storage-info`, requireAuth, async (req: Request, res: Res
       limit: user.storageLimit,
       available: user.storageLimit - usedStorage,
       usedPercentage: Math.round((usedStorage / user.storageLimit) * 100)
+    });
+  } catch (error) {
+    console.error('Error getting storage info:', error);
+    res.status(500).json({ message: 'Error getting storage info' });
+  }
+});
+
+app.get(`${API_PREFIX}/cron-job`, requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { user } = await validateSessionToken(getTokenFromRequest(req)!);
+    if (!user || !user.id) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const jobsLaunched = [];
+    const jobsAlreadyLaunched = [];
+
+    const cronJobCleanupExpiredFiles = await db.select()
+      .from(cronJobsTable)
+      .where(
+        and(
+          eq(cronJobsTable.type, CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES),
+          gte(cronJobsTable.createdAt, today),
+          lt(cronJobsTable.createdAt, tomorrow)
+        )
+      )
+      .limit(1);
+
+    if (cronJobCleanupExpiredFiles.length === 0) {
+      await db.insert(cronJobsTable).values({
+        type: CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES
+      });
+      cleanupExpiredFiles();
+      jobsLaunched.push(CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
+    } else {
+      jobsAlreadyLaunched.push(CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
+    }
+
+    res.json({
+      status: 'success',
+      jobsLaunched,
+      jobsAlreadyLaunched
     });
   } catch (error) {
     console.error('Error getting storage info:', error);

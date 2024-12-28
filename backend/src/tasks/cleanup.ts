@@ -5,6 +5,9 @@ import fs from 'fs';
 import path from 'path';
 import { createStorageProvider } from '../storage';
 
+
+export const CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES = 'cleanup_expired_files';
+
 export async function cleanupExpiredFiles() {
     const storageProvider = createStorageProvider();
     try {
