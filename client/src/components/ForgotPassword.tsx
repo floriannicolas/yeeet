@@ -60,7 +60,7 @@ export const ForgotPassword = () => {
                         <CardHeader>
                             <CardTitle className="text-2xl">Reset your password</CardTitle>
                             <CardDescription>
-                                Enter your email address and we'll send you a link to reset your password
+                                Enter your email address and we'll send you a link to reset your password:
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
