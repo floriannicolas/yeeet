@@ -486,10 +486,8 @@ export const Home = () => {
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription className="max-w-md">
-                          <p className="text-ellipsis overflow-hidden">
+                        <AlertDialogDescription className="max-w-md text-ellipsis overflow-hidden">
                             This action cannot be undone.<br />The file <span className="text-slate-900 font-medium dark:text-slate-200">{file.originalName}</span> will be permanently deleted.
-                          </p>
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
