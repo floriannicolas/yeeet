@@ -413,19 +413,19 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
       let mimeType = req.file?.mimetype || null;
 
       output.on('finish', async () => {
-        const avifPath = await convertImageToWebp(finalPath, mimeType);
-        const fileStats = fs.statSync(avifPath);
-        mimeType = mime.getType(avifPath);
+        finalPath = await convertImageToWebp(finalPath, mimeType);
+        const fileStats = fs.statSync(finalPath);
+        mimeType = mime.getType(finalPath);
         const s3Path = await storageProvider.saveFile(
-          avifPath,
+          finalPath,
           path.join(userId.toString(), path.basename(finalPath))
         );
         try {
           const downloadToken = generateDownloadToken();
           const result = await db.insert(filesTable).values({
             userId: userId,
-            originalName: path.basename(avifPath),
-            filePath: avifPath,
+            originalName: path.basename(finalPath),
+            filePath: finalPath,
             s3Path: s3Path,
             mimeType: mimeType || null,
             size: fileStats.size,

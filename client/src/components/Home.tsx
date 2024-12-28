@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
-import { StorageInfo, UploadProgress } from '../types';
+import { StorageInfo, UploadComplete, UploadProgress } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -102,10 +102,13 @@ export const Home = () => {
       setProgress((data.uploadedChunks / data.totalChunks) * 100);
     });
 
-    socketRef.current.on('completed', () => {
+    socketRef.current.on('completed', (data: UploadComplete) => {
       fetchFiles(FILES_LIMIT);
       setProgress(0);
-      toast({ title: "File uploaded" });
+      toast({ 
+        title: "File uploaded successfully", 
+        description: <>Your file <span className="font-semibold">{data.originalName}</span> is now available.</> 
+      });
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
