@@ -12,7 +12,7 @@ const sendEmail = async (to: string, subject: string, html: string): Promise<voi
             Messages: [
                 {
                     From: {
-                        Email: 'tombetoile@gmail.com',
+                        Email: process.env.MAILJET_SENDER_EMAIL,
                         Name: 'Yeeet - No Reply'
                     },
                     To: [{ Email: to }],
