@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { getToken, removeToken } from '@/utils/token';
 import { useToast } from "@/hooks/use-toast";
-import { formatFileSize } from '../utils/format';
+import { formatFileSize } from '@/utils/format';
 
 interface FileInfo {
   id: number;
@@ -74,6 +74,30 @@ export const Home = () => {
       }
     }
   };
+
+  const fetchCronJobs = async () => {
+    const now = new Date();
+    if (now.getHours() < 2) {
+      return;
+    }
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/cron-jobs`, {
+        withCredentials: true,
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      console.log('fetchCronJobs', response.data);
+    } catch (error) {
+      console.error('Error fetching cron jobs:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCronJobs();
+    const interval = setInterval(fetchCronJobs, 3600000); // Every hour
+
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchStorageInfo = async () => {
     const response = await axios.get(

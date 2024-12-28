@@ -489,7 +489,7 @@ app.get(`${API_PREFIX}/storage-info`, requireAuth, async (req: Request, res: Res
   }
 });
 
-app.get(`${API_PREFIX}/cron-job`, requireAuth, async (req: Request, res: Response): Promise<void> => {
+app.get(`${API_PREFIX}/cron-jobs`, requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { user } = await validateSessionToken(getTokenFromRequest(req)!);
     if (!user || !user.id) {
@@ -522,6 +522,11 @@ app.get(`${API_PREFIX}/cron-job`, requireAuth, async (req: Request, res: Respons
       jobsLaunched.push(CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
     } else {
       jobsAlreadyLaunched.push(CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
+    }
+
+    if (jobsLaunched.length > 0) {
+      await db.delete(cronJobsTable)
+        .where(lt(cronJobsTable.createdAt, today));
     }
 
     res.json({
