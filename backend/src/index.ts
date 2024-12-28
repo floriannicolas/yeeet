@@ -12,7 +12,7 @@ import crypto from 'crypto';
 import cors from 'cors';
 import { eq, and, or, desc, gte, lt, gt, isNull } from 'drizzle-orm';
 import { db } from './database';
-import { usersTable, filesTable, cronJobsTable, passwordResetTokensTable } from './db/schema';
+import { usersTable, filesTable, cronJobsTable, passwordResetTokensTable, User } from './db/schema';
 import {
   createSession,
   deleteSessionTokenCookie,
@@ -714,6 +714,47 @@ app.delete(`${API_PREFIX}/files/:id`, requireAuth, async (req: Request, res: Res
   } catch (error) {
     console.error('Error deleting file:', error);
     res.status(500).json({ message: 'Error deleting file' });
+  }
+});
+
+app.post(`${API_PREFIX}/user/update-settings`, requireAuth, async (req: Request, res: Response): Promise<void> => {
+  try {
+    let userId = -1;
+    const token = getTokenFromRequest(req);
+    if (token) {
+      const { user } = await validateSessionToken(token);
+      if (!user || !user.id) {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+      }
+      userId = user.id;
+    } else {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    if (!userId) {
+      res.status(400).json({ message: 'User ID is required' });
+      return;
+    }
+
+    const { deleteScreenshotAfterUpload, screenshotPath } = req.body;
+    const updatedUser = {} as User;
+    if (deleteScreenshotAfterUpload !== undefined) {
+      updatedUser.deleteScreenshotAfterUpload = deleteScreenshotAfterUpload;
+    }
+    if (screenshotPath !== undefined) {
+      updatedUser.screenshotPath = screenshotPath;
+    }
+
+    await db.update(usersTable)
+        .set(updatedUser)
+        .where(eq(usersTable.id, userId));
+
+    res.json({ message: 'User settings updated successfully' });
+  } catch (error) {
+    console.error('Error updating user settings:', error);
+    res.status(500).json({ message: 'Error updating user settings' });
   }
 });
 

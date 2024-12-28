@@ -1,6 +1,4 @@
-import pg from 'pg';
-import { pgTable, serial, text, varchar, timestamp, integer, bigint, uniqueIndex, AnyPgColumn } from 'drizzle-orm/pg-core';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { pgTable, serial, text, varchar, timestamp, integer, bigint, boolean, uniqueIndex, AnyPgColumn } from 'drizzle-orm/pg-core';
 
 import type { InferSelectModel } from 'drizzle-orm';
 import { SQL, sql } from 'drizzle-orm';
@@ -13,7 +11,9 @@ export const usersTable = pgTable('users', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   password: varchar('password', { length: 255 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-  storageLimit: bigint('storage_limit', { mode: 'number' }).default(USER_STORAGE_LIMIT).notNull()
+  storageLimit: bigint('storage_limit', { mode: 'number' }).default(USER_STORAGE_LIMIT).notNull(),
+  deleteScreenshotAfterUpload: boolean('delete_screenshot_after_upload').default(true).notNull(),
+  screenshotPath: varchar('screenshot_path', { length: 255 }).default('$HOME/Desktop').notNull(),
 }, (table) => ({
      emailUniqueIndex: uniqueIndex('emailUniqueIndex').on(lower(table.email)),
 }));
