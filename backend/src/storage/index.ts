@@ -30,14 +30,19 @@ export const convertImageToAvif = async (filePath: string, mimeType: string | nu
     if (!mimeType || !mimeType.startsWith('image/')) {
         return filePath;
     }
-
+    console.time('convertImageToAvif');
+    console.time('convertImageToAvif.sharp.toBuffer');
     const image = await sharp(filePath)
         .resize({ height: 2160, withoutEnlargement: true })
         .avif({ quality: 75, effort: 0 })
         .toBuffer();
+    console.timeEnd('convertImageToAvif.sharp.toBuffer');
     const newFilePath = getUniqueFilename(filePath.replace(/\.[^.]+$/, '.avif'));
+    console.time('convertImageToAvif.sharp.toFile');
     await sharp(image).toFile(newFilePath);
+    console.timeEnd('convertImageToAvif.sharp.toFile');
     fs.unlinkSync(filePath);
+    console.timeEnd('convertImageToAvif');
 
     return newFilePath;
 }
