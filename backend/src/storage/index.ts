@@ -41,6 +41,11 @@ export const convertImageToAvif = async (filePath: string, mimeType: string | nu
     console.time('convertImageToAvif.sharp.toFile');
     await sharp(image).toFile(newFilePath);
     console.timeEnd('convertImageToAvif.sharp.toFile');
+
+    const testNewFilePath = getUniqueFilename(newFilePath);
+    console.time('convertImageToAvif.fs.writeFile');
+    await fs.writeFileSync(testNewFilePath, image);
+    console.timeEnd('convertImageToAvif.fs.writeFile');
     fs.unlinkSync(filePath);
     console.timeEnd('convertImageToAvif');
 
