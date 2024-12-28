@@ -356,10 +356,10 @@ export const Home = () => {
         )}
       </header>
       <div className="flex flex-col gap-4 p-6">
-        <div className="flex items-center justify-between space-y-2 mb-6">
+        <div className="flex items-center justify-between space-y-2 md:space-y-0 mb-6">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Your files</h2>
-            <p className="text-muted-foreground">Your secure file sharing space…</p>
+            <h2 className="text-2xl font-bold leading-tight tracking-tighter lg:leading-[1.1]">Your files</h2>
+            <p className="max-w-2xl text-md font-light text-muted-foreground">Your secure file sharing space…</p>
           </div>
           <div className="flex items-center space-x-2">
             <div className="grid w-full items-center gap-1.5">
