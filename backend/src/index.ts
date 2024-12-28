@@ -241,7 +241,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 const generateDownloadToken = () => {
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(8).toString('hex');
 };
 
 app.get(`${API_PREFIX}/download/:token`, async (req: Request, res: Response): Promise<void> => {
