@@ -257,7 +257,7 @@ export const Home = () => {
         return `Expires in ${diffDays} days`;
       }
     }
-    return 'Never expires';
+    return 'Non-expiring';
   }
 
   const isImageType = (mimeType: string) => {
