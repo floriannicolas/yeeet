@@ -23,7 +23,7 @@ import {
 } from './session';
 import cron from 'node-cron';
 import { cleanupExpiredFiles } from './tasks/cleanup';
-import { createStorageProvider } from './storage/index';
+import { convertImageToAvif, createStorageProvider } from './storage/index';
 import {
   getMaxUserStorageSpace,
   convertBytesToMb,
@@ -423,10 +423,13 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
         output.write(fs.readFileSync(chunkPath));
       }
 
+      const mimeType = req.file?.mimetype || '';
+
       output.on('finish', async () => {
-        const fileStats = fs.statSync(finalPath);
+        const avifPath = await convertImageToAvif(finalPath, mimeType);
+        const fileStats = fs.statSync(avifPath);
         const s3Path = await storageProvider.saveFile(
-          finalPath,
+          avifPath,
           path.join(userId.toString(), path.basename(finalPath))
         );
         try {
@@ -434,9 +437,9 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
           const result = await db.insert(filesTable).values({
             userId: userId,
             originalName: path.basename(finalPath),
-            filePath: finalPath,
+            filePath: avifPath,
             s3Path: s3Path,
-            mimeType: req.file?.mimetype,
+            mimeType: mimeType || null,
             size: fileStats.size,
             downloadToken: downloadToken,
             expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30) // 30 days
