@@ -23,7 +23,7 @@ import {
 } from './session';
 import cron from 'node-cron';
 import { cleanupExpiredFiles } from './tasks/cleanup';
-import { convertImageToAvif, createStorageProvider } from './storage/index';
+import { convertImageToAvif, createStorageProvider, getUniqueFilename } from './storage/index';
 import {
   getMaxUserStorageSpace,
   convertBytesToMb,
@@ -31,6 +31,7 @@ import {
   getUserStorageUsed,
 } from './utils/storage';
 import { formatFileSize } from './utils/format';
+import mime from 'mime';
 
 // Cleanup expired files every day at 3am
 cron.schedule('0 3 * * *', async () => {
@@ -293,6 +294,7 @@ app.get(`${API_PREFIX}/view/:token`, async (req: Request, res: Response): Promis
       'image/gif',
       'image/webp',
       'image/svg+xml',
+      'image/avif',
       'application/pdf',
       'text/plain',
       'text/html',
@@ -399,20 +401,6 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
   io.emit('progress', { uploadId, uploadedChunks, totalChunks });
 
   if (uploadedChunks === parseInt(totalChunks)) {
-    const getUniqueFilename = (originalPath: string) => {
-      const dir = path.dirname(originalPath);
-      const ext = path.extname(originalPath);
-      const baseName = path.basename(originalPath, ext);
-      let counter = 1;
-      let finalPath = originalPath;
-
-      while (fs.existsSync(finalPath)) {
-        finalPath = path.join(dir, `${baseName} (${counter})${ext}`);
-        counter++;
-      }
-      return finalPath;
-    };
-
     let finalPath = path.join(userDir, originalName);
     finalPath = getUniqueFilename(finalPath);
 
@@ -423,11 +411,12 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
         output.write(fs.readFileSync(chunkPath));
       }
 
-      const mimeType = req.file?.mimetype || '';
+      let mimeType = req.file?.mimetype || null;
 
       output.on('finish', async () => {
         const avifPath = await convertImageToAvif(finalPath, mimeType);
         const fileStats = fs.statSync(avifPath);
+        mimeType = mime.getType(avifPath);
         const s3Path = await storageProvider.saveFile(
           avifPath,
           path.join(userId.toString(), path.basename(finalPath))
@@ -436,7 +425,7 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
           const downloadToken = generateDownloadToken();
           const result = await db.insert(filesTable).values({
             userId: userId,
-            originalName: path.basename(finalPath),
+            originalName: path.basename(avifPath),
             filePath: avifPath,
             s3Path: s3Path,
             mimeType: mimeType || null,

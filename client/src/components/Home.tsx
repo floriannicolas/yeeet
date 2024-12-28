@@ -412,7 +412,7 @@ export const Home = () => {
                 </div>
               </a>
               <div className="flex justify-between items-center gap-2">
-                <p className="flex-1 text-sm font-bold text-ellipsis whitespace-nowrap overflow-hidden block">{file.originalName}</p>
+                <p className="flex-1 text-sm font-bold text-ellipsis whitespace-nowrap overflow-hidden block" title={file.originalName}>{file.originalName}</p>
                 <p className="text-sm text-muted-foreground">
                   <AlertDialog>
                     <DropdownMenu>

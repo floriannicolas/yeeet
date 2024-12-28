@@ -12,8 +12,22 @@ export interface StorageProvider {
     getFile(filePath: string, localPath: string): Promise<any>;
 }
 
-export const convertImageToAvif = async (filePath: string, mimeType: string): Promise<string> => {
-    if (!mimeType.startsWith('image/')) {
+export const getUniqueFilename = (originalPath: string) => {
+    const dir = path.dirname(originalPath);
+    const ext = path.extname(originalPath);
+    const baseName = path.basename(originalPath, ext);
+    let counter = 1;
+    let finalPath = originalPath;
+
+    while (fs.existsSync(finalPath)) {
+        finalPath = path.join(dir, `${baseName} (${counter})${ext}`);
+        counter++;
+    }
+    return finalPath;
+};
+
+export const convertImageToAvif = async (filePath: string, mimeType: string | null): Promise<string> => {
+    if (!mimeType || !mimeType.startsWith('image/')) {
         return filePath;
     }
 
@@ -21,7 +35,7 @@ export const convertImageToAvif = async (filePath: string, mimeType: string): Pr
         .resize({ height: 2160, withoutEnlargement: true })
         .avif({ quality: 75, effort: 0 })
         .toBuffer();
-    const newFilePath = filePath.replace(/\.[^.]+$/, '.avif');
+    const newFilePath = getUniqueFilename(filePath.replace(/\.[^.]+$/, '.avif'));
     await sharp(image).toFile(newFilePath);
     fs.unlinkSync(filePath);
 
