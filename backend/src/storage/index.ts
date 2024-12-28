@@ -3,6 +3,7 @@ import { Upload } from '@aws-sdk/lib-storage';
 import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
+import { formatFileSize } from '../utils/format';
 
 
 export interface StorageProvider {
@@ -45,14 +46,45 @@ export const convertImageToAvif = async (filePath: string, mimeType: string | nu
     const testNewFilePath = getUniqueFilename(newFilePath);
     console.time('convertImageToAvif.fs.writeFile');
     const fileStats = fs.statSync(newFilePath);
-    console.log('convertImageToAvif.sharp.fileSize', fileStats.size);
+    console.log('convertImageToAvif.sharp.fileSize', formatFileSize(fileStats.size));
     await fs.writeFileSync(testNewFilePath, image);
     console.timeEnd('convertImageToAvif.fs.writeFile');
     const testFileStats = fs.statSync(testNewFilePath);
-    console.log('convertImageToAvif.fs.writeFileSync.fileSize', testFileStats.size);
+    console.log('convertImageToAvif.fs.writeFileSync.fileSize', formatFileSize(testFileStats.size));
     fs.unlinkSync(testNewFilePath);
     fs.unlinkSync(filePath);
     console.timeEnd('convertImageToAvif');
+
+    return newFilePath;
+}
+
+export const convertImageToWebp = async (filePath: string, mimeType: string | null): Promise<string> => {
+    if (!mimeType || !mimeType.startsWith('image/')) {
+        return filePath;
+    }
+    console.time('convertImageToWebp');
+    console.time('convertImageToWebp.sharp.toBuffer');
+    const image = await sharp(filePath)
+        .resize({ height: 2160, withoutEnlargement: true })
+        .webp({ quality: 75, effort: 0 })
+        .toBuffer();
+    console.timeEnd('convertImageToWebp.sharp.toBuffer');
+    const newFilePath = getUniqueFilename(filePath.replace(/\.[^.]+$/, '.webp'));
+    console.time('convertImageToWebp.sharp.toFile');
+    await sharp(image).toFile(newFilePath);
+    console.timeEnd('convertImageToWebp.sharp.toFile');
+
+    const testNewFilePath = getUniqueFilename(newFilePath);
+    console.time('convertImageToWebp.fs.writeFile');
+    const fileStats = fs.statSync(newFilePath);
+    console.log('convertImageToWebp.sharp.fileSize', formatFileSize(fileStats.size));
+    await fs.writeFileSync(testNewFilePath, image);
+    console.timeEnd('convertImageToWebp.fs.writeFile');
+    const testFileStats = fs.statSync(testNewFilePath);
+    console.log('convertImageToWebp.fs.writeFileSync.fileSize', formatFileSize(testFileStats.size));
+    fs.unlinkSync(testNewFilePath);
+    fs.unlinkSync(filePath);
+    console.timeEnd('convertImageToWebp');
 
     return newFilePath;
 }
