@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label";
 import axios from 'axios';
+import { Helmet } from "react-helmet";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -47,6 +48,9 @@ export const ForgotPassword = () => {
 
     return (
         <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+            <Helmet>
+                <title>Forgot your password? - Yeeet</title>
+            </Helmet>
             <div className="w-full max-w-sm">
                 <div className="flex flex-col items-center gap-2 text-center mb-6">
                     <Link to="/" className="flex items-center gap-2 font-medium">

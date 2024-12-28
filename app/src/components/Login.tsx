@@ -62,7 +62,9 @@ export const Login = () => {
                         <div className="flex flex-col gap-6">
                             <div className="flex flex-col items-center gap-2">
                                 <a
-                                    href="/"
+                                    href={`${import.meta.env.VITE_CLIENT_URL}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="flex flex-col items-center gap-2 font-medium"
                                 >
                                     <div className="flex h-8 w-8 items-center justify-center rounded-md">
@@ -101,7 +103,9 @@ export const Login = () => {
                                     <div className="flex items-center">
                                         <Label htmlFor="password">Password</Label>
                                         <a
-                                            href="#"
+                                            href={`${import.meta.env.VITE_CLIENT_URL}/#/forgot-password`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
                                             className="ml-auto text-sm underline-offset-4 hover:underline"
                                         >
                                             Forgot your password?

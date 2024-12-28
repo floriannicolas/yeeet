@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import axios from 'axios';
+import { Helmet } from "react-helmet";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -55,6 +56,9 @@ export const ResetPassword = () => {
 
     return (
         <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+            <Helmet>
+                <title>Reset your password - Yeeet</title>
+            </Helmet>
             <div className="w-full max-w-sm">
                 <div className="flex flex-col items-center gap-2 text-center mb-6">
                     <Link to="/" className="flex items-center gap-2 font-medium">
@@ -81,19 +85,21 @@ export const ResetPassword = () => {
                                 {error && <p className="text-red-500 mb-4">{error}</p>}
                                 <div className="flex flex-col gap-6">
                                     <div className="grid gap-2">
-                                        <Label htmlFor="password">New Password</Label>
+                                        <Label htmlFor="password">New password</Label>
                                         <Input
                                             id="password"
                                             type="password"
                                             value={password}
+                                            autoComplete="new-password"
                                             onChange={(e) => setPassword(e.target.value)}
                                             required
                                         />
                                     </div>
                                     <div className="grid gap-2">
-                                        <Label htmlFor="confirmPassword">Confirm Password</Label>
+                                        <Label htmlFor="confirmPassword">Confirm password</Label>
                                         <Input
                                             id="confirmPassword"
+                                            autoComplete="new-password"
                                             type="password"
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}

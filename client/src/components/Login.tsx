@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Helmet } from "react-helmet";
 
 export const Login = () => {
   const [username, setUsername] = useState('');
@@ -32,6 +33,9 @@ export const Login = () => {
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
+      <Helmet>
+        <title>Login - Yeeet</title>
+      </Helmet>
       <div className="flex flex-col gap-4 p-6 md:p-10">
         <div className="flex justify-center gap-2 md:justify-start">
           <Link to="/" className="flex items-center gap-2 font-medium">

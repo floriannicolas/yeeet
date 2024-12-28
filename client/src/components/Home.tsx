@@ -47,6 +47,7 @@ import {
   DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
 import { formatFileSize } from '../utils/format';
+import { Helmet } from "react-helmet";
 
 interface FileInfo {
   id: number;
@@ -301,6 +302,9 @@ export const Home = () => {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
+      <Helmet>
+        <title>Yeeet</title>
+      </Helmet>
       <header className="flex sticky top-0 bg-background z-10 h-16 shrink-0 items-center gap-2 border-b px-6">
         <div className="flex justify-center gap-2 md:justify-start w-full">
           <Link to="/" className="flex items-center gap-2 font-medium">
@@ -487,7 +491,7 @@ export const Home = () => {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription className="max-w-md text-ellipsis overflow-hidden">
-                            This action cannot be undone.<br />The file <span className="text-slate-900 font-medium dark:text-slate-200">{file.originalName}</span> will be permanently deleted.
+                          This action cannot be undone.<br />The file <span className="text-slate-900 font-medium dark:text-slate-200">{file.originalName}</span> will be permanently deleted.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Helmet } from "react-helmet";
 
 export const Register = () => {
   const [username, setUsername] = useState('');
@@ -18,7 +19,7 @@ export const Register = () => {
     e.preventDefault();
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/register`, 
+        `${import.meta.env.VITE_API_URL}/api/register`,
         { username, password, email, invitationKey },
         { withCredentials: true }
       );
@@ -30,6 +31,9 @@ export const Register = () => {
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
+      <Helmet>
+        <title>Create an account - Yeeet</title>
+      </Helmet>
       <div className="relative hidden bg-muted lg:block">
         <img
           src="/register-bg.webp"

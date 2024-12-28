@@ -37,7 +37,7 @@ export async function sendPasswordResetEmail(email: string, resetToken: string):
     const subject = 'Reset your password';
 
     const html = `
-    <h1><img src="${process.env.CLIENT_URL}/icon.png" alt="Yeeet" style="width: 32px; height: 32px;" /> Yeeet</h1>
+    <h1><img src="${process.env.CLIENT_URL}/icon.png" alt="Yeeet" style="width: 32px; height: 32px;" /></h1>
     <h2>Password Reset Request</h2>
     <p>You requested to reset your password. Click the link below to proceed:</p>
     <p><a href="${resetLink}">Reset Password</a></p>
