@@ -105,6 +105,7 @@ export const Home = () => {
     });
 
     socketRef.current.on('completed', (data: UploadComplete) => {
+      console.log('completed', data);
       fetchFiles(FILES_LIMIT);
       setProgress(0);
       toast({
@@ -424,7 +425,7 @@ export const Home = () => {
                   <img
                     className={`w-full h-44 object-contain rounded-lg ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-125 transition-all duration-300`}
                     src={file.viewUrl}
-                    alt={file.originalName}
+                    alt=""
                   />
                 ) : (
                   <div className={`w-full h-44 rounded-lg flex items-center justify-center ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-125 transition-all duration-300`}>
