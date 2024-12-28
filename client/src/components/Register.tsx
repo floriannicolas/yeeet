@@ -82,6 +82,7 @@ export const Register = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     type="text"
+                    autoComplete="new-username"
                     error={!!error}
                     required
                   />
@@ -93,6 +94,7 @@ export const Register = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     type="email"
+                    autoComplete="new-email"
                     error={!!error}
                     placeholder="jon.snow@example.com"
                     required
@@ -105,6 +107,7 @@ export const Register = () => {
                   <Input
                     id="password"
                     type="password"
+                    autoComplete="new-password"
                     error={!!error}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
