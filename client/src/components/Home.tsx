@@ -97,6 +97,7 @@ export const Home = () => {
   useEffect(() => {
     socketRef.current = io(import.meta.env.VITE_SOCKET_URL, {
       path: '/socket.io',
+      withCredentials: true,
       transports: ['websocket', 'polling'],
     });
 

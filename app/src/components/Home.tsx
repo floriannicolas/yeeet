@@ -211,6 +211,7 @@ export const Home = () => {
   useEffect(() => {
     socketRef.current = io(API_URL, {
       path: '/socket.io',
+      withCredentials: true,
       transports: ['websocket', 'polling'],
     });
 
@@ -253,6 +254,10 @@ export const Home = () => {
           await remove(path);
         }
       } catch (error) {
+        toast({
+          title: 'Error handling screenshot',
+          description: error instanceof Error ? error.message : 'Screenshot not handled',
+        });
         console.error('Error handling screenshot:', error);
       }
     });
