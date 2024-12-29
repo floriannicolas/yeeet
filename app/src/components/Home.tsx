@@ -77,19 +77,18 @@ export const Home = () => {
   const launchScreenshotWatcher = async () => {
     try {
       const screenshotPath = getScreenshotPath().replace('$HOME/', '').replace('~/', '');
-      const regexPng = /\d{2}\.\d{2}\.\d{2}\.png$/;
-      const regexJpg = /\d{2}\.\d{2}\.\d{2}\.jpg$/;
+      const regex = /\d{2}\.\d{2}\.\d{2}\.(png|jpg)(-[\w\-]+)?$/;
       const stopWatcher = await watchImmediate(
         screenshotPath,
         (event: WatchEvent) => {
           let isScreenshot = false;
-          debugLog('watchImmediate event detected :: ' + event.paths[0]);
           if (event.type !== 'any') {
             for (const [key, value] of Object.entries(event.type)) {
               if (key === 'create' && value.kind === 'file') {
                 debugLog('event file created detected :: ' + event.paths[0]);
                 const path = event.paths[0];
-                if (regexPng.test(path) || regexJpg.test(path)) {
+                if (regex.test(path)) {
+                  debugLog('file considerated as a screenshot :: ' + event.paths[0]);
                   isScreenshot = true;
                 }
               }
@@ -97,8 +96,13 @@ export const Home = () => {
           }
           if (isScreenshot) {
             console.log('new screenshot detected', event);
-            errorLog('watchImmediate event detected :: screenshot-created :: ' + event.paths[0].replace('/.', '/'));
-            emit('screenshot-created', event.paths[0].replace('/.', '/'));
+            const regex = /(.+\.(png|jpg))/;
+            const match = event.paths[0].match(regex);
+            const filename = (match ? match[1] : event.paths[0]).replace('/.', '/');
+            setTimeout(() => {
+              errorLog('watchImmediate :: screenshot detected :: ' + filename);
+              emit('screenshot-created', filename);
+            }, 200);
           }
         },
         {
