@@ -303,7 +303,7 @@ export const Home = () => {
   };
 
   return (
-    <div className="min-h-svh"
+    <div className="min-h-svh flex flex-col"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -382,7 +382,7 @@ export const Home = () => {
           </div>
         )}
       </header>
-      <div className="flex flex-col gap-4 p-6">
+      <div className="flex flex-col gap-4 p-6 h-full flex-1">
         <div className="flex items-center justify-between space-y-2 md:space-y-0 mb-6">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Your files</h2>
@@ -413,8 +413,12 @@ export const Home = () => {
           </div>
         </div>
         {files.length === 0 && (
-          <div className="flex h-full">
-            <p className="text-muted-foreground">No files yet…</p>
+          <div className="flex flex-col h-full flex-1 items-center justify-center p-2">
+            <FlameKindling className="w-16 h-16 text-muted-foreground mb-2 flame-kindling-animation" />
+            <p className="text-md font-light text-muted-foreground mb-2">No files yet…</p>
+            <p className="text-sm font-light text-muted-foreground">
+              <span onClick={() => fileInputRef.current?.click()} className="font-semibold text-white cursor-pointer hover:underline">Upload your first file</span> to get started.
+            </p>
           </div>
         )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-flow-row gap-4 md:gap-6">
@@ -483,14 +487,14 @@ export const Home = () => {
                           }
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <AlertDialogTrigger asChild>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem>
                             <div className="w-full h-full text-red-500">
                               <Trash className="w-4 h-4 inline-block mr-2 align-middle" />
                               <span className="inline-block align-middle">Delete</span>
                             </div>
-                          </AlertDialogTrigger>
-                        </DropdownMenuItem>
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
                       </DropdownMenuContent>
                     </DropdownMenu>
                     <AlertDialogContent>

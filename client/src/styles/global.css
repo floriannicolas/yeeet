@@ -74,3 +74,15 @@ input:autofill, select:autofill {
   color: FieldText !important;
 }*/
 
+
+.flame-kindling-animation {
+    animation: flame-kindling 2.6s infinite;
+}
+
+@keyframes flame-kindling
+{
+    0%      {color:white;}
+    25%     {color: hsl(var(--muted-foreground));}
+    75%     {color: hsl(var(--muted-foreground));}
+    100%    {color:white;}
+}
