@@ -66,3 +66,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+/*
+input:autofill, select:autofill {
+  background-color: -moz-autofill-background !important;
+  background-image: none !important;
+  color: FieldText !important;
+}*/
+

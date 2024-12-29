@@ -10,23 +10,23 @@ const InputPassword = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="relative w-full">
         <Input
-          className={cn(className, "pr-10")}
+          className={cn(className, "pr-10", "peer")}
           error={error}
           ref={ref}
           {...props}
           type={isVisible ? "text" : "password"}
         />
         <div
-          className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-black"
+          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer peer-autofill:text-black"
           onClick={() => setIsVisible(!isVisible)}
         >
-          {isVisible ? <EyeOff /> : <Eye />}
+          {isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </div>
         
       </div>
     )
   }
 )
-InputPassword.displayName = "InpInputPasswordut"
+InputPassword.displayName = "InputPassword"
 
 export { InputPassword }

@@ -17,16 +17,16 @@ const InputPassword = React.forwardRef<HTMLInputElement, InputProps>(
           type={isVisible ? "text" : "password"}
         />
         <div
-          className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-black"
+          className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
           onClick={() => setIsVisible(!isVisible)}
         >
-          {isVisible ? <EyeOff /> : <Eye />}
+          {isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </div>
         
       </div>
     )
   }
 )
-InputPassword.displayName = "InpInputPasswordut"
+InputPassword.displayName = "InputPassword"
 
 export { InputPassword }
