@@ -6,6 +6,14 @@ export const setDeleteScreenshotAfterUpload = (value: boolean) => {
   localStorage.setItem('deleteScreenshotAfterUpload', value.toString());
 }
 
+export const getDebugMode = () => {
+  return JSON.parse(localStorage.getItem('debugMode') || 'false');
+}
+
+export const setDebugMode = (value: boolean) => {
+  localStorage.setItem('debugMode', value.toString());
+}
+
 export const getScreenshotPath = () => {
   return localStorage.getItem('screenshotPath') || '$HOME/Desktop';
 }
