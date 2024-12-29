@@ -51,6 +51,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { formatFileSize } from '../utils/format';
 import { Helmet } from "react-helmet";
 import { getApiToken, removeApiToken } from '@/utils/api-token';
+import { getAppVersionAlertClosed, setAppVersionAlertClosed } from '@/utils/app-version-alert';
 
 interface FileInfo {
   id: number;
@@ -77,7 +78,10 @@ export const Home = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
-  const [showAppUpdate, setShowAppUpdate] = useState(lastAppVersion !== MACOS_APP_VERSION);
+  const [showAppUpdate, setShowAppUpdate] = useState(
+    !getAppVersionAlertClosed() &&
+    lastAppVersion !== MACOS_APP_VERSION
+  );
 
   const fetchFiles = async (limit?: number) => {
     try {
@@ -317,7 +321,13 @@ export const Home = () => {
       </Helmet>
       {showAppUpdate && (
         <Alert>
-          <div className="absolute top-0 right-0 p-2 cursor-pointer" onClick={() => setShowAppUpdate(false)}>
+          <div
+            className="absolute top-0 right-0 p-2 cursor-pointer"
+            onClick={() => {
+              setShowAppUpdate(false);
+              setAppVersionAlertClosed(true);
+            }}
+          >
             <X className="w-4 h-4" />
           </div>
           <AppWindowMac className="h-4 w-4" />

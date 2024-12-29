@@ -24,6 +24,7 @@ import { listen, emit } from '@tauri-apps/api/event';
 import { readFile, remove, BaseDirectory, watchImmediate, WatchEvent } from '@tauri-apps/plugin-fs';
 import { Command } from '@tauri-apps/plugin-shell';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
+import { getVersion } from '@tauri-apps/api/app';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -151,7 +152,17 @@ export const Home = () => {
     }
   };
 
+  const fetchAppVersion = async () => {
+    const version = await getVersion();
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/update-app-version`,
+      { appVersion: version },
+      { headers: { Authorization: `Bearer ${getApiToken()}` } }
+    );
+  };
+
   useEffect(() => {
+    fetchAppVersion()
     fetchCronJobs();
     const interval = setInterval(fetchCronJobs, 3600000); // Every hour
 
