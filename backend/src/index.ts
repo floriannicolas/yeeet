@@ -258,14 +258,17 @@ app.get(`${API_PREFIX}/check-auth`, async (req: Request, res: Response) => {
   const token = getTokenFromRequest(req);
   let isAuthenticated = false;
   let userId = null;
+  let lastAppVersion = null;
   if (token) {
     const { user } = await validateSessionToken(token);
     isAuthenticated = !!user;
     userId = user?.id;
+    lastAppVersion = user?.lastAppVersion;
   }
   res.json({ 
     isAuthenticated, 
     userId,
+    lastAppVersion,
   });
 });
 
@@ -418,6 +421,25 @@ app.get(`${API_PREFIX}/view/:token`, async (req: Request, res: Response): Promis
 
 app.use(requireAuth, express.static('public'));
 
+app.post(`${API_PREFIX}/update-app-version`, requireAuth, async (req: Request, res: Response) => {
+  const { appVersion } = req.body;
+  let userId = -1;
+  const token = getTokenFromRequest(req);
+  if (token) {
+    const { user } = await validateSessionToken(token);
+    if (!user || !user.id) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+    userId = user.id;
+  } else {
+    res.status(401).json({ message: 'Unauthorized' });
+    return;
+  }
+
+  await db.update(usersTable).set({ lastAppVersion: appVersion }).where(eq(usersTable.id, userId));
+  res.json({ message: 'App version updated' });
+});
 
 app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req: Request, res: Response): Promise<void> => {
   if (!req.file) {

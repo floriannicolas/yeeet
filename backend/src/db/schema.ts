@@ -12,6 +12,7 @@ export const usersTable = pgTable('users', {
   password: varchar('password', { length: 255 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   storageLimit: bigint('storage_limit', { mode: 'number' }).default(USER_STORAGE_LIMIT).notNull(),
+  lastAppVersion: varchar('last_app_version', { length: 255 }),
 }, (table) => ({
      emailUniqueIndex: uniqueIndex('emailUniqueIndex').on(lower(table.email)),
 }));

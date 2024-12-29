@@ -19,6 +19,7 @@ import {
   ClipboardCopy,
   ToggleLeft,
   ToggleRight,
+  X,
 } from 'lucide-react';
 import axios from 'axios';
 import { Button } from "@/components/ui/button"
@@ -46,6 +47,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuShortcut,
 } from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { formatFileSize } from '../utils/format';
 import { Helmet } from "react-helmet";
 import { getApiToken, removeApiToken } from '@/utils/api-token';
@@ -63,17 +65,19 @@ interface FileInfo {
 
 const FILES_LIMIT = 50;
 const API_URL = import.meta.env.VITE_API_URL;
+const MACOS_APP_VERSION = import.meta.env.VITE_MACOS_APP_VERSION;
 
 export const Home = () => {
   const [progress, setProgress] = useState(0);
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
   const socketRef = useRef<Socket>();
   const navigate = useNavigate();
-  const { logout, userId } = useAuth();
+  const { logout, userId, lastAppVersion } = useAuth();
   const [files, setFiles] = useState<FileInfo[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
+  const [showAppUpdate, setShowAppUpdate] = useState(lastAppVersion !== MACOS_APP_VERSION);
 
   const fetchFiles = async (limit?: number) => {
     try {
@@ -169,7 +173,7 @@ export const Home = () => {
   };
 
   const handleDownloadApp = () => {
-    window.open('/releases/download/Yeeet_0.1.0_x64.dmg', '_blank');
+    window.open(`/releases/download/Yeeet_${MACOS_APP_VERSION}_x64.dmg`, '_blank');
   };
 
   const handleOpenLink = (url: string) => {
@@ -311,6 +315,18 @@ export const Home = () => {
       <Helmet>
         <title>Yeeet</title>
       </Helmet>
+      {showAppUpdate && (
+        <Alert>
+          <div className="absolute top-0 right-0 p-2 cursor-pointer" onClick={() => setShowAppUpdate(false)}>
+            <X className="w-4 h-4" />
+          </div>
+          <AppWindowMac className="h-4 w-4" />
+          <AlertTitle>Application update</AlertTitle>
+          <AlertDescription className="text-sm text-muted-foreground">
+            A new desktop app is available for macOS! you can download it <span onClick={handleDownloadApp} className="font-semibold text-white cursor-pointer hover:underline">here</span>.
+          </AlertDescription>
+        </Alert>
+      )}
       <header className="flex sticky top-0 bg-background z-10 h-16 shrink-0 items-center gap-2 border-b px-6">
         <div className="flex justify-center gap-2 md:justify-start w-full">
           <Link to="/" className="flex items-center gap-2 font-medium">
@@ -365,7 +381,7 @@ export const Home = () => {
                 <DropdownMenuItem onClick={handleDownloadApp}>
                   <AppWindowMac />
                   <span>Download app</span>
-                  <DropdownMenuShortcut>v0.1.0</DropdownMenuShortcut>
+                  <DropdownMenuShortcut>v{MACOS_APP_VERSION}</DropdownMenuShortcut>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
