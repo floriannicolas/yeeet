@@ -143,12 +143,11 @@ export const Home = () => {
       return;
     }
     try {
-      const response = await axios.get(
+      await axios.get(
         `${API_URL}/api/cron-jobs`, {
         withCredentials: true,
         headers: { Authorization: `Bearer ${getToken()}` },
       });
-      console.log('fetchCronJobs', response.data);
     } catch (error) {
       console.error('Error fetching cron jobs:', error);
     }
