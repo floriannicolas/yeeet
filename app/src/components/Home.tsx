@@ -18,8 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { listen, emit } from '@tauri-apps/api/event';
@@ -38,7 +36,12 @@ import {
 import { getApiToken, removeApiToken } from '@/utils/api-token';
 import { useToast } from "@/hooks/use-toast";
 import { formatFileSize } from '@/utils/format';
-import { getDebugMode, getDeleteScreenshotAfterUpload, getScreenshotPath, setDebugMode, setDeleteScreenshotAfterUpload, setScreenshotPath } from '@/utils/settings';
+import { getDeleteScreenshotAfterUpload, getScreenshotPath, setDeleteScreenshotAfterUpload, setScreenshotPath } from '@/utils/settings';
+import {
+  debug as debugLog,
+  info as infoLog,
+  error as errorLog,
+} from '@tauri-apps/plugin-log';
 
 interface FileInfo {
   id: number;
@@ -69,8 +72,6 @@ export const Home = () => {
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
   const [lastScreenshotPath, setLastScreenshotPath] = useState<string | null>(null);
-  const [debugModeState, setDebugModeState] = useState(getDebugMode());
-  const [debugLogs, setDebugLogs] = useState<string[]>([]);
   const [appVersion, setAppVersion] = useState<string | null>(null);
 
   const launchScreenshotWatcher = async () => {
@@ -82,11 +83,11 @@ export const Home = () => {
         screenshotPath,
         (event: WatchEvent) => {
           let isScreenshot = false;
-          setDebugLogs([...debugLogs, 'watchImmediate event detected :: ' + event.paths[0]]);
+          debugLog('watchImmediate event detected :: ' + event.paths[0]);
           if (event.type !== 'any') {
             for (const [key, value] of Object.entries(event.type)) {
               if (key === 'create' && value.kind === 'file') {
-                setDebugLogs([...debugLogs, 'event file createddetected :: ' + event.paths[0]]);
+                debugLog('event file created detected :: ' + event.paths[0]);
                 const path = event.paths[0];
                 if (regexPng.test(path) || regexJpg.test(path)) {
                   isScreenshot = true;
@@ -96,7 +97,7 @@ export const Home = () => {
           }
           if (isScreenshot) {
             console.log('new screenshot detected', event);
-            setDebugLogs([...debugLogs, 'watchImmediate event detected :: screenshot-created :: ' + event.paths[0].replace('/.', '/')]);
+            errorLog('watchImmediate event detected :: screenshot-created :: ' + event.paths[0].replace('/.', '/'));
             emit('screenshot-created', event.paths[0].replace('/.', '/'));
           }
         },
@@ -112,7 +113,7 @@ export const Home = () => {
         title: 'Error setting up screenshot watcher',
         description: error instanceof Error ? error.message : 'Check your screenshot path',
       });
-      setDebugLogs([...debugLogs, error instanceof Error ? error.message : 'Check your screenshot path']);
+      errorLog(error instanceof Error ? error.message : 'Check your screenshot path');
       console.error('Error setting up screenshot watcher:', error);
     }
   };
@@ -140,7 +141,7 @@ export const Home = () => {
     } catch (error: any) {
       resizeWindow(0);
       console.error('Error fetching files:', error);
-      setDebugLogs([...debugLogs, 'Error fetching files']);
+      errorLog('Error fetching files :: ' + error.response.status + ' :: ' + error.response.data);
       if (error.response.status === 401) {
         removeApiToken();
         navigate('/login');
@@ -205,14 +206,11 @@ export const Home = () => {
         height = 390;
         break;
     }
-    if (getDebugMode()) {
-      height += 200;
-    }
     try {
       await getCurrentWindow().setSize(new LogicalSize(360, height));
     } catch (error) {
       console.error('Failed to resize window:', error);
-      setDebugLogs([...debugLogs, 'Failed to resize window']);
+      errorLog('Failed to resize window :: ' + error);
     }
   };
 
@@ -227,7 +225,7 @@ export const Home = () => {
         await window.hide();
       } catch (error) {
         console.error('Error hiding window:', error);
-        setDebugLogs([...debugLogs, error instanceof Error ? error.message : 'Error hiding window']);
+        errorLog('Error hiding window :: ' + error);
       }
     });
 
@@ -246,7 +244,7 @@ export const Home = () => {
         title: 'Error connecting to socket server',
         description: error instanceof Error ? error.message : 'Check your internet connection',
       });
-      setDebugLogs([...debugLogs, error instanceof Error ? error.message : 'Check your internet connection']);
+      errorLog(error instanceof Error ? error.message : 'Check your internet connection');
     });
 
     socketRef.current.on(`progress.${userId}`, (data: UploadProgress) => {
@@ -254,7 +252,7 @@ export const Home = () => {
     });
 
     socketRef.current.on(`completed.${userId}`, async (result: any) => {
-      setDebugLogs([...debugLogs, `completed.${userId} :: ${result.viewUrl}`]);
+      infoLog(`completed.${userId} :: ${result.viewUrl}`);
       await writeText(result.viewUrl);
       fetchFiles(FILES_LIMIT);
       setProgress(0);
@@ -271,7 +269,7 @@ export const Home = () => {
 
   useEffect(() => {
     const unlistenScreenshot = listen('screenshot-created', async (event) => {
-      setDebugLogs([...debugLogs, `listen.screenshot-created :: ${event.payload as string}`]);
+      infoLog(`listen.screenshot-created :: ${event.payload as string}`);
       try {
         const path = (event.payload as string);
         if (path === lastScreenshotPath) {
@@ -288,11 +286,11 @@ export const Home = () => {
 
         await handleUpload(file);
         if (getDeleteScreenshotAfterUpload()) {
-          setDebugLogs([...debugLogs, `listen.screenshot-created :: delete-screenshot-after-upload :: ${path}`]);
+          infoLog(`listen.screenshot-created :: delete-screenshot-after-upload :: ${path}`);
           await remove(path);
         }
       } catch (error) {
-        setDebugLogs([...debugLogs, `listen.screenshot-created :: error :: ${error instanceof Error ? error.message : 'Screenshot not handled'}`]);
+        errorLog(`listen.screenshot-created :: error :: ${error instanceof Error ? error.message : 'Screenshot not handled'}`);
         toast({
           title: 'Error handling screenshot',
           description: error instanceof Error ? error.message : 'Screenshot not handled',
@@ -345,7 +343,7 @@ export const Home = () => {
       if (!response.ok) {
         const error = await response.json();
         const title = error.code === 'STORAGE_LIMIT_EXCEEDED' ? 'Storage limit exceeded' : 'Error uploading file';
-        setDebugLogs([...debugLogs, `handleUpload :: error :: ${title} :: ${error.message}`]);
+        errorLog(`handleUpload :: error :: ${title} :: ${error.message}`);
         toast({
           title,
           description: error.message,
@@ -365,7 +363,7 @@ export const Home = () => {
       logout();
       navigate('/login');
     } catch (err) {
-      setDebugLogs([...debugLogs, `handleLogout :: error :: ${err instanceof Error ? err.message : 'Logout failed'}`]);
+      errorLog(`handleLogout :: error :: ${err instanceof Error ? err.message : 'Logout failed'}`);
       console.error('Logout failed:', err);
     }
   };
@@ -401,8 +399,6 @@ export const Home = () => {
     setDeleteScreenshotAfterUpload(deleteScreenshotAfterUploadState);
     setScreenshotPath(screenshotPathState);
     setScreenshotPathUpdated(screenshotPathState);
-    setDebugMode(debugModeState);
-    resizeWindow(files.length);
     setAreSettingsOpen(false);
   };
 
@@ -410,7 +406,7 @@ export const Home = () => {
     try {
       await Command.create('run-screencapture-select-area').execute();
     } catch (error) {
-      setDebugLogs([...debugLogs, `handleSelectArea :: error :: ${error instanceof Error ? error.message : 'Error launching screenshot'}`]);
+      errorLog(`handleSelectArea :: error :: ${error instanceof Error ? error.message : 'Error launching screenshot'}`);
       console.error('Error launching screenshot:', error);
     }
   };
@@ -419,7 +415,7 @@ export const Home = () => {
     try {
       await Command.create('run-screencapture-desktop').execute();
     } catch (error) {
-      setDebugLogs([...debugLogs, `handleDesktopScreenshot :: error :: ${error instanceof Error ? error.message : 'Error launching screenshot'}`]);
+      errorLog(`handleDesktopScreenshot :: error :: ${error instanceof Error ? error.message : 'Error launching screenshot'}`);
       console.error('Error launching screenshot:', error);
     }
   };
@@ -447,7 +443,6 @@ export const Home = () => {
               onClose={() => {
                 setDeleteScreenshotAfterUploadState(getDeleteScreenshotAfterUpload());
                 setScreenshotPathState(getScreenshotPath());
-                setDebugModeState(getDebugMode());
                 setAreSettingsOpen(false);
               }}
               open={areSettingsOpen}
@@ -501,20 +496,6 @@ export const Home = () => {
                     </DrawerHeader>
                     <div className="flex items-center justify-center w-full">
                       <div className="flex flex-col gap-4 w-full px-4">
-                        <div className="grid gap-2">
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              id="debugMode"
-                              checked={debugModeState}
-                              onCheckedChange={(checked) => {
-                                setDebugModeState(checked);
-                              }}
-                            />
-                            <Label htmlFor="debugMode" className="text-right">
-                              Debug mode
-                            </Label>
-                          </div>
-                        </div>
                         <div className="grid gap-2">
                           <div className="flex items-center space-x-2">
                             <Switch
@@ -639,21 +620,6 @@ export const Home = () => {
           </div>
         )
       }
-      {getDebugMode() && (
-        <ScrollArea className="h-48 border">
-          <div className="p-4">
-            <h4 className="mb-4 text-sm font-medium leading-none">Debug logs</h4>
-            {debugLogs.map((log) => (
-              <>
-                <div key={log} className="text-sm">
-                  {log}
-                </div>
-                <Separator className="my-2" />
-              </>
-            ))}
-          </div>
-        </ScrollArea>
-      )}
     </div >
   );
 };

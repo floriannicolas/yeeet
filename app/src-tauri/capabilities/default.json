@@ -57,29 +57,45 @@
     {
       "identifier": "fs:scope",
       "allow": [
-        { "path": "$HOME" },
-        { "path": "$HOME/**" }
+        {
+          "path": "$HOME"
+        },
+        {
+          "path": "$HOME/**"
+        }
       ]
     },
     {
       "identifier": "fs:allow-watch",
       "allow": [
-        { "path": "$HOME" },
-        { "path": "$HOME/**" }
+        {
+          "path": "$HOME"
+        },
+        {
+          "path": "$HOME/**"
+        }
       ]
     },
     {
       "identifier": "fs:allow-read-file",
       "allow": [
-        { "path": "$HOME" },
-        { "path": "$HOME/**" }
+        {
+          "path": "$HOME"
+        },
+        {
+          "path": "$HOME/**"
+        }
       ]
     },
     {
       "identifier": "fs:allow-write-file",
       "allow": [
-        { "path": "$HOME" },
-        { "path": "$HOME/**" }
+        {
+          "path": "$HOME"
+        },
+        {
+          "path": "$HOME/**"
+        }
       ]
     },
     "shell:allow-execute",
@@ -107,6 +123,7 @@
           ]
         }
       ]
-    }
+    },
+    "log:default"
   ]
 }
