@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { InputPassword } from "@/components/ui/input-password"
 import { Label } from "@/components/ui/label"
 import { Helmet } from "react-helmet";
+import { setApiToken } from '@/utils/api-token';
 
 export const Login = () => {
   const [username, setUsername] = useState('');
@@ -19,12 +20,13 @@ export const Login = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/login`, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/login`, {
         username,
         password,
       }, {
         withCredentials: true,
       });
+      setApiToken(response.data.token);
       login();
       navigate('/');
     } catch (err: any) {

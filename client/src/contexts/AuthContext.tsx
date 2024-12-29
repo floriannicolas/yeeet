@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
+import { getApiToken, removeApiToken } from '@/utils/api-token';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -21,12 +22,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/check-auth`, 
-          { withCredentials: true }
+          { withCredentials: true, headers: { Authorization: `Bearer ${getApiToken()}` } }
         );
         setIsAuthenticated(response.data.isAuthenticated);
         setUserId(response.data.userId);
       } catch (error) {
         setIsAuthenticated(false);
+        removeApiToken();
       } finally {
         setIsLoading(false);
       }

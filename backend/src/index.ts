@@ -15,10 +15,8 @@ import { db } from './database';
 import { usersTable, filesTable, cronJobsTable, passwordResetTokensTable, User } from './db/schema';
 import {
   createSession,
-  deleteSessionTokenCookie,
   generateSessionToken,
   invalidateSession,
-  setSessionTokenCookie,
   validateSessionToken
 } from './session';
 import cron from 'node-cron';
@@ -163,8 +161,8 @@ app.post(`${API_PREFIX}/login`, async (req: Request, res: Response) => {
       const isPasswordValid = await bcrypt.compare(password, user[0].password);
       if (isPasswordValid) {
         const token = generateSessionToken();
-        const session = await createSession(token, user[0].id);
-        setSessionTokenCookie(res as Response, token, session.expiresAt);
+        await createSession(token, user[0].id);
+        // setSessionTokenCookie(res as Response, token, session.expiresAt);
         res.status(200).send({ message: 'Login successful', token: token });
       } else {
         res.status(401).send('Invalid password');
@@ -278,7 +276,7 @@ app.post(`${API_PREFIX}/logout`, (req: Request, res: Response) => {
     } else {
       const token = getTokenFromRequest(req);
       invalidateSession(token);
-      deleteSessionTokenCookie(res as Response);
+      // deleteSessionTokenCookie(res as Response);
       res.json({ message: 'Logged out successfully' });
     }
   });

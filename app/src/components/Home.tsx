@@ -32,7 +32,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { getToken, removeToken } from '@/utils/token';
+import { getApiToken, removeApiToken } from '@/utils/api-token';
 import { useToast } from "@/hooks/use-toast";
 import { formatFileSize } from '@/utils/format';
 import { getDeleteScreenshotAfterUpload, getScreenshotPath, setDeleteScreenshotAfterUpload, setScreenshotPath } from '@/utils/settings';
@@ -120,7 +120,7 @@ export const Home = () => {
         `${API_URL}${url}`,
         {
           withCredentials: true,
-          headers: { Authorization: `Bearer ${getToken()}` }
+          headers: { Authorization: `Bearer ${getApiToken()}` }
         }
       );
       const data = response.data || [];
@@ -131,7 +131,7 @@ export const Home = () => {
       resizeWindow(0);
       console.error('Error fetching files:', error);
       if (error.response.status === 401) {
-        removeToken();
+        removeApiToken();
         navigate('/login');
       }
     }
@@ -146,7 +146,7 @@ export const Home = () => {
       await axios.get(
         `${API_URL}/api/cron-jobs`, {
         withCredentials: true,
-        headers: { Authorization: `Bearer ${getToken()}` },
+        headers: { Authorization: `Bearer ${getApiToken()}` },
       });
     } catch (error) {
       console.error('Error fetching cron jobs:', error);
@@ -164,7 +164,7 @@ export const Home = () => {
     const response = await axios.get(
       `${API_URL}/api/storage-info`, {
       withCredentials: true,
-      headers: { Authorization: `Bearer ${getToken()}` },
+      headers: { Authorization: `Bearer ${getApiToken()}` },
     });
     setStorageInfo(response.data);
   };
@@ -302,7 +302,7 @@ export const Home = () => {
         method: 'POST',
         credentials: 'include',
         body: formData,
-        headers: { Authorization: `Bearer ${getToken()}` }
+        headers: { Authorization: `Bearer ${getApiToken()}` }
       });
       if (!response.ok) {
         const error = await response.json();
@@ -321,9 +321,9 @@ export const Home = () => {
       await fetch(`${API_URL}/api/logout`, {
         method: 'POST',
         credentials: 'include',
-        headers: { Authorization: `Bearer ${getToken()}` }
+        headers: { Authorization: `Bearer ${getApiToken()}` }
       });
-      removeToken();
+      removeApiToken();
       logout();
       navigate('/login');
     } catch (err) {

@@ -1,4 +1,4 @@
-import { getToken } from '@/utils/token';
+import { getApiToken } from '@/utils/api-token';
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface AuthContextType {
@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/check-auth`, {
           credentials: 'include',
-          headers: { Authorization: `Bearer ${getToken()}` }
+          headers: { Authorization: `Bearer ${getApiToken()}` }
         });
         const data = await response.json();
         setIsAuthenticated(data.isAuthenticated);

@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatFileSize } from '../utils/format';
 import { Helmet } from "react-helmet";
+import { getApiToken, removeApiToken } from '@/utils/api-token';
 
 interface FileInfo {
   id: number;
@@ -77,7 +78,7 @@ export const Home = () => {
   const fetchFiles = async (limit?: number) => {
     try {
       const url = limit ? `${API_URL}/api/files?limit=${limit}` : `${API_URL}/api/files`;
-      const response = await axios.get(url, { withCredentials: true });
+      const response = await axios.get(url, { withCredentials: true, headers: { Authorization: `Bearer ${getApiToken()}` } });
       setFiles(response.data);
       fetchStorageInfo();
     } catch (error) {
@@ -88,7 +89,8 @@ export const Home = () => {
   const fetchStorageInfo = async () => {
     const response = await axios.get(
       `${API_URL}/api/storage-info`, {
-      withCredentials: true
+      withCredentials: true,
+      headers: { Authorization: `Bearer ${getApiToken()}` }
     });
     setStorageInfo(response.data);
   };
@@ -154,6 +156,7 @@ export const Home = () => {
         method: 'POST',
         body: formData,
         credentials: 'include',
+        headers: { Authorization: `Bearer ${getApiToken()}` }
       });
       if (!response.ok) {
         const error = await response.json();
@@ -183,7 +186,9 @@ export const Home = () => {
     await fetch(`${API_URL}/api/logout`, {
       method: 'POST',
       credentials: 'include',
+      headers: { Authorization: `Bearer ${getApiToken()}` }
     });
+    removeApiToken();
     logout();
     navigate('/login');
   };
@@ -192,6 +197,11 @@ export const Home = () => {
     try {
       await axios.delete(`${API_URL}/api/files/${id}`, {
         withCredentials: true,
+        headers: { Authorization: `Bearer ${getApiToken()}` }
+      });
+      toast({
+        title: "File deleted successfully",
+        description: <>Your file is now deleted.</>
       });
       fetchFiles(FILES_LIMIT);
     } catch (error) {
@@ -204,6 +214,7 @@ export const Home = () => {
       await fetch(`${API_URL}/api/files/${id}/toggle-expiration`, {
         method: 'POST',
         credentials: 'include',
+        headers: { Authorization: `Bearer ${getApiToken()}` }
       });
       fetchFiles(FILES_LIMIT);
     } catch (error) {
