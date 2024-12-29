@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { FlameKindling } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { InputPassword } from "@/components/ui/input-password";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LogicalSize, getCurrentWindow } from '@tauri-apps/api/window';
@@ -111,9 +112,8 @@ export const Login = () => {
                                             Forgot your password?
                                         </a>
                                     </div>
-                                    <Input
+                                    <InputPassword
                                         id="password"
-                                        type="password"
                                         value={password}
                                         error={!!error}
                                         onChange={(e) => setPassword(e.target.value)}
