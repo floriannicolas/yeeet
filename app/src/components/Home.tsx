@@ -98,7 +98,10 @@ export const Home = () => {
             console.log('new screenshot detected', event);
             const regex = /(.+\.(png|jpg))/;
             const match = event.paths[0].match(regex);
-            const filename = (match ? match[1] : event.paths[0]).replace('/.', '/');
+            const filename = (match ? match[1] : event.paths[0])
+              .replace('/.', '/')
+              .replace('/.', '/')
+              .replace('/.', '/');
             setTimeout(() => {
               errorLog('watchImmediate :: screenshot detected :: ' + filename);
               emit('screenshot-created', filename);
