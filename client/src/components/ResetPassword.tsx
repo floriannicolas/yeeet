@@ -9,7 +9,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { InputPassword } from "@/components/ui/input-password";
 import { Label } from "@/components/ui/label";
 import axios from 'axios';
 import { Helmet } from "react-helmet";
@@ -86,9 +86,8 @@ export const ResetPassword = () => {
                                 <div className="flex flex-col gap-6">
                                     <div className="grid gap-2">
                                         <Label htmlFor="password">New password</Label>
-                                        <Input
+                                        <InputPassword
                                             id="password"
-                                            type="password"
                                             value={password}
                                             autoComplete="new-password"
                                             onChange={(e) => setPassword(e.target.value)}
@@ -97,10 +96,9 @@ export const ResetPassword = () => {
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="confirmPassword">Confirm password</Label>
-                                        <Input
+                                        <InputPassword
                                             id="confirmPassword"
                                             autoComplete="new-password"
-                                            type="password"
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
                                             required

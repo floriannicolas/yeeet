@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { InputPassword } from "@/components/ui/input-password"
 import { Label } from "@/components/ui/label"
 import { Helmet } from "react-helmet";
 
@@ -75,9 +76,8 @@ export const Login = () => {
                       Forgot your password?
                     </Link>
                   </div>
-                  <Input
+                  <InputPassword
                     id="password"
-                    type="password"
                     value={password}
                     error={!!error}
                     onChange={(e) => setPassword(e.target.value)}

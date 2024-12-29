@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { InputPassword } from "@/components/ui/input-password"
 import { Label } from "@/components/ui/label"
 import { Helmet } from "react-helmet";
 
@@ -109,9 +110,8 @@ export const Register = () => {
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
                   </div>
-                  <Input
+                  <InputPassword
                     id="password"
-                    type="password"
                     autoComplete="new-password"
                     error={!!error}
                     value={password}
@@ -123,9 +123,8 @@ export const Register = () => {
                   <div className="flex items-center">
                     <Label htmlFor="password">Confirm password</Label>
                   </div>
-                  <Input
+                  <InputPassword
                     id="confirmPassword"
-                    type="password"
                     autoComplete="new-password"
                     error={!!error}
                     value={confirmPassword}
