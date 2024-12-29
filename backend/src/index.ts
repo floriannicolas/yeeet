@@ -392,7 +392,7 @@ app.get(`${API_PREFIX}/view/:token`, async (req: Request, res: Response): Promis
     ];
 
     if (!viewableMimeTypes.includes(file.mimeType ?? '')) {
-      res.status(400).json({ message: 'File type not supported for viewing' });
+      res.redirect(`${BACKEND_URL}${API_PREFIX}/download/${file.downloadToken}`);
       return;
     }
 
