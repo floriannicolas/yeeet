@@ -31,8 +31,6 @@
     "fs:allow-write-file",
     "fs:allow-app-read",
     "fs:allow-app-read-recursive",
-    "fs:allow-appcache-read",
-    "fs:allow-appcache-read-recursive",
     "fs:allow-appconfig-read",
     "fs:allow-appconfig-read-recursive",
     "fs:allow-appdata-read",
