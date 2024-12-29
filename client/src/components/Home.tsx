@@ -279,10 +279,16 @@ export const Home = () => {
   }
 
   const isImageType = (mimeType: string) => {
+    if (!mimeType) {
+      return false;
+    }
     return mimeType.startsWith('image/');
   };
 
   const getFileIcon = (mimeType: string) => {
+    if (!mimeType) {
+      return <FileIcon className="w-16 h-16 text-muted-foreground" />;
+    }
     if (mimeType.startsWith('video/')) {
       return <FileVideo className="w-16 h-16 text-muted-foreground" />
     }
@@ -295,6 +301,9 @@ export const Home = () => {
   };
 
   const getFileBackground = (mimeType: string): string => {
+    if (!mimeType) {
+      return 'bg-gray-950';
+    }
     if (mimeType.startsWith('video/')) {
       return 'bg-emerald-950';
     }
