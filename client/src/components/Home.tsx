@@ -20,6 +20,7 @@ import {
   ToggleLeft,
   ToggleRight,
   X,
+  LoaderCircle,
 } from 'lucide-react';
 import axios from 'axios';
 import { Button } from "@/components/ui/button"
@@ -77,6 +78,7 @@ export const Home = () => {
   const [files, setFiles] = useState<FileInfo[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const [showAppUpdate, setShowAppUpdate] = useState(
     !getAppVersionAlertClosed() &&
@@ -89,6 +91,7 @@ export const Home = () => {
       const response = await axios.get(url, { headers: { Authorization: `Bearer ${getApiToken()}` } });
       setFiles(response.data);
       fetchStorageInfo();
+      setIsLoading(false);
     } catch (error) {
       console.error('Error fetching files:', error);
     }
@@ -438,7 +441,12 @@ export const Home = () => {
             </div>
           </div>
         </div>
-        {files.length === 0 && (
+        {isLoading && (
+          <div className="flex h-full flex-1 items-center gap-2 justify-center p-2 font-light text-white">
+            <LoaderCircle className="animate-spin" /> Loading...
+          </div>
+        )}
+        {!isLoading && files.length === 0 && (
           <div className="flex flex-col h-full flex-1 items-center justify-center p-2">
             <FlameKindling className="w-16 h-16 text-muted-foreground mb-2 flame-kindling-animation" />
             <p className="text-md font-light text-muted-foreground mb-2">No files yet…</p>
@@ -447,106 +455,110 @@ export const Home = () => {
             </p>
           </div>
         )}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-flow-row gap-4 md:gap-6">
-          {files.map(file => (
-            <div className="flex flex-col gap-2 relative" key={file.id}>
-              <a
-                href={file.viewUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="relative border overflow-hidden w-full h-44 rounded-lg flex items-center justify-center group"
-              >
-                {isImageType(file.mimeType) ? (
-                  <img
-                    className={`w-full h-44 object-contain rounded-lg ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-125 transition-all duration-300`}
-                    src={file.viewUrl}
-                    alt=""
-                  />
-                ) : (
-                  <div className={`w-full h-44 rounded-lg flex items-center justify-center ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-125 transition-all duration-300`}>
-                    {getFileIcon(file.mimeType)}
+        {
+          !isLoading && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-flow-row gap-4 md:gap-6">
+              {files.map(file => (
+                <div className="flex flex-col gap-2 relative" key={file.id}>
+                  <a
+                    href={file.viewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative border overflow-hidden w-full h-44 rounded-lg flex items-center justify-center group"
+                  >
+                    {isImageType(file.mimeType) ? (
+                      <img
+                        className={`w-full h-44 object-contain rounded-lg ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-125 transition-all duration-300`}
+                        src={file.viewUrl}
+                        alt=""
+                      />
+                    ) : (
+                      <div className={`w-full h-44 rounded-lg flex items-center justify-center ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-125 transition-all duration-300`}>
+                        {getFileIcon(file.mimeType)}
+                      </div>
+                    )}
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full bg-background p-4 opacity-0 group-hover:opacity-70 transition-all duration-300">
+                      <Eye className="w-6 h-6" />
+                    </div>
+                  </a>
+                  <div className="flex justify-between items-center gap-2">
+                    <p className="flex-1 text-sm font-bold text-ellipsis whitespace-nowrap overflow-hidden block" title={file.originalName}>{file.originalName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      <AlertDialog>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="rounded-full p-2.5">
+                              <EllipsisVertical />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="">
+                            <DropdownMenuGroup>
+                              <DropdownMenuItem onClick={() => handleCopyLink(file.viewUrl)}>
+                                <ClipboardCopy />
+                                Copy link
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleOpenLink(file.viewUrl)}>
+                                <Eye />
+                                View
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleOpenLink(file.downloadUrl)}>
+                                <Download />
+                                Download
+                              </DropdownMenuItem>
+                            </DropdownMenuGroup>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleToggleExpiration(file.id)}>
+                              {
+                                file.expiresAt ? (
+                                  <>
+                                    <ToggleRight />
+                                    Make it non-expiring
+                                  </>
+                                ) : (
+                                  <>
+                                    <ToggleLeft />
+                                    Make it expiring
+                                  </>
+                                )
+                              }
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem>
+                                <div className="w-full h-full text-red-500">
+                                  <Trash className="w-4 h-4 inline-block mr-2 align-middle" />
+                                  <span className="inline-block align-middle">Delete</span>
+                                </div>
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription className="max-w-md text-ellipsis overflow-hidden">
+                              This action cannot be undone.<br />The file <span className="text-slate-900 font-medium dark:text-slate-200">{file.originalName}</span> will be permanently deleted.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDelete(file.id)}>Continue</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </p>
                   </div>
-                )}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full bg-background p-4 opacity-0 group-hover:opacity-70 transition-all duration-300">
-                  <Eye className="w-6 h-6" />
+                  <div className="flex justify-between items-center gap-2">
+                    <p className="flex-1 text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {getFileExpiresAtLabel(file)}
+                    </p>
+                  </div>
                 </div>
-              </a>
-              <div className="flex justify-between items-center gap-2">
-                <p className="flex-1 text-sm font-bold text-ellipsis whitespace-nowrap overflow-hidden block" title={file.originalName}>{file.originalName}</p>
-                <p className="text-sm text-muted-foreground">
-                  <AlertDialog>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="rounded-full p-2.5">
-                          <EllipsisVertical />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="">
-                        <DropdownMenuGroup>
-                          <DropdownMenuItem onClick={() => handleCopyLink(file.viewUrl)}>
-                            <ClipboardCopy />
-                            Copy link
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleOpenLink(file.viewUrl)}>
-                            <Eye />
-                            View
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleOpenLink(file.downloadUrl)}>
-                            <Download />
-                            Download
-                          </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleToggleExpiration(file.id)}>
-                          {
-                            file.expiresAt ? (
-                              <>
-                                <ToggleRight />
-                                Make it non-expiring
-                              </>
-                            ) : (
-                              <>
-                                <ToggleLeft />
-                                Make it expiring
-                              </>
-                            )
-                          }
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <AlertDialogTrigger asChild>
-                          <DropdownMenuItem>
-                            <div className="w-full h-full text-red-500">
-                              <Trash className="w-4 h-4 inline-block mr-2 align-middle" />
-                              <span className="inline-block align-middle">Delete</span>
-                            </div>
-                          </DropdownMenuItem>
-                        </AlertDialogTrigger>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription className="max-w-md text-ellipsis overflow-hidden">
-                          This action cannot be undone.<br />The file <span className="text-slate-900 font-medium dark:text-slate-200">{file.originalName}</span> will be permanently deleted.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(file.id)}>Continue</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </p>
-              </div>
-              <div className="flex justify-between items-center gap-2">
-                <p className="flex-1 text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
-                <p className="text-sm text-muted-foreground">
-                  {getFileExpiresAtLabel(file)}
-                </p>
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )
+        }
       </div>
       {isDragging && (
         <div className="fixed inset-0 bg-gray-600/50 z-50 p-12">
