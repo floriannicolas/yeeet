@@ -24,7 +24,6 @@ export const Login = () => {
         username,
         password,
       }, {
-        withCredentials: true,
       });
       setApiToken(response.data.token);
       login();

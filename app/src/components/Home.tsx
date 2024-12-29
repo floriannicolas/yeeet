@@ -119,7 +119,6 @@ export const Home = () => {
       const response = await axios.get(
         `${API_URL}${url}`,
         {
-          withCredentials: true,
           headers: { Authorization: `Bearer ${getApiToken()}` }
         }
       );
@@ -145,7 +144,6 @@ export const Home = () => {
     try {
       await axios.get(
         `${API_URL}/api/cron-jobs`, {
-        withCredentials: true,
         headers: { Authorization: `Bearer ${getApiToken()}` },
       });
     } catch (error) {
@@ -163,7 +161,6 @@ export const Home = () => {
   const fetchStorageInfo = async () => {
     const response = await axios.get(
       `${API_URL}/api/storage-info`, {
-      withCredentials: true,
       headers: { Authorization: `Bearer ${getApiToken()}` },
     });
     setStorageInfo(response.data);
@@ -215,7 +212,6 @@ export const Home = () => {
     socketRef.current = io(API_URL, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
-      withCredentials: true
     });
 
     socketRef.current.on(`progress.${userId}`, (data: UploadProgress) => {
@@ -300,7 +296,6 @@ export const Home = () => {
 
       const response = await fetch(`${API_URL}/api/upload`, {
         method: 'POST',
-        credentials: 'include',
         body: formData,
         headers: { Authorization: `Bearer ${getApiToken()}` }
       });
@@ -320,7 +315,6 @@ export const Home = () => {
     try {
       await fetch(`${API_URL}/api/logout`, {
         method: 'POST',
-        credentials: 'include',
         headers: { Authorization: `Bearer ${getApiToken()}` }
       });
       removeApiToken();

@@ -78,7 +78,7 @@ export const Home = () => {
   const fetchFiles = async (limit?: number) => {
     try {
       const url = limit ? `${API_URL}/api/files?limit=${limit}` : `${API_URL}/api/files`;
-      const response = await axios.get(url, { withCredentials: true, headers: { Authorization: `Bearer ${getApiToken()}` } });
+      const response = await axios.get(url, { headers: { Authorization: `Bearer ${getApiToken()}` } });
       setFiles(response.data);
       fetchStorageInfo();
     } catch (error) {
@@ -89,7 +89,6 @@ export const Home = () => {
   const fetchStorageInfo = async () => {
     const response = await axios.get(
       `${API_URL}/api/storage-info`, {
-      withCredentials: true,
       headers: { Authorization: `Bearer ${getApiToken()}` }
     });
     setStorageInfo(response.data);
@@ -99,7 +98,6 @@ export const Home = () => {
     socketRef.current = io(import.meta.env.VITE_SOCKET_URL, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
-      withCredentials: true
     });
 
     socketRef.current.on(`progress.${userId}`, (data: UploadProgress) => {
@@ -155,7 +153,6 @@ export const Home = () => {
       const response = await fetch(`${API_URL}/api/upload`, {
         method: 'POST',
         body: formData,
-        credentials: 'include',
         headers: { Authorization: `Bearer ${getApiToken()}` }
       });
       if (!response.ok) {
@@ -185,7 +182,6 @@ export const Home = () => {
   const handleLogout = async () => {
     await fetch(`${API_URL}/api/logout`, {
       method: 'POST',
-      credentials: 'include',
       headers: { Authorization: `Bearer ${getApiToken()}` }
     });
     removeApiToken();
@@ -196,7 +192,6 @@ export const Home = () => {
   const handleDelete = async (id: number) => {
     try {
       await axios.delete(`${API_URL}/api/files/${id}`, {
-        withCredentials: true,
         headers: { Authorization: `Bearer ${getApiToken()}` }
       });
       toast({
@@ -213,7 +208,6 @@ export const Home = () => {
     try {
       await fetch(`${API_URL}/api/files/${id}/toggle-expiration`, {
         method: 'POST',
-        credentials: 'include',
         headers: { Authorization: `Bearer ${getApiToken()}` }
       });
       fetchFiles(FILES_LIMIT);

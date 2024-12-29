@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const response = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/check-auth`, 
-          { withCredentials: true, headers: { Authorization: `Bearer ${getApiToken()}` } }
+          { headers: { Authorization: `Bearer ${getApiToken()}` } }
         );
         setIsAuthenticated(response.data.isAuthenticated);
         setUserId(response.data.userId);

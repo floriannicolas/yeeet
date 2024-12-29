@@ -26,8 +26,7 @@ export const Register = () => {
     try {
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/register`,
-        { username, password, email, invitationKey },
-        { withCredentials: true }
+        { username, password, email, invitationKey }
       );
       navigate('/login');
     } catch (err: any) {

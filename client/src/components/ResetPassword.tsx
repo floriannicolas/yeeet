@@ -38,8 +38,6 @@ export const ResetPassword = () => {
             const response = await axios.post(`${API_URL}/api/reset-password`, {
                 token,
                 password
-            }, {
-                withCredentials: true
             });
 
             if (response.status === 200) {

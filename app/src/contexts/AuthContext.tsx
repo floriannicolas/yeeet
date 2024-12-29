@@ -20,7 +20,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const checkAuth = async () => {
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/check-auth`, {
-          credentials: 'include',
           headers: { Authorization: `Bearer ${getApiToken()}` }
         });
         const data = await response.json();

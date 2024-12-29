@@ -30,7 +30,6 @@ export const ForgotPassword = () => {
             const response = await axios.post(`${API_URL}/api/forgot-password`, {
                 email,
               }, {
-                withCredentials: true,
               });
 
             if (response.status === 200 ) {
