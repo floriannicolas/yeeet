@@ -2,16 +2,26 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { io, Socket } from 'socket.io-client';
 import { StorageInfo, UploadProgress } from '../types';
-import { FlameKindling, LogOut, EllipsisVertical, Upload } from 'lucide-react';
+import { FlameKindling, LogOut, EllipsisVertical, Upload, Settings } from 'lucide-react';
 import { LogicalSize, getCurrentWindow } from '@tauri-apps/api/window';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
+import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
-import { listen } from '@tauri-apps/api/event';
-import { readFile, remove } from '@tauri-apps/plugin-fs';
+import { listen, emit } from '@tauri-apps/api/event';
+import { readFile, remove, BaseDirectory, watchImmediate, WatchEvent } from '@tauri-apps/plugin-fs';
 import { Command } from '@tauri-apps/plugin-shell';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import {
@@ -25,6 +35,7 @@ import {
 import { getToken, removeToken } from '@/utils/token';
 import { useToast } from "@/hooks/use-toast";
 import { formatFileSize } from '@/utils/format';
+import { getDeleteScreenshotAfterUpload, getScreenshotPath, setDeleteScreenshotAfterUpload, setScreenshotPath } from '@/utils/settings';
 
 interface FileInfo {
   id: number;
@@ -46,10 +57,61 @@ export const Home = () => {
   const socketRef = useRef<Socket>();
   const navigate = useNavigate();
   const { logout, userId } = useAuth();
+  const [deleteScreenshotAfterUploadState, setDeleteScreenshotAfterUploadState] = useState(getDeleteScreenshotAfterUpload());
+  const [screenshotPathState, setScreenshotPathState] = useState(getScreenshotPath());
+  const [screenshotPathUpdated, setScreenshotPathUpdated] = useState(screenshotPathState);
+  const [areSettingsOpen, setAreSettingsOpen] = useState(false);
   const [files, setFiles] = useState<FileInfo[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
+  const [lastScreenshotPath, setLastScreenshotPath] = useState<string | null>(null);
+
+  const launchScreenshotWatcher = async () => {
+    try {
+      const screenshotPath = getScreenshotPath().replace('$HOME/', '').replace('~/', '');
+      const regex = /\d{2}\.\d{2}\.\d{2}\.png$/;
+      const stopWatcher = await watchImmediate(
+        screenshotPath,
+        (event: WatchEvent) => {
+          let isScreenshot = false;
+          if (event.type !== 'any') {
+            for (const [key, value] of Object.entries(event.type)) {
+              if (key === 'create' && value.kind === 'file') {
+                const path = event.paths[0];
+                if (regex.test(path)) {
+                  isScreenshot = true;
+                }
+              }
+            }
+          }
+          if (isScreenshot) {
+            console.log('new screenshot detected', event);
+            emit('screenshot-created', event.paths[0].replace('/.', '/'));
+          }
+        },
+        {
+          baseDir: BaseDirectory.Home,
+          recursive: true,
+        }
+      );
+
+      return stopWatcher;
+    } catch (error) {
+      toast({
+        title: 'Error setting up screenshot watcher',
+        description: error instanceof Error ? error.message : 'Check your screenshot path',
+      });
+      console.error('Error setting up screenshot watcher:', error);
+    }
+  };
+
+  useEffect(() => {
+    const stopWatcher = launchScreenshotWatcher();
+    return () => {
+      stopWatcher.then(stop => stop?.());
+    };
+  }, [screenshotPathUpdated]);
 
   const fetchFiles = async (limit?: number) => {
     try {
@@ -179,7 +241,11 @@ export const Home = () => {
   useEffect(() => {
     const unlistenScreenshot = listen('screenshot-created', async (event) => {
       try {
-        const path = (event.payload as string).replace('/.', '/');
+        const path = (event.payload as string);
+        if (path === lastScreenshotPath) {
+          return;
+        }
+        setLastScreenshotPath(path);
         const fileContent = await readFile(path);
         const filename = path.split('/').pop() || 'screenshot.png';
         const normalizedFilename = filename.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace('’', '');
@@ -188,7 +254,9 @@ export const Home = () => {
         });
 
         await handleUpload(file);
-        await remove(path);
+        if (getDeleteScreenshotAfterUpload()) {
+          await remove(path);
+        }
       } catch (error) {
         console.error('Error handling screenshot:', error);
       }
@@ -290,6 +358,14 @@ export const Home = () => {
     }
   };
 
+  const handleSaveSettings = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setDeleteScreenshotAfterUpload(deleteScreenshotAfterUploadState);
+    setScreenshotPath(screenshotPathState);
+    setScreenshotPathUpdated(screenshotPathState)
+    setAreSettingsOpen(false);
+  };
+
   const handleSelectArea = async () => {
     try {
       await Command.create('run-screencapture-select-area').execute();
@@ -325,45 +401,110 @@ export const Home = () => {
             Yeeet
           </a>
           <div className="flex items-center gap-2 font-medium ml-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="rounded-full p-2.5">
-                  <EllipsisVertical />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-52 -ml-36">
-                {storageInfo && (
-                  <>
-                    <DropdownMenuGroup>
-                      <div className="px-2 py-1.5 text-xm flex gap-2 items-center">
-                        <div className="text-semibold">
-                          Usage
+            <Drawer
+              onClose={() => {
+                setDeleteScreenshotAfterUploadState(getDeleteScreenshotAfterUpload());
+                setScreenshotPathState(getScreenshotPath());
+                setAreSettingsOpen(false);
+              }}
+              open={areSettingsOpen}
+            >
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="rounded-full p-2.5">
+                    <EllipsisVertical />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-52 -ml-36">
+                  {storageInfo && (
+                    <>
+                      <DropdownMenuGroup>
+                        <div className="px-2 py-1.5 text-xm flex gap-2 items-center">
+                          <div className="text-semibold">
+                            Usage
+                          </div>
+                          <div className="ml-auto text-xs tracking-widest opacity-60">
+                            {formatFileSize(storageInfo.used)} / {formatFileSize(storageInfo.limit)}
+                          </div>
                         </div>
-                        <div className="ml-auto text-xs tracking-widest opacity-60">
-                          {formatFileSize(storageInfo.used)} / {formatFileSize(storageInfo.limit)}
+                        <div className="px-2 py-1.5">
+                          <Progress value={storageInfo.usedPercentage} className="h-2" />
+                        </div>
+                      </DropdownMenuGroup>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  <DropdownMenuItem onClick={() => setAreSettingsOpen(true)}>
+                    <div className="w-full h-full">
+                      <Settings className="w-4 h-4 inline-block mr-2 align-middle" />
+                      <span className="inline-block align-middle">App settings</span>
+                    </div>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DrawerContent>
+                <form onSubmit={handleSaveSettings}>
+                  <div className="mx-auto w-full max-w-sm">
+                    <DrawerHeader>
+                      <DrawerTitle>App settings</DrawerTitle>
+                      <DrawerDescription>
+                        Update app settings here.
+                      </DrawerDescription>
+                    </DrawerHeader>
+                    <div className="flex items-center justify-center w-full">
+                      <div className="flex flex-col gap-4 w-full px-4">
+                        <div className="grid gap-2">
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              id="deleteScreenshotAfterUpload"
+                              checked={deleteScreenshotAfterUploadState}
+                              onCheckedChange={(checked) => {
+                                setDeleteScreenshotAfterUploadState(checked);
+                              }}
+                            />
+                            <Label htmlFor="deleteScreenshotAfterUpload" className="text-right">
+                              Delete screenshot after upload
+                            </Label>
+                          </div>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="password">Screenshot path</Label>
+                          <Input
+                            id="screenshotPath"
+                            value={screenshotPathState}
+                            className="w-full"
+                            onChange={(e) => {
+                              setScreenshotPathState(e.target.value);
+                            }}
+                          />
                         </div>
                       </div>
-                      <div className="px-2 py-1.5">
-                        <Progress value={storageInfo.usedPercentage} className="h-2" />
-                      </div>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                  </>
-                )}
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    </div>
+                    <DrawerFooter>
+                      <Button type="submit">Save</Button>
+                      <DrawerClose asChild>
+                        <Button type="button" variant="outline">Cancel</Button>
+                      </DrawerClose>
+                    </DrawerFooter>
+                  </div>
+                </form>
+              </DrawerContent>
+            </Drawer>
           </div>
         </div>
-        {(progress > 0) && (
-          <div className="absolute left-0 right-0 top-full border-b border-t bg-background overflow-hidden">
-            <div className="left-0 right-0 top-full h-2 bg-gray-200 text-right" style={{ width: `${progress}%` }} />
-          </div>
-        )}
-      </header>
+        {
+          (progress > 0) && (
+            <div className="absolute left-0 right-0 top-full border-b border-t bg-background overflow-hidden">
+              <div className="left-0 right-0 top-full h-2 bg-gray-200 text-right" style={{ width: `${progress}%` }} />
+            </div>
+          )
+        }
+      </header >
       <div className="flex flex-col gap-4 p-6">
         <div className="flex flex-col gap-2 divide-y">
           <div className="flex flex-col">
@@ -429,16 +570,18 @@ export const Home = () => {
           </div>
         </div>
       </div>
-      {isDragging && (
-        <div className="fixed inset-0 bg-gray-600/50 z-50 p-12">
-          <div className="flex items-center justify-center h-full border-2 rounded-lg border-dashed border-white">
-            <div className="flex flex-col gap-4 items-center justify-center h-full">
-              <Upload className="w-16 h-16" />
-              <p className="text-white text-2xl">Drop your <span className="font-bold">file</span> here</p>
+      {
+        isDragging && (
+          <div className="fixed inset-0 bg-gray-600/50 z-50 p-12">
+            <div className="flex items-center justify-center h-full border-2 rounded-lg border-dashed border-white">
+              <div className="flex flex-col gap-4 items-center justify-center h-full">
+                <Upload className="w-16 h-16" />
+                <p className="text-white text-2xl">Drop your <span className="font-bold">file</span> here</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };

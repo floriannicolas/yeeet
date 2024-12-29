@@ -265,7 +265,10 @@ app.get(`${API_PREFIX}/check-auth`, async (req: Request, res: Response) => {
     isAuthenticated = !!user;
     userId = user?.id;
   }
-  res.json({ isAuthenticated, userId });
+  res.json({ 
+    isAuthenticated, 
+    userId,
+  });
 });
 
 app.post(`${API_PREFIX}/logout`, (req: Request, res: Response) => {
@@ -714,65 +717,6 @@ app.delete(`${API_PREFIX}/files/:id`, requireAuth, async (req: Request, res: Res
   } catch (error) {
     console.error('Error deleting file:', error);
     res.status(500).json({ message: 'Error deleting file' });
-  }
-});
-
-app.get(`${API_PREFIX}/user/settings`, requireAuth, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { user } = await validateSessionToken(getTokenFromRequest(req)!);
-    if (!user || !user.id) {
-      res.status(401).json({ message: 'Unauthorized' });
-      return;
-    }
-
-    res.json({
-      deleteScreenshotAfterUpload: user.deleteScreenshotAfterUpload,
-      screenshotPath: user.screenshotPath
-    });
-  } catch (error) {
-    console.error('Error fetching user settings:', error);
-    res.status(500).json({ message: 'Error fetching user settings' });
-  }
-});
-
-app.post(`${API_PREFIX}/user/update-settings`, requireAuth, async (req: Request, res: Response): Promise<void> => {
-  try {
-    let userId = -1;
-    const token = getTokenFromRequest(req);
-    if (token) {
-      const { user } = await validateSessionToken(token);
-      if (!user || !user.id) {
-        res.status(401).json({ message: 'Unauthorized' });
-        return;
-      }
-      userId = user.id;
-    } else {
-      res.status(401).json({ message: 'Unauthorized' });
-      return;
-    }
-
-    if (!userId) {
-      res.status(400).json({ message: 'User ID is required' });
-      return;
-    }
-
-    const { deleteScreenshotAfterUpload, screenshotPath } = req.body;
-    const updatedUser = {} as User;
-    if (deleteScreenshotAfterUpload !== undefined) {
-      updatedUser.deleteScreenshotAfterUpload = deleteScreenshotAfterUpload;
-    }
-    if (screenshotPath !== undefined) {
-      updatedUser.screenshotPath = screenshotPath;
-    }
-
-    await db.update(usersTable)
-        .set(updatedUser)
-        .where(eq(usersTable.id, userId));
-
-    res.json({ message: 'User settings updated successfully' });
-  } catch (error) {
-    console.error('Error updating user settings:', error);
-    res.status(500).json({ message: 'Error updating user settings' });
   }
 });
 

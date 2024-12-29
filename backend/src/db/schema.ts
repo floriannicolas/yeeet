@@ -12,8 +12,6 @@ export const usersTable = pgTable('users', {
   password: varchar('password', { length: 255 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   storageLimit: bigint('storage_limit', { mode: 'number' }).default(USER_STORAGE_LIMIT).notNull(),
-  deleteScreenshotAfterUpload: boolean('delete_screenshot_after_upload').default(true).notNull(),
-  screenshotPath: varchar('screenshot_path', { length: 255 }).default('$HOME/Desktop').notNull(),
 }, (table) => ({
      emailUniqueIndex: uniqueIndex('emailUniqueIndex').on(lower(table.email)),
 }));

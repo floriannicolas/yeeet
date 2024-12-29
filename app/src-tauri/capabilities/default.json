@@ -58,7 +58,17 @@
     "fs:read-all",
     {
       "identifier": "fs:scope",
-      "allow": [{ "path": "$DESKTOP" }, { "path": "$DESKTOP/*" }, { "path": "$DESKTOP/**" }]
+      "allow": [
+        { "path": "$HOME" },
+        { "path": "$HOME/**" }
+      ]
+    },
+    {
+      "identifier": "fs:allow-watch",
+      "allow": [
+        { "path": "$HOME" },
+        { "path": "$HOME/**" }
+      ]
     },
     "shell:allow-execute",
     {
