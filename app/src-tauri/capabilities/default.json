@@ -98,32 +98,8 @@
         }
       ]
     },
-    "shell:allow-execute",
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "run-screencapture-select-area",
-          "cmd": "screencapture",
-          "args": [
-            "-i",
-            "-p"
-          ]
-        }
-      ]
-    },
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "run-screencapture-desktop",
-          "cmd": "screencapture",
-          "args": [
-            "-p"
-          ]
-        }
-      ]
-    },
-    "log:default"
+    "log:default",
+    "autostart:allow-enable",
+    "autostart:allow-is-enabled"
   ]
 }

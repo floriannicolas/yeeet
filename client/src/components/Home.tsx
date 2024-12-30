@@ -82,7 +82,7 @@ export const Home = () => {
   const { toast } = useToast();
   const [showAppUpdate, setShowAppUpdate] = useState(
     !getAppVersionAlertClosed() &&
-    lastAppVersion !== MACOS_APP_VERSION
+    (!lastAppVersion || (lastAppVersion < MACOS_APP_VERSION))
   );
 
   const fetchFiles = async (limit?: number) => {
@@ -386,7 +386,7 @@ export const Home = () => {
                   <>
                     <DropdownMenuGroup>
                       <div className="px-2 py-1.5 text-sm flex gap-2 items-center">
-                        <div className="text-semibold">
+                        <div className="font-semibold">
                           Usage
                         </div>
                         <div className="ml-auto text-xs tracking-widest opacity-60">

@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { io, Socket } from 'socket.io-client';
 import { StorageInfo, UploadProgress } from '../types';
-import { FlameKindling, LogOut, EllipsisVertical, Upload, Settings } from 'lucide-react';
+import { FlameKindling, LogOut, EllipsisVertical, Upload, Settings, CircleHelp } from 'lucide-react';
 import { LogicalSize, getCurrentWindow } from '@tauri-apps/api/window';
 import {
   Drawer,
@@ -13,6 +13,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +23,6 @@ import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { listen, emit } from '@tauri-apps/api/event';
 import { readFile, remove, BaseDirectory, watchImmediate, WatchEvent } from '@tauri-apps/plugin-fs';
-import { Command } from '@tauri-apps/plugin-shell';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import { getVersion } from '@tauri-apps/api/app';
 import {
@@ -67,6 +67,7 @@ export const Home = () => {
   const [screenshotPathState, setScreenshotPathState] = useState(getScreenshotPath());
   const [screenshotPathUpdated, setScreenshotPathUpdated] = useState(screenshotPathState);
   const [areSettingsOpen, setAreSettingsOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [files, setFiles] = useState<FileInfo[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -198,19 +199,17 @@ export const Home = () => {
   };
 
   const resizeWindow = async (limit: number) => {
-    let height = 390;
+    let height = 305;
     switch (limit) {
       case 0:
-        height = 310;
-        break;
       case 1:
-        height = 320;
+        height = 255;
         break;
       case 2:
-        height = 360;
+        height = 275;
         break;
       case 3:
-        height = 390;
+        height = 305;
         break;
     }
     try {
@@ -228,8 +227,8 @@ export const Home = () => {
   useEffect(() => {
     const unlistenBlur = listen('tauri://blur', async () => {
       try {
-        const window = getCurrentWindow();
-        await window.hide();
+        //const window = getCurrentWindow();
+        //await window.hide();
       } catch (error) {
         console.error('Error hiding window:', error);
         errorLog('Error hiding window :: ' + error);
@@ -409,27 +408,9 @@ export const Home = () => {
     setAreSettingsOpen(false);
   };
 
-  const handleSelectArea = async () => {
-    try {
-      await Command.create('run-screencapture-select-area').execute();
-    } catch (error) {
-      errorLog(`handleSelectArea :: error :: ${error instanceof Error ? error.message : 'Error launching screenshot'}`);
-      console.error('Error launching screenshot:', error);
-    }
-  };
-
-  const handleDesktopScreenshot = async () => {
-    try {
-      await Command.create('run-screencapture-desktop').execute();
-    } catch (error) {
-      errorLog(`handleDesktopScreenshot :: error :: ${error instanceof Error ? error.message : 'Error launching screenshot'}`);
-      console.error('Error launching screenshot:', error);
-    }
-  };
-
   return (
     <div
-      className="min-h-svh"
+      className="min-h-svh flex flex-col"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -446,100 +427,51 @@ export const Home = () => {
             Yeeet
           </a>
           <div className="flex items-center gap-2 font-medium ml-auto">
-            <Drawer
-              onClose={() => {
-                setDeleteScreenshotAfterUploadState(getDeleteScreenshotAfterUpload());
-                setScreenshotPathState(getScreenshotPath());
-                setAreSettingsOpen(false);
-              }}
-              open={areSettingsOpen}
-            >
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="rounded-full p-2.5">
-                    <EllipsisVertical />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-52 -ml-36">
-                  {storageInfo && (
-                    <>
-                      <DropdownMenuGroup>
-                        <div className="px-2 py-1.5 text-xm flex gap-2 items-center">
-                          <div className="text-semibold">
-                            Usage
-                          </div>
-                          <div className="ml-auto text-xs tracking-widest opacity-60">
-                            {formatFileSize(storageInfo.used)} / {formatFileSize(storageInfo.limit)}
-                          </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="rounded-full p-2.5">
+                  <EllipsisVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-52 -ml-36">
+                {storageInfo && (
+                  <>
+                    <DropdownMenuGroup>
+                      <div className="px-2 py-1.5 text-xm flex gap-2 items-center">
+                        <div className="font-semibold">
+                          Usage
                         </div>
-                        <div className="px-2 py-1.5">
-                          <Progress value={storageInfo.usedPercentage} className="h-2" />
-                        </div>
-                      </DropdownMenuGroup>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
-                  <DropdownMenuItem onClick={() => setAreSettingsOpen(true)}>
-                    <div className="w-full h-full">
-                      <Settings className="w-4 h-4 inline-block mr-2 align-middle" />
-                      <span className="inline-block align-middle">App settings</span>
-                    </div>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <DrawerContent>
-                <form onSubmit={handleSaveSettings}>
-                  <div className="mx-auto w-full max-w-sm">
-                    <DrawerHeader>
-                      <DrawerTitle>App settings</DrawerTitle>
-                      <DrawerDescription>
-                        Update app <span className="text-white">v{appVersion}</span> settings here.
-                      </DrawerDescription>
-                    </DrawerHeader>
-                    <div className="flex items-center justify-center w-full">
-                      <div className="flex flex-col gap-4 w-full px-4">
-                        <div className="grid gap-2">
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              id="deleteScreenshotAfterUpload"
-                              checked={deleteScreenshotAfterUploadState}
-                              onCheckedChange={(checked) => {
-                                setDeleteScreenshotAfterUploadState(checked);
-                              }}
-                            />
-                            <Label htmlFor="deleteScreenshotAfterUpload" className="text-right">
-                              Delete screenshot after upload
-                            </Label>
-                          </div>
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="password">Screenshot path</Label>
-                          <Input
-                            id="screenshotPath"
-                            value={screenshotPathState}
-                            className="w-full"
-                            onChange={(e) => {
-                              setScreenshotPathState(e.target.value);
-                            }}
-                          />
+                        <div className="ml-auto text-xs tracking-widest opacity-60">
+                          {formatFileSize(storageInfo.used)} / {formatFileSize(storageInfo.limit)}
                         </div>
                       </div>
-                    </div>
-                    <DrawerFooter>
-                      <Button type="submit">Save</Button>
-                      <DrawerClose asChild>
-                        <Button type="button" variant="outline">Cancel</Button>
-                      </DrawerClose>
-                    </DrawerFooter>
+                      <div className="px-2 py-1.5">
+                        <Progress value={storageInfo.usedPercentage} className="h-2" />
+                      </div>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                <DropdownMenuItem onClick={() => setAreSettingsOpen(true)}>
+                  <div className="w-full h-full">
+                    <Settings className="w-4 h-4 inline-block mr-2 align-middle" />
+                    <span className="inline-block align-middle">App settings</span>
                   </div>
-                </form>
-              </DrawerContent>
-            </Drawer>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setIsHelpOpen(true)}>
+                  <div className="w-full h-full">
+                    <CircleHelp className="w-4 h-4 inline-block mr-2 align-middle" />
+                    <span className="inline-block align-middle">Help</span>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         {
@@ -550,9 +482,9 @@ export const Home = () => {
           )
         }
       </header >
-      <div className="flex flex-col gap-4 p-6">
-        <div className="flex flex-col gap-2 divide-y">
-          <div className="flex flex-col">
+      <div className="flex flex-col flex-1 gap-4 p-6">
+        <div className="flex flex-col flex-1 gap-2 divide-y">
+          <div className="flex flex-col flex-1">
             <h2 className="text-1xl font-bold mb-2">
               Recent uploads
             </h2>
@@ -597,24 +529,118 @@ export const Home = () => {
               </Label>
             </div>
           </div>
-          <div className="flex flex-col pt-2">
-            <Button
-              variant="ghost"
-              className="w-full"
-              onClick={handleSelectArea}
-            >
-              Select area…
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full"
-              onClick={handleDesktopScreenshot}
-            >
-              Desktop screenshot
-            </Button>
-          </div>
         </div>
       </div>
+      <Drawer
+        onClose={() => {
+          setDeleteScreenshotAfterUploadState(getDeleteScreenshotAfterUpload());
+          setScreenshotPathState(getScreenshotPath());
+          setAreSettingsOpen(false);
+        }}
+        open={areSettingsOpen}
+      >
+        <DrawerContent>
+          <ScrollArea className="h-[75vh]">
+            <form onSubmit={handleSaveSettings}>
+              <div className="mx-auto w-full max-w-sm">
+                <DrawerHeader>
+                  <DrawerTitle>App settings</DrawerTitle>
+                  <DrawerDescription>
+                    Update app <span className="text-white">v{appVersion}</span> settings here.
+                  </DrawerDescription>
+                </DrawerHeader>
+                <div className="flex items-center justify-center w-full">
+                  <div className="flex flex-col gap-4 w-full px-4">
+                    <div className="grid gap-2">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="deleteScreenshotAfterUpload"
+                          checked={deleteScreenshotAfterUploadState}
+                          onCheckedChange={(checked) => {
+                            setDeleteScreenshotAfterUploadState(checked);
+                          }}
+                        />
+                        <Label htmlFor="deleteScreenshotAfterUpload" className="text-right">
+                          Delete screenshot after upload
+                        </Label>
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="password">Screenshot path</Label>
+                      <Input
+                        id="screenshotPath"
+                        value={screenshotPathState}
+                        className="w-full"
+                        onChange={(e) => {
+                          setScreenshotPathState(e.target.value);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <DrawerFooter>
+                  <Button type="submit">Save</Button>
+                  <DrawerClose asChild>
+                    <Button type="button" variant="outline">Cancel</Button>
+                  </DrawerClose>
+                </DrawerFooter>
+              </div>
+            </form>
+          </ScrollArea>
+        </DrawerContent>
+      </Drawer>
+      <Drawer
+        onClose={() => {
+          setIsHelpOpen(false);
+        }}
+        open={isHelpOpen}
+      >
+        <DrawerContent>
+          <ScrollArea className="h-[75vh]">
+            <div className="mx-auto w-full max-w-sm">
+              <DrawerHeader>
+                <DrawerTitle>Help</DrawerTitle>
+                <DrawerDescription className="text-left">
+                  Yeeet is a tool to upload your screenshots to a web server.
+                </DrawerDescription>
+              </DrawerHeader>
+              <div className="flex items-center justify-center w-full">
+                <div className="flex flex-col gap-2 w-full px-4">
+                  <div className="font-medium text-lg">
+                    MacOs Shortcuts
+                  </div>
+                  <div className="flex flex-col gap-2 divide-y">
+                    <div className="text-sm text-muted-foreground">
+                      Using MacOs Shortcuts, you can take a screenshot of the part of the screen or the entire screen and they will be automatically uploaded to Yeeet.
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <div className="text-muted-foreground flex items-center gap-0.5">
+                        <kbd>⌘</kbd><span className="text-xs">+</span><kbd>⇧</kbd><span className="text-xs">+</span><kbd>4</kbd>
+                      </div>
+                      <div className="flex-1 text-sm">
+                        Take a screenshot of the part of the screen.
+                      </div>
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <div className="text-muted-foreground flex items-center gap-0.5">
+                        <kbd>⌘</kbd><span className="text-xs">+</span><kbd>⇧</kbd><span className="text-xs">+</span><kbd>3</kbd>
+                      </div>
+                      <div className="flex-1 text-sm">
+                        Take a screenshot of the entire screen.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <DrawerFooter>
+                <DrawerClose asChild>
+                  <Button type="button" variant="outline">Close</Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </div>
+          </ScrollArea>
+        </DrawerContent>
+      </Drawer>
       {
         isDragging && (
           <div className="fixed inset-0 bg-gray-600/50 z-50 p-12">

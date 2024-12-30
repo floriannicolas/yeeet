@@ -4,8 +4,6 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
-use tauri_plugin_fs::FsExt;
-
 #[cfg(desktop)]
 mod tray;
 
@@ -24,10 +22,6 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_positioner::init())
         .setup(move |app| {
-            let scope = app.fs_scope();
-            let _ = scope.allow_directory("~/Desktop", false);
-            dbg!(scope.is_allowed("~/Desktop"));
-
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
@@ -36,6 +30,9 @@ pub fn run() {
                 let handle = app.handle();
                 tray::create_tray(handle)?;
             }
+
+            #[cfg(desktop)]
+            let _ = app.handle().plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, Some(vec!["--flag1", "--flag2"]) /* arbitrary number of args to pass to your app */));
 
             Ok(())
         })
