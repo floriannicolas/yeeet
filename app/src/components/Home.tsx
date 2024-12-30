@@ -227,8 +227,8 @@ export const Home = () => {
   useEffect(() => {
     const unlistenBlur = listen('tauri://blur', async () => {
       try {
-        //const window = getCurrentWindow();
-        //await window.hide();
+        const window = getCurrentWindow();
+        await window.hide();
       } catch (error) {
         console.error('Error hiding window:', error);
         errorLog('Error hiding window :: ' + error);
