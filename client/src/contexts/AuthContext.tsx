@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import axios from 'axios';
 import { getApiToken, removeApiToken } from '@/utils/api-token';
+import { LoaderCircle } from 'lucide-react';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const checkAuth = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/check-auth`, 
+          `${import.meta.env.VITE_API_URL}/api/check-auth`,
           { headers: { Authorization: `Bearer ${getApiToken()}` } }
         );
         setIsAuthenticated(response.data.isAuthenticated);
@@ -45,6 +46,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{ isAuthenticated, isLoading, userId, lastAppVersion, login, logout }}>
       {!isLoading && children}
+      {isLoading && (
+        <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 text-muted-foreground gap-3">
+          <LoaderCircle className="animate-spin" /> Loading...
+        </div>
+      )}
     </AuthContext.Provider>
   );
 };
