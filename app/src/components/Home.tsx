@@ -82,31 +82,27 @@ export const Home = () => {
       const stopWatcher = await watchImmediate(
         screenshotPath,
         (event: WatchEvent) => {
-          let isScreenshot = false;
-          if (event.type !== 'any') {
-            for (const [key, value] of Object.entries(event.type)) {
-              if (key === 'create' && value.kind === 'file') {
-                debugLog('event file created detected :: ' + event.paths[0]);
-                const path = event.paths[0];
-                if (regex.test(path)) {
-                  debugLog('file considerated as a screenshot :: ' + event.paths[0]);
-                  isScreenshot = true;
-                }
-              }
+          if (
+            typeof event.type === 'object'
+            && 'create' in event.type
+            && event.type.create.kind === 'file'
+          ) {
+            debugLog('event file created detected :: ' + event.paths[0]);
+            const path = event.paths[0];
+            if (regex.test(path)) {
+              debugLog('file considerated as a screenshot :: ' + path);
+              console.log('new screenshot detected', event);
+              const regex = /(.+\.(png|jpg))/;
+              const match = path.match(regex);
+              const filename = (match ? match[1] : path)
+                .replace('/.', '/')
+                .replace('/.', '/')
+                .replace('/.', '/');
+              setTimeout(() => {
+                errorLog('watchImmediate :: screenshot detected :: ' + filename);
+                emit('screenshot-created', filename);
+              }, 200);
             }
-          }
-          if (isScreenshot) {
-            console.log('new screenshot detected', event);
-            const regex = /(.+\.(png|jpg))/;
-            const match = event.paths[0].match(regex);
-            const filename = (match ? match[1] : event.paths[0])
-              .replace('/.', '/')
-              .replace('/.', '/')
-              .replace('/.', '/');
-            setTimeout(() => {
-              errorLog('watchImmediate :: screenshot detected :: ' + filename);
-              emit('screenshot-created', filename);
-            }, 200);
           }
         },
         {
@@ -227,8 +223,8 @@ export const Home = () => {
   useEffect(() => {
     const unlistenBlur = listen('tauri://blur', async () => {
       try {
-        const window = getCurrentWindow();
-        await window.hide();
+        //const window = getCurrentWindow();
+        //await window.hide();
       } catch (error) {
         console.error('Error hiding window:', error);
         errorLog('Error hiding window :: ' + error);
