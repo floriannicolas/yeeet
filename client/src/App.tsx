@@ -1,13 +1,12 @@
 import { Routes, Route, Navigate, HashRouter } from 'react-router-dom';
-import { ProtectedRoute } from './components/ProtectedRoute';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
-import { Home } from './components/Home';
 import { AuthProvider } from './contexts/AuthContext';
 import { ProtectableRoute } from './components/ProtectableRoute';
 import { Toaster } from "@/components/ui/toaster"
 import { ForgotPassword } from './components/ForgotPassword';
 import { ResetPassword } from './components/ResetPassword';
+import { ProtectedHome } from './components/ProtectedHome';
 
 export const App = () => {
   return (
@@ -27,9 +26,7 @@ export const App = () => {
           <Route
             path="/"
             element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
+              <ProtectedHome />
             }
           />
           <Route path="/forgot-password" element={<ForgotPassword />} />
