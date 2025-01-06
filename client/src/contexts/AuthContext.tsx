@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import axios from 'axios';
 import { getApiToken, removeApiToken } from '@/utils/api-token';
 import { LoaderCircle } from 'lucide-react';
+import { Helmet } from 'react-helmet';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -47,9 +48,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider value={{ isAuthenticated, isLoading, userId, lastAppVersion, login, logout }}>
       {!isLoading && children}
       {isLoading && (
-        <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 text-muted-foreground gap-3">
-          <LoaderCircle className="animate-spin" /> Loading...
-        </div>
+        <>
+          <Helmet>
+            <title>Loading - Yeeet</title>
+          </Helmet>
+          <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 text-muted-foreground gap-3">
+            <LoaderCircle className="animate-spin" /> Loading...
+          </div>
+        </>
       )}
     </AuthContext.Provider>
   );
