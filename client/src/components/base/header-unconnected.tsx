@@ -1,34 +1,10 @@
 import { Link } from 'react-router-dom';
 import {
   FlameKindling,
-  Menu,
 } from 'lucide-react';
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
 import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet"
 
 export const HeaderUnconnected = () => {
-  const scrollToElement = (targetId: string) => {
-    const element = document.getElementById(targetId);
-    if (element) {
-      element.scrollIntoView();
-      const url = new URL(window.location.toString());
-      url.hash = `#${targetId}`;
-      window.history.pushState({}, '', url);
-    }
-  };
-
   return (
     <header className="flex sticky top-0 bg-background z-10 h-16 shrink-0 items-center gap-2 border-b px-6">
       <div className="flex justify-center gap-2 md:justify-start w-full">
@@ -38,7 +14,7 @@ export const HeaderUnconnected = () => {
           </div>
           Yeeet
         </Link>
-        <div className="flex items-center gap-2 font-medium mx-auto hidden md:block">
+        {/* <div className="flex items-center gap-2 font-medium mx-auto hidden md:block">
           <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem className="cursor-pointer" onClick={() => { scrollToElement('getting-started') }}>
@@ -50,30 +26,30 @@ export const HeaderUnconnected = () => {
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Pricing
                 </NavigationMenuLink>
-              </NavigationMenuItem>
+              </NavigationMenuItem> 
               <NavigationMenuItem className="cursor-pointer" onClick={() => { scrollToElement('download') }}>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Download
                 </NavigationMenuLink>
               </NavigationMenuItem>
-              {/* <NavigationMenuItem>
+              <NavigationMenuItem>
                 <Link to="/changelog">
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                     Changelog
                   </NavigationMenuLink>
                 </Link>
-              </NavigationMenuItem> */}
+              </NavigationMenuItem> 
             </NavigationMenuList>
           </NavigationMenu>
-        </div>
-        <div className="flex items-center gap-2 font-medium ml-auto hidden md:block">
+        </div> */}
+        <div className="flex items-center gap-2 font-medium ml-auto">
           <Link to="/login">
             <Button>
               Login
             </Button>
           </Link>
         </div>
-        <div className="flex items-center gap-2 font-medium ml-auto block md:hidden">
+        {/* <div className="flex items-center gap-2 font-medium ml-auto block md:hidden">
           <Sheet>
             <SheetTrigger>
               <Menu className="cursor-pointer" />
@@ -102,7 +78,7 @@ export const HeaderUnconnected = () => {
                       </NavigationMenuLink>
                     </NavigationMenuItem>
                   </SheetClose>
-                  {/* <SheetClose className="w-full block text-left">
+                  <SheetClose className="w-full block text-left">
                     <NavigationMenuItem className="w-full block">
                       <Link to="/changelog" className="w-full block">
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
@@ -110,7 +86,7 @@ export const HeaderUnconnected = () => {
                         </NavigationMenuLink>
                       </Link>
                     </NavigationMenuItem>
-                  </SheetClose> */}
+                  </SheetClose>
                   <SheetClose className="w-full block text-left mt-2">
                     <NavigationMenuItem className="w-full block">
                       <Link to="/login" className="w-full block">
@@ -125,7 +101,7 @@ export const HeaderUnconnected = () => {
             </SheetContent>
           </Sheet>
 
-        </div>
+        </div> */}
       </div>
     </header>
   );
