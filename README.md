@@ -184,7 +184,7 @@ The application will be available at:
 
 ```bash
 cd app
-pnpm tauridev
+pnpm tauri dev
 ```
 
 ## 🏗️ Building

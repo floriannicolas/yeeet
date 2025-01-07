@@ -7,7 +7,7 @@
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    Manager, Runtime,
+    Manager, Runtime, WebviewWindowBuilder, WebviewUrl,
 };
 use tauri_plugin_positioner::{Position, WindowExt};
 
@@ -44,6 +44,23 @@ pub fn create_tray<R: Runtime>(app: &tauri::AppHandle<R>) -> tauri::Result<()> {
                         let _ = window.show().unwrap();
                         let _ = window.set_focus().unwrap();
                     }
+                } else {
+                    let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::default())
+                    .title("Yeeet")
+                    .inner_size(360.0, 450.0)
+                    .resizable(false)
+                    .fullscreen(false)
+                    .decorations(false)
+                    .transparent(true)
+                    .skip_taskbar(true)
+                    .visible(false)
+                    .build()
+                    .unwrap();
+
+                    let _ = window.set_visible_on_all_workspaces(true);
+                    let _ = window.move_window(Position::TrayBottomCenter).unwrap();
+                    let _ = window.show().unwrap();
+                    let _ = window.set_focus().unwrap();
                 }
             }
         })

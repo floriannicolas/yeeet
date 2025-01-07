@@ -43,13 +43,6 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![greet])
-        .build(tauri::generate_context!())
-        .expect("error while running tauri application")
-        .run(|_app_handle, e| match e {
-            tauri::RunEvent::ExitRequested { api, .. } => {
-                api.prevent_exit();
-            }
-
-            _ => {}
-        });
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
 }
