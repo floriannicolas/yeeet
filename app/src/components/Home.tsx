@@ -36,7 +36,14 @@ import {
 import { getApiToken, removeApiToken } from '@/utils/api-token';
 import { useToast } from "@/hooks/use-toast";
 import { formatFileSize } from '@/utils/format';
-import { getDeleteScreenshotAfterUpload, getIsShottrFriendly, getScreenshotPath, setDeleteScreenshotAfterUpload, setScreenshotPath } from '@/utils/settings';
+import { 
+  getDeleteScreenshotAfterUpload,
+  getIsShottrFriendly,
+  getScreenshotPath,
+  setDeleteScreenshotAfterUpload,
+  setIsShottrFriendly,
+  setScreenshotPath,
+} from '@/utils/settings';
 import {
   debug as debugLog,
   info as infoLog,
@@ -434,6 +441,7 @@ export const Home = () => {
   const handleSaveSettings = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setDeleteScreenshotAfterUpload(deleteScreenshotAfterUploadState);
+    setIsShottrFriendly(isShottrFriendlyState);
     setScreenshotPath(screenshotPathState);
     setScreenshotPathUpdated(screenshotPathState);
     setAreSettingsOpen(false);
