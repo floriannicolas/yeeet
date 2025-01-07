@@ -79,6 +79,7 @@ export const Dashboard = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const filesToUploadQueue = useRef<File[]>([]);
   const { toast } = useToast();
   const [showAppUpdate, setShowAppUpdate] = useState(
     !getAppVersionAlertClosed() &&
@@ -126,6 +127,7 @@ export const Dashboard = () => {
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      manageUploadQueueList();
     });
 
     return () => {
@@ -248,9 +250,23 @@ export const Dashboard = () => {
       droppedFiles.forEach(file => dataTransfer.items.add(file));
       fileInputRef.current.files = dataTransfer.files;
 
+      filesToUploadQueue.current = droppedFiles;
       handleUpload(droppedFiles[0]);
     }
   };
+
+  const manageUploadQueueList = () => {
+    if (filesToUploadQueue.current.length > 0) {
+      const [, ...otherFiles] = filesToUploadQueue.current;
+      console.log('decrementFilesToUpload.new', otherFiles);
+      filesToUploadQueue.current = otherFiles;
+      if (otherFiles.length > 0) {
+        handleUpload(otherFiles[0]);
+      }
+    } else {
+      console.log('decrementFilesToUpload.emptyList', filesToUploadQueue.current);
+    }
+  }
 
   const getFileExpiresAtLabel = (file: FileInfo) => {
     if (file.expiresAt) {

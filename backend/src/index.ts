@@ -396,15 +396,8 @@ app.get(`${API_PREFIX}/view/:token`, async (req: Request, res: Response): Promis
       return;
     }
 
-    // Configuration des en-têtes pour la visualisation
     res.setHeader('Content-Type', file.mimeType ?? '');
-
-    // Forcer la visualisation inline pour les PDF, notamment sur Firefox
-    if (file.mimeType === 'application/pdf') {
-      res.setHeader('Content-Disposition', 'inline');
-    } else {
-      res.setHeader('Content-Disposition', `inline; filename="${file.originalName}"`);
-    }
+    res.setHeader('Content-Disposition', `inline; filename="${file.originalName}"`);
 
     const fileContent = await storageProvider.getFile(file.s3Path || file.filePath, file.filePath);
     if (fileContent.pipe) {
