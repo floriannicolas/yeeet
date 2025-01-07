@@ -56,13 +56,13 @@ export const HeaderUnconnected = () => {
                   Download
                 </NavigationMenuLink>
               </NavigationMenuItem>
-              <NavigationMenuItem>
+              {/* <NavigationMenuItem>
                 <Link to="/changelog">
                   <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                     Changelog
                   </NavigationMenuLink>
                 </Link>
-              </NavigationMenuItem>
+              </NavigationMenuItem> */}
             </NavigationMenuList>
           </NavigationMenu>
         </div>
@@ -102,7 +102,7 @@ export const HeaderUnconnected = () => {
                       </NavigationMenuLink>
                     </NavigationMenuItem>
                   </SheetClose>
-                  <SheetClose className="w-full block text-left">
+                  {/* <SheetClose className="w-full block text-left">
                     <NavigationMenuItem className="w-full block">
                       <Link to="/changelog" className="w-full block">
                         <NavigationMenuLink className={navigationMenuTriggerStyle()}>
@@ -110,7 +110,7 @@ export const HeaderUnconnected = () => {
                         </NavigationMenuLink>
                       </Link>
                     </NavigationMenuItem>
-                  </SheetClose>
+                  </SheetClose> */}
                   <SheetClose className="w-full block text-left mt-2">
                     <NavigationMenuItem className="w-full block">
                       <Link to="/login" className="w-full block">
