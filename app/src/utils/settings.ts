@@ -6,6 +6,14 @@ export const setDeleteScreenshotAfterUpload = (value: boolean) => {
   localStorage.setItem('deleteScreenshotAfterUpload', value.toString());
 }
 
+export const getIsShottrFriendly = () => {
+  return JSON.parse(localStorage.getItem('isShottrFriendly') || 'true');
+}
+
+export const setIsShottrFriendly = (value: boolean) => {
+  localStorage.setItem('isShottrFriendly', value.toString());
+}
+
 export const getDebugMode = () => {
   return JSON.parse(localStorage.getItem('debugMode') || 'false');
 }

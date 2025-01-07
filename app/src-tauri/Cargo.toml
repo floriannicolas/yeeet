@@ -1,6 +1,6 @@
 [package]
 name = "Yeeet"
-version = "0.1.5"
+version = "0.1.6"
 description = "File Sharing Platform"
 authors = ["Florian Nicolas"]
 edition = "2021"

@@ -36,7 +36,7 @@ import {
 import { getApiToken, removeApiToken } from '@/utils/api-token';
 import { useToast } from "@/hooks/use-toast";
 import { formatFileSize } from '@/utils/format';
-import { getDeleteScreenshotAfterUpload, getScreenshotPath, setDeleteScreenshotAfterUpload, setScreenshotPath } from '@/utils/settings';
+import { getDeleteScreenshotAfterUpload, getIsShottrFriendly, getScreenshotPath, setDeleteScreenshotAfterUpload, setScreenshotPath } from '@/utils/settings';
 import {
   debug as debugLog,
   info as infoLog,
@@ -64,6 +64,7 @@ export const Home = () => {
   const navigate = useNavigate();
   const { logout, userId } = useAuth();
   const [deleteScreenshotAfterUploadState, setDeleteScreenshotAfterUploadState] = useState(getDeleteScreenshotAfterUpload());
+  const [isShottrFriendlyState, setIsShottrFriendlyState] = useState(getIsShottrFriendly());
   const [screenshotPathState, setScreenshotPathState] = useState(getScreenshotPath());
   const [screenshotPathUpdated, setScreenshotPathUpdated] = useState(screenshotPathState);
   const [areSettingsOpen, setAreSettingsOpen] = useState(false);
@@ -72,38 +73,71 @@ export const Home = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
-  const [lastScreenshotPath, setLastScreenshotPath] = useState<string | null>(null);
+  const lastScreenshotRef = useRef<string | null>(null);
   const [appVersion, setAppVersion] = useState<string | null>(null);
+
+  const detectDefaultScreenshot = (event: WatchEvent) => {
+    const regex = /\d{2}\.\d{2}\.\d{2}\.(png|jpg)(-[\w\-]+)?$/;
+    if (
+      typeof event.type === 'object'
+      && 'create' in event.type
+      && event.type.create.kind === 'file'
+    ) {
+      debugLog('event file created detected :: ' + event.paths[0]);
+      const path = event.paths[0];
+      if (regex.test(path)) {
+        debugLog('file considerated as a screenshot :: ' + path);
+        const regex = /(.+\.(png|jpg))/;
+        const match = path.match(regex);
+        const filename = (match ? match[1] : path)
+          .replace('/.', '/')
+          .replace('/.', '/')
+          .replace('/.', '/');
+        setTimeout(() => {
+          errorLog('detectDefaultScreenshot :: screenshot detected :: ' + filename);
+          emit('screenshot-created', filename);
+        }, 200);
+      }
+    }
+  }
+
+  const detectShottrScreenshot = (event: WatchEvent) => {
+    if (!isShottrFriendlyState) {
+      return;
+    }
+
+    const regex = /SCR-\d{8}-[a-zA-Z0-9]+\.(png|jpg)(-[\w\-]+)?$/;
+    if (
+      typeof event.type === 'object'
+      && 'modify' in event.type
+      && event.type.modify.kind === 'data'
+    ) {
+      debugLog('shottr event file created detected :: ' + event.paths[0]);
+      const path = event.paths[0];
+      if (regex.test(path)) {
+        debugLog('Shottr file considerated as a screenshot :: ' + path);
+        const regex = /(.+\.(png|jpg))/;
+        const match = path.match(regex);
+        const filename = (match ? match[1] : path)
+          .replace('/.', '/')
+          .replace('/.', '/')
+          .replace('/.', '/');
+        setTimeout(() => {
+          errorLog('detectShottrScreenshot :: screenshot detected :: ' + filename);
+          emit('screenshot-created', filename);
+        }, 200);
+      }
+    }
+  }
 
   const launchScreenshotWatcher = async () => {
     try {
       const screenshotPath = getScreenshotPath().replace('$HOME/', '').replace('~/', '');
-      const regex = /\d{2}\.\d{2}\.\d{2}\.(png|jpg)(-[\w\-]+)?$/;
       const stopWatcher = await watchImmediate(
         screenshotPath,
         (event: WatchEvent) => {
-          if (
-            typeof event.type === 'object'
-            && 'create' in event.type
-            && event.type.create.kind === 'file'
-          ) {
-            debugLog('event file created detected :: ' + event.paths[0]);
-            const path = event.paths[0];
-            if (regex.test(path)) {
-              debugLog('file considerated as a screenshot :: ' + path);
-              console.log('new screenshot detected', event);
-              const regex = /(.+\.(png|jpg))/;
-              const match = path.match(regex);
-              const filename = (match ? match[1] : path)
-                .replace('/.', '/')
-                .replace('/.', '/')
-                .replace('/.', '/');
-              setTimeout(() => {
-                errorLog('watchImmediate :: screenshot detected :: ' + filename);
-                emit('screenshot-created', filename);
-              }, 200);
-            }
-          }
+          detectDefaultScreenshot(event);
+          detectShottrScreenshot(event);
         },
         {
           baseDir: BaseDirectory.Home,
@@ -274,10 +308,11 @@ export const Home = () => {
       infoLog(`listen.screenshot-created :: ${event.payload as string}`);
       try {
         const path = (event.payload as string);
-        if (path === lastScreenshotPath) {
+        if (path === lastScreenshotRef.current) {
+          infoLog(`listen.screenshot-created :: last screenshot detected, doing nothing`);
           return;
         }
-        setLastScreenshotPath(path);
+        lastScreenshotRef.current = path;
         const fileContent = await readFile(path);
         const filename = path.split('/').pop() || 'screenshot.png';
         const mimeType = filename.endsWith('.png') ? 'image/png' : 'image/jpeg';
@@ -287,6 +322,7 @@ export const Home = () => {
         });
 
         await handleUpload(file);
+        infoLog(`listen.screenshot-created :: screenshot uploaded :: ${path}`);
         if (getDeleteScreenshotAfterUpload()) {
           infoLog(`listen.screenshot-created :: delete-screenshot-after-upload :: ${path}`);
           await remove(path);
@@ -410,7 +446,7 @@ export const Home = () => {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <header className="flex sticky top-0 bg-background z-10 h-16 shrink-0 items-center gap-2 border-b px-6">
+      <header className="flex sticky top-0 bg-background z-10 h-16 shrink-0 items-center gap-2 border-b px-6 select-none">
         <div className="flex justify-center gap-2 md:justify-start w-full">
           <a
             href={CLIENT_URL}
@@ -477,7 +513,7 @@ export const Home = () => {
           )
         }
       </header >
-      <div className="flex flex-col flex-1 gap-4 p-6">
+      <div className="flex flex-col flex-1 gap-4 p-6 select-none">
         <div className="flex flex-col flex-1 gap-2 divide-y">
           <div className="flex flex-col flex-1">
             <h2 className="text-1xl font-bold mb-2">
@@ -529,6 +565,7 @@ export const Home = () => {
       <Drawer
         onClose={() => {
           setDeleteScreenshotAfterUploadState(getDeleteScreenshotAfterUpload());
+          setIsShottrFriendlyState(getIsShottrFriendly());
           setScreenshotPathState(getScreenshotPath());
           setAreSettingsOpen(false);
         }}
@@ -557,6 +594,20 @@ export const Home = () => {
                         />
                         <Label htmlFor="deleteScreenshotAfterUpload" className="text-right">
                           Delete screenshot after upload
+                        </Label>
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="isShottrFriendly"
+                          checked={isShottrFriendlyState}
+                          onCheckedChange={(checked) => {
+                            setIsShottrFriendlyState(checked);
+                          }}
+                        />
+                        <Label htmlFor="isShottrFriendly" className="text-right">
+                          Detect Shottr screenshots
                         </Label>
                       </div>
                     </div>
