@@ -17,7 +17,9 @@ const NavigationMenu = React.forwardRef<
     )}
     {...props}
   >
-    {children}
+    <div className="relative w-full">
+      {children}
+    </div>
     <NavigationMenuViewport />
   </NavigationMenuPrimitive.Root>
 ))
