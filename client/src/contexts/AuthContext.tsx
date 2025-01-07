@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {isLoading && (
         <>
           <Helmet>
-            <title>Loading - Yeeet</title>
+            <title>Loading... - Yeeet</title>
           </Helmet>
           <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 text-muted-foreground gap-3">
             <LoaderCircle className="animate-spin" /> Loading...

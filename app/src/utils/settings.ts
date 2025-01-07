@@ -21,3 +21,9 @@ export const getScreenshotPath = () => {
 export const setScreenshotPath = (value: string) => {
   localStorage.setItem('screenshotPath', value);
 }
+
+export const setScreenshotPathIfNull = (value: string) => {
+  if (!localStorage.getItem('screenshotPath')) {
+    localStorage.setItem('screenshotPath', value);
+  }
+}

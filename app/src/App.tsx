@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Login } from './components/Login';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Home } from './components/Home';
+import { Command } from '@tauri-apps/plugin-shell';
 import { LoaderCircle } from 'lucide-react';
 import './styles/global.css';
 import { Toaster } from "@/components/ui/toaster";
@@ -11,6 +12,7 @@ import {
   info as infoLog,
   error as errorLog,
 } from '@tauri-apps/plugin-log';
+import { setScreenshotPathIfNull } from './utils/settings';
 
 const AppRoutes = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -34,6 +36,11 @@ const AppRoutes = () => {
 function App() {
   const enableAutostartIfNotEnabled = async () => {
     try {
+      if (import.meta.env.VITE_ENV === 'development') {
+        infoLog("Development mode, no autostart");
+        return;
+      }
+
       const enabled = await isEnabled();
       if (!enabled) {
         await enable();
@@ -46,8 +53,29 @@ function App() {
     }
   };
 
+  const getDefaultScreenCaptureLocation = async () => {
+    const result = await Command.create('run-read-default-screencapture').execute();
+    console.log('getDefaultScreenCaptureLocation', result.stdout);
+    const correctedData = result.stdout
+      .replace(/=/g, ":")
+      .replace(/;\s*(?=[}\]])/g, "")
+      .replace(/;\s*/g, ",") 
+      .replace(/(\b[a-zA-Z0-9_-]+)\s*:/g, '"$1":')
+      .replace(/:\s*([a-zA-Z0-9_-]+)\b/g, ': "$1"');
+
+    try {
+      const jsonData = JSON.parse(correctedData);
+      const location = jsonData.location.replace('~', '$HOME');
+      infoLog(`Default MacOS screencapture location detected: ${jsonData.location}`);
+      setScreenshotPathIfNull(location);
+    } catch (error) {
+      errorLog("Error getting default screencapture location :: " + error);
+    }
+  }
+
   useEffect(() => {
     enableAutostartIfNotEnabled();
+    getDefaultScreenCaptureLocation();
   }, []);
 
   return (
