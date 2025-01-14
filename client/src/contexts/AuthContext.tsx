@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userId, setUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingTitle, setLoadingTitle] = useState('Loading...');
   const [lastAppVersion, setLastAppVersion] = useState(null);
   useEffect(() => {
     const checkAuth = async () => {
@@ -44,13 +45,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = () => setIsAuthenticated(true);
   const logout = () => setIsAuthenticated(false);
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      switch (loadingTitle) {
+        case 'Loading':
+          setLoadingTitle('Loading.');
+          break;
+        case 'Loading.':
+          setLoadingTitle('Loading..');
+          break;
+        case 'Loading..':
+          setLoadingTitle('Loading...');
+          break;
+        case 'Loading...':
+          setLoadingTitle('Loading');
+          break;
+        default:
+          setLoadingTitle('Loading...');
+          break;
+      }
+    }, 600);
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <AuthContext.Provider value={{ isAuthenticated, isLoading, userId, lastAppVersion, login, logout }}>
       {!isLoading && children}
       {isLoading && (
         <>
           <Helmet>
-            <title>Loading... - Yeeet</title>
+            <title>{loadingTitle}</title>
           </Helmet>
           <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 text-muted-foreground gap-3">
             <LoaderCircle className="animate-spin" /> Loading...
