@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import axios from 'axios';
 import { getApiToken, removeApiToken } from '@/utils/api-token';
 import { LoaderCircle } from 'lucide-react';
@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userId, setUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [loadingTitle, setLoadingTitle] = useState('Loading...');
+  const loadingTitleRef = useRef<string>('Loading...');
   const [lastAppVersion, setLastAppVersion] = useState(null);
   useEffect(() => {
     const checkAuth = async () => {
@@ -47,24 +47,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      switch (loadingTitle) {
+      switch (loadingTitleRef.current) {
         case 'Loading':
-          setLoadingTitle('Loading.');
+          loadingTitleRef.current = 'Loading.';
           break;
         case 'Loading.':
-          setLoadingTitle('Loading..');
+          loadingTitleRef.current = 'Loading..';
           break;
         case 'Loading..':
-          setLoadingTitle('Loading...');
+          loadingTitleRef.current = 'Loading...';
           break;
         case 'Loading...':
-          setLoadingTitle('Loading');
+          loadingTitleRef.current = 'Loading';
           break;
         default:
-          setLoadingTitle('Loading...');
+          loadingTitleRef.current = 'Loading...';
           break;
       }
-    }, 600);
+    }, 800);
     return () => clearInterval(intervalId);
   }, []);
 
@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {isLoading && (
         <>
           <Helmet>
-            <title>{loadingTitle}</title>
+            <title>{loadingTitleRef.current}</title>
           </Helmet>
           <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 text-muted-foreground gap-3">
             <LoaderCircle className="animate-spin" /> Loading...
