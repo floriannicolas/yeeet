@@ -100,24 +100,26 @@ export const Login = () => {
                                     />
                                 </div>
                                 <div className="grid gap-2">
-                                    <div className="flex items-center">
-                                        <Label htmlFor="password">Password</Label>
-                                        <a
-                                            href={`${import.meta.env.VITE_CLIENT_URL}/#/forgot-password`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="ml-auto text-sm underline-offset-4 hover:underline"
-                                        >
-                                            Forgot your password?
-                                        </a>
+                                    <div className="flex flex-col-reverse gap-2">
+                                        <InputPassword
+                                            id="password"
+                                            value={password}
+                                            error={!!error}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                        />
+                                        <div className="flex items-center">
+                                            <Label htmlFor="password">Password</Label>
+                                            <a
+                                                href={`${import.meta.env.VITE_CLIENT_URL}/#/forgot-password`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="ml-auto text-sm underline-offset-4 hover:underline"
+                                            >
+                                                Forgot your password?
+                                            </a>
+                                        </div>
                                     </div>
-                                    <InputPassword
-                                        id="password"
-                                        value={password}
-                                        error={!!error}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                    />
                                 </div>
                                 <Button type="submit" className="w-full">
                                     Login
