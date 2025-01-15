@@ -19,7 +19,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userId, setUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const loadingTitleRef = useRef<string>('Loading...');
+  const loadingTitleDotsRef = useRef<number>(3);
+  const [loadingTitle, setLoadingTitle] = useState('Loading...');
   const [lastAppVersion, setLastAppVersion] = useState(null);
   useEffect(() => {
     const checkAuth = async () => {
@@ -47,24 +48,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      switch (loadingTitleRef.current) {
-        case 'Loading':
-          loadingTitleRef.current = 'Loading.';
-          break;
-        case 'Loading.':
-          loadingTitleRef.current = 'Loading..';
-          break;
-        case 'Loading..':
-          loadingTitleRef.current = 'Loading...';
-          break;
-        case 'Loading...':
-          loadingTitleRef.current = 'Loading';
-          break;
-        default:
-          loadingTitleRef.current = 'Loading...';
-          break;
+      loadingTitleDotsRef.current += 1;
+      if (loadingTitleDotsRef.current > 3) {
+        loadingTitleDotsRef.current = 0;
       }
-    }, 800);
+      setLoadingTitle(`Loading${'.'.repeat(loadingTitleDotsRef.current)}`);
+    }, 400);
     return () => clearInterval(intervalId);
   }, []);
 
@@ -74,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {isLoading && (
         <>
           <Helmet>
-            <title>{loadingTitleRef.current}</title>
+            <title>{loadingTitle}</title>
           </Helmet>
           <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 text-muted-foreground gap-3">
             <LoaderCircle className="animate-spin" /> Loading...
