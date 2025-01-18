@@ -51,7 +51,7 @@ export default function Dashboard({
     };
 
     useEffect(() => {
-        socketRef.current = io(process.env.VITE_SOCKET_URL, {
+        socketRef.current = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
             path: '/socket.io',
             withCredentials: true,
             transports: ['websocket', 'polling'],
@@ -109,14 +109,23 @@ export default function Dashboard({
             });
             formData.append('chunk', new Blob([chunk], { type: file.type }), metadata);
 
-            const response = await uploadUserFileChunk(formData);
-            if (!response.ok) {
-                const error = await response.json();
-                const title = error.code === 'STORAGE_LIMIT_EXCEEDED' ? 'Storage limit exceeded' : 'Error uploading file';
+            try {
+                const response = await uploadUserFileChunk(formData);
+                if (!response.ok) {
+                    const error = response.error;
+                    const title = error.code === 'STORAGE_LIMIT_EXCEEDED' ? 'Storage limit exceeded' : 'Error uploading file';
+                    toast({
+                        title,
+                        description: error.message,
+                    });
+                    break;
+                }
+            } catch (e) {
+                const error = e as Error;
                 toast({
-                    title,
+                    title: 'Error uploading file',
                     description: error.message,
-                });
+                });  
                 break;
             }
         }

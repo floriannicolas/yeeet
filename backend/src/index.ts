@@ -130,7 +130,11 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
 app.post(`${API_PREFIX}/register`, async (req: Request, res: Response) => {
   const { username, email, password, invitationKey } = req.body;
   if (invitationKey !== 'YEEEEEEEEEEEEET') {
-    res.status(401).send('Invalid invitation key. You need an invitation key to create an account.');
+    res.status(401).json({
+      errors: {
+        invitationKey: ['Invalid invitation key. You need an invitation key to create an account'],
+      },
+    });
     return;
   }
   try {
@@ -143,10 +147,16 @@ app.post(`${API_PREFIX}/register`, async (req: Request, res: Response) => {
     res.status(200).send({ message: 'Register successful' });
   } catch (error: any) {
     if (error.code === '23505') {
-      res.status(400).send('Username already exists');
+      res.status(400).json({
+        errors: {
+          username: ['Username already exists'],
+        },
+      });
     } else {
       console.error(error);
-      res.status(500).send('Server error');
+      res.status(500).json({
+        message: 'Server error'
+      });
     }
   }
 });

@@ -1,4 +1,4 @@
-import GlobalLoader from '@/components/ui/global-loader';
+import Loader from '@/components/ui/loader';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -6,5 +6,5 @@ export const metadata: Metadata = {
 };
 
 export default function Loading() {
-    return <GlobalLoader />;
+    return <Loader type='global' />;
 }

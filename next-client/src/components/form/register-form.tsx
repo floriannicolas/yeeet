@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import Link from 'next/link';
 
 export default function RegisterForm() {
-    const [errorMessage, formAction, isPending] = useActionState(
+    const [state, formAction, isPending] = useActionState(
         register,
         undefined,
     );
@@ -26,62 +26,97 @@ export default function RegisterForm() {
                     <CircleAlert className="size-4 inline" /> You need an invitation key to create an account.
                 </p>
             </div>
-            {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
+            {state?.message && <p className="text-red-500 text-sm">{state.message}</p>}
             <div className="grid gap-6">
                 <div className="grid gap-2">
-                    <Label htmlFor="invitationKey">Invitation key</Label>
+                    <Label
+                        htmlFor="invitationKey"
+                        className={!!state?.errors?.invitationKey ? 'text-red-500' : ''}
+                    >
+                        Invitation key
+                    </Label>
                     <Input
                         id="invitationKey"
                         name="invitationKey"
                         type="text"
-                        error={!!errorMessage}
+                        defaultValue={state?.formData?.invitationKey as string}
+                        error={!!state?.errors?.invitationKey}
+                        errorsList={state?.errors?.invitationKey}
                         required
                     />
                 </div>
                 <div className="grid gap-2">
-                    <Label htmlFor="username">Username</Label>
+                    <Label
+                        htmlFor="username"
+                        className={!!state?.errors?.username ? 'text-red-500' : ''}
+                    >
+                        Username
+                    </Label>
                     <Input
                         id="username"
                         name="username"
                         type="text"
                         autoComplete="new-username"
-                        error={!!errorMessage}
+                        defaultValue={state?.formData?.username as string}
+                        error={!!state?.errors?.username}
+                        errorsList={state?.errors?.username}
                         required
                     />
                 </div>
                 <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label
+                        htmlFor="email"
+                        className={!!state?.errors?.email ? 'text-red-500' : ''}
+                    >
+                        Email
+                    </Label>
                     <Input
                         id="email"
                         name="email"
                         type="email"
                         autoComplete="new-email"
-                        error={!!errorMessage}
+                        defaultValue={state?.formData?.email as string}
+                        error={!!state?.errors?.email}
+                        errorsList={state?.errors?.email}
                         placeholder="jon.snow@example.com"
                         required
                     />
                 </div>
                 <div className="grid gap-2">
                     <div className="flex items-center">
-                        <Label htmlFor="password">Password</Label>
+                        <Label
+                            htmlFor="password"
+                            className={!!state?.errors?.password ? 'text-red-500' : ''}
+                        >
+                            Password
+                        </Label>
                     </div>
                     <InputPassword
                         id="password"
                         name="password"
                         autoComplete="new-password"
-                        error={!!errorMessage}
+                        defaultValue={state?.formData?.password as string}
+                        error={!!state?.errors?.password}
+                        errorsList={state?.errors?.password}
                         required
                     />
                 </div>
                 <div className="grid gap-2">
                     <div className="flex items-center">
-                        <Label htmlFor="password">Confirm password</Label>
+                        <Label
+                            htmlFor="confirmPassword"
+                            className={!!state?.errors?.confirmPassword ? 'text-red-500' : ''}
+                        >
+                            Confirm password
+                        </Label>
                     </div>
                     <InputPassword
                         id="confirmPassword"
                         name="confirmPassword"
                         autoComplete="new-password"
-                        error={!!errorMessage}
+                        defaultValue={state?.formData?.confirmPassword as string}
+                        error={!!state?.errors?.confirmPassword}
+                        errorsList={state?.errors?.confirmPassword}
                         required
                     />
                 </div>

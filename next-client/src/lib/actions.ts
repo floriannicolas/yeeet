@@ -5,6 +5,7 @@ import { AuthError } from 'next-auth';
 import { redirect } from 'next/navigation';
 import axios, { AxiosError } from 'axios';
 import { FileInfo } from './definitions';
+import { z } from 'zod';
 
 export async function authenticate(
     prevState: string | undefined,
@@ -15,6 +16,7 @@ export async function authenticate(
         redirect('/');
     } catch (error) {
         if (error instanceof AuthError) {
+            console.log('error', error);
             switch (error.type) {
                 case 'CredentialsSignin':
                     return 'Invalid credentials.';
@@ -26,34 +28,84 @@ export async function authenticate(
     }
 }
 
+export type RegisterState = {
+    errors?: {
+        username?: string[];
+        password?: string[];
+        confirmPassword?: string[];
+        email?: string[];
+        invitationKey?: string[];
+    },
+    formData?: {
+        username?: string;
+        password?: string;
+        confirmPassword?: string;
+        email?: string;
+        invitationKey?: string;
+    },
+    message?: string | null;
+};
+
 export async function register(
-    prevState: string | undefined,
+    prevState: RegisterState | undefined,
     formData: FormData,
 ) {
-    const username = formData.get('username');
-    const password = formData.get('password');
-    const confirmPassword = formData.get('confirmPassword');
-    const email = formData.get('email');
-    const invitationKey = formData.get('invitationKey');
-    if (password !== confirmPassword) {
-        return 'Passwords do not match';
+    const formDataObj = Object.fromEntries(formData.entries());
+    const validatedFields = z
+        .object({
+            username: z.string(),
+            password: z.string().min(6, 'Password must contain at least 6 character(s)'),
+            confirmPassword: z.string().min(6, 'Password must contain at least 6 character(s)'),
+            email: z.string().email(),
+            invitationKey: z.string(),
+        })
+        .refine(({ password, confirmPassword }) => password === confirmPassword, {
+            message: "Passwords do not match",
+            path: ["confirmPassword", "confirmPassword"],
+        })
+        .safeParse(formDataObj);
+
+    if (!validatedFields.success) {
+        return {
+            formData: formDataObj,
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Some error(s) appeared during your registration.',
+        };
     }
+
+    const { 
+        username,
+        password,
+        email,
+        invitationKey,
+    } = validatedFields.data;
     try {
-        await axios.post(
+        const response = await axios.post(
             `${process.env.API_URL}/api/register`,
             { username, password, email, invitationKey }
         );
+        if (response.status !== 200) {
+            return {
+                message: response.data,
+                formData: formDataObj,
+            };
+        }
         redirect('/login');
     } catch (e) {
         const error = e as AxiosError;
-        return error.message || 'An error occurred';
+        const errorResponse = error.response?.data as RegisterState;
+        return {
+            errors: errorResponse?.errors,
+            message: 'Some error(s) appeared during your registration.',
+            formData: formDataObj,
+        };
     }
 }
 
 export async function forgotPassword(
-    prevState: { success?: string | null, error?: string | null} | undefined,
+    prevState: { success?: string | null, error?: string | null } | undefined,
     formData: FormData,
-) : Promise<{ success?: string | null, error?: string | null}> {
+): Promise<{ success?: string | null, error?: string | null }> {
     const email = formData.get('email');
     try {
         const response = await axios.post(`${process.env.API_URL}/api/forgot-password`, { email });
@@ -75,9 +127,9 @@ export async function forgotPassword(
 }
 
 export async function resetPassword(
-    prevState: { success?: string | null, error?: string | null} | undefined,
+    prevState: { success?: string | null, error?: string | null } | undefined,
     formData: FormData,
-) : Promise<{ success?: string | null, error?: string | null}> {
+): Promise<{ success?: string | null, error?: string | null }> {
     const token = formData.get('token');
     const password = formData.get('password');
     const confirmPassword = formData.get('confirmPassword');
@@ -130,6 +182,7 @@ export async function getUserFiles(limit?: number): Promise<FileInfo[]> {
         ? `${process.env.API_URL}/api/files?limit=${limit}`
         : `${process.env.API_URL}/api/files`;
     const response = await axios.get(url, { headers: { Authorization: `Bearer ${session?.accessToken}` } });
+
     return response.data;
 }
 
@@ -160,9 +213,17 @@ export async function toggleUserFileExpiration(id: number) {
 
 export async function uploadUserFileChunk(formData: FormData) {
     const session = await auth();
-    return await fetch(`${process.env.API_URL}/api/upload`, {
+    const response = await fetch(`${process.env.API_URL}/api/upload`, {
         method: 'POST',
         body: formData,
         headers: { Authorization: `Bearer ${session?.accessToken}` }
     });
+    console.log('response', response);
+
+    const error = (!response.ok) ? await response.json() : null;
+
+    return {
+        ok: response.ok,
+        error,
+    }
 }

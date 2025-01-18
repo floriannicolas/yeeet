@@ -5,11 +5,13 @@ import { cn } from "@/lib/utils"
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
+  errorsList?: string[];
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, error, ...props }, ref) => {
+  ({ className, type, error, errorsList, ...props }, ref) => {
     return (
+      <>
       <input
         type={type}
         className={cn(
@@ -20,6 +22,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         ref={ref}
         {...props}
       />
+      {errorsList && errorsList.length > 0 && (
+        <ul className="text-red-500 flex flex-col gap-2 mb-4 text-sm list-disc pl-5">
+          {errorsList.map((error) => (
+            <li key={error}>{error}.</li>
+          ))}
+        </ul>
+      )}
+      </>
     )
   }
 )
