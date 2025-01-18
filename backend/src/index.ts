@@ -163,7 +163,12 @@ app.post(`${API_PREFIX}/login`, async (req: Request, res: Response) => {
         const token = generateSessionToken();
         await createSession(token, user[0].id);
         // setSessionTokenCookie(res as Response, token, session.expiresAt);
-        res.status(200).send({ message: 'Login successful', token: token });
+        res.status(200).send({
+          id: user[0].id,
+          username: user[0].username,
+          email: user[0].email,
+          token: token,
+        });
       } else {
         res.status(401).send('Invalid password');
       }
