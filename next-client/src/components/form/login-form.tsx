@@ -51,7 +51,7 @@ export default function LoginForm() {
                         </div>
                     </div>
                 </div>
-                <Button type="submit" className="w-full" aria-disabled={isPending}>
+                <Button type="submit" className="w-full" aria-disabled={isPending} disabled={isPending}>
                     Login
                 </Button>
             </div>
