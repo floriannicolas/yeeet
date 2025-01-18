@@ -16,9 +16,10 @@ export async function authenticate(
         redirect('/');
     } catch (error) {
         if (error instanceof AuthError) {
-            console.log('error', error);
+            console.log('error', error.type);
             switch (error.type) {
                 case 'CredentialsSignin':
+                case 'CallbackRouteError':
                     return 'Invalid credentials.';
                 default:
                     return 'Something went wrong.';
@@ -61,7 +62,7 @@ export async function register(
         })
         .refine(({ password, confirmPassword }) => password === confirmPassword, {
             message: "Passwords do not match",
-            path: ["confirmPassword", "confirmPassword"],
+            path: ["confirmPassword"],
         })
         .safeParse(formDataObj);
 
@@ -102,43 +103,83 @@ export async function register(
     }
 }
 
+export type ForgotPasswordState = {
+    status?: string;
+    message?: string | null;
+};
+
 export async function forgotPassword(
-    prevState: { success?: string | null, error?: string | null } | undefined,
+    prevState: ForgotPasswordState | undefined,
     formData: FormData,
-): Promise<{ success?: string | null, error?: string | null }> {
+): Promise<ForgotPasswordState> {
     const email = formData.get('email');
     try {
         const response = await axios.post(`${process.env.API_URL}/api/forgot-password`, { email });
         const message = response.data.message;
         if (response.status === 200) {
             return {
-                success: message,
+                status: 'success',
+                message,
             };
         }
         return {
-            error: message,
+            status: 'error',
+            message,
         };
     } catch (e) {
         const error = e as AxiosError;
+        const errorResponse = error.response?.data as { message: string };
         return {
-            error: error.message || 'An error occurred. Please try again later.',
+            status: 'error',
+            message: errorResponse?.message || error.message || 'An error occurred. Please try again later.',
         };
     }
 }
 
-export async function resetPassword(
-    prevState: { success?: string | null, error?: string | null } | undefined,
-    formData: FormData,
-): Promise<{ success?: string | null, error?: string | null }> {
-    const token = formData.get('token');
-    const password = formData.get('password');
-    const confirmPassword = formData.get('confirmPassword');
+export type ResetPasswordState = {
+    errors?: {
+        password?: string[];
+        confirmPassword?: string[];
+        token?: string[];
+    },
+    formData?: {
+        token?: string;
+        password?: string;
+        confirmPassword?: string;
+    },
+    status?: string;
+    message?: string | null;
+};
 
-    if (password !== confirmPassword) {
+export async function resetPassword(
+    prevState: ResetPasswordState | undefined,
+    formData: FormData,
+): Promise<ResetPasswordState> {
+    const formDataObj = Object.fromEntries(formData.entries());
+    const validatedFields = z
+        .object({
+            token: z.string(),
+            password: z.string().min(6, 'Password must contain at least 6 character(s)'),
+            confirmPassword: z.string().min(6, 'Password must contain at least 6 character(s)'),
+        })
+        .refine(({ password, confirmPassword }) => password === confirmPassword, {
+            message: "Passwords do not match",
+            path: ["confirmPassword"],
+        })
+        .safeParse(formDataObj);
+
+    if (!validatedFields.success) {
         return {
-            error: 'Passwords do not match',
+            status: 'error',
+            formData: formDataObj,
+            errors: validatedFields.error.flatten().fieldErrors,
         };
     }
+
+    const { 
+        token,
+        password,
+    } = validatedFields.data;
 
     try {
         const response = await axios.post(`${process.env.API_URL}/api/reset-password`, {
@@ -152,16 +193,20 @@ export async function resetPassword(
                 redirect('/login');
             }, 2000);
             return {
-                success: message,
+                status: 'success',
+                message,
             };
         }
         return {
-            error: message,
+            status: 'error',
+            message,
         };
     } catch (e) {
         const error = e as AxiosError;
+        const errorResponse = error.response?.data as { message: string };
         return {
-            error: error.message || 'An error occurred. Please try again later.',
+            status: 'error',
+            message: errorResponse?.message || error.message || 'An error occurred. Please try again later.',
         };
     }
 }

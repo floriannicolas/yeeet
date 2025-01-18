@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import Link from 'next/link';
 
 export default function RegisterForm() {
-    const [state, formAction, isPending] = useActionState(
+    const [formState, formAction, isPending] = useActionState(
         register,
         undefined,
     );
@@ -26,12 +26,12 @@ export default function RegisterForm() {
                     <CircleAlert className="size-4 inline" /> You need an invitation key to create an account.
                 </p>
             </div>
-            {state?.message && <p className="text-red-500 text-sm">{state.message}</p>}
+            {formState?.message && <p className="text-red-500 text-sm">{formState.message}</p>}
             <div className="grid gap-6">
                 <div className="grid gap-2">
                     <Label
                         htmlFor="invitationKey"
-                        className={!!state?.errors?.invitationKey ? 'text-red-500' : ''}
+                        className={!!formState?.errors?.invitationKey ? 'text-red-500' : ''}
                     >
                         Invitation key
                     </Label>
@@ -39,16 +39,16 @@ export default function RegisterForm() {
                         id="invitationKey"
                         name="invitationKey"
                         type="text"
-                        defaultValue={state?.formData?.invitationKey as string}
-                        error={!!state?.errors?.invitationKey}
-                        errorsList={state?.errors?.invitationKey}
+                        defaultValue={formState?.formData?.invitationKey as string}
+                        error={!!formState?.errors?.invitationKey}
+                        errorsList={formState?.errors?.invitationKey}
                         required
                     />
                 </div>
                 <div className="grid gap-2">
                     <Label
                         htmlFor="username"
-                        className={!!state?.errors?.username ? 'text-red-500' : ''}
+                        className={!!formState?.errors?.username ? 'text-red-500' : ''}
                     >
                         Username
                     </Label>
@@ -57,16 +57,16 @@ export default function RegisterForm() {
                         name="username"
                         type="text"
                         autoComplete="new-username"
-                        defaultValue={state?.formData?.username as string}
-                        error={!!state?.errors?.username}
-                        errorsList={state?.errors?.username}
+                        defaultValue={formState?.formData?.username as string}
+                        error={!!formState?.errors?.username}
+                        errorsList={formState?.errors?.username}
                         required
                     />
                 </div>
                 <div className="grid gap-2">
                     <Label
                         htmlFor="email"
-                        className={!!state?.errors?.email ? 'text-red-500' : ''}
+                        className={!!formState?.errors?.email ? 'text-red-500' : ''}
                     >
                         Email
                     </Label>
@@ -75,9 +75,9 @@ export default function RegisterForm() {
                         name="email"
                         type="email"
                         autoComplete="new-email"
-                        defaultValue={state?.formData?.email as string}
-                        error={!!state?.errors?.email}
-                        errorsList={state?.errors?.email}
+                        defaultValue={formState?.formData?.email as string}
+                        error={!!formState?.errors?.email}
+                        errorsList={formState?.errors?.email}
                         placeholder="jon.snow@example.com"
                         required
                     />
@@ -86,7 +86,7 @@ export default function RegisterForm() {
                     <div className="flex items-center">
                         <Label
                             htmlFor="password"
-                            className={!!state?.errors?.password ? 'text-red-500' : ''}
+                            className={!!formState?.errors?.password ? 'text-red-500' : ''}
                         >
                             Password
                         </Label>
@@ -95,9 +95,9 @@ export default function RegisterForm() {
                         id="password"
                         name="password"
                         autoComplete="new-password"
-                        defaultValue={state?.formData?.password as string}
-                        error={!!state?.errors?.password}
-                        errorsList={state?.errors?.password}
+                        defaultValue={formState?.formData?.password as string}
+                        error={!!formState?.errors?.password}
+                        errorsList={formState?.errors?.password}
                         required
                     />
                 </div>
@@ -105,7 +105,7 @@ export default function RegisterForm() {
                     <div className="flex items-center">
                         <Label
                             htmlFor="confirmPassword"
-                            className={!!state?.errors?.confirmPassword ? 'text-red-500' : ''}
+                            className={!!formState?.errors?.confirmPassword ? 'text-red-500' : ''}
                         >
                             Confirm password
                         </Label>
@@ -114,9 +114,9 @@ export default function RegisterForm() {
                         id="confirmPassword"
                         name="confirmPassword"
                         autoComplete="new-password"
-                        defaultValue={state?.formData?.confirmPassword as string}
-                        error={!!state?.errors?.confirmPassword}
-                        errorsList={state?.errors?.confirmPassword}
+                        defaultValue={formState?.formData?.confirmPassword as string}
+                        error={!!formState?.errors?.confirmPassword}
+                        errorsList={formState?.errors?.confirmPassword}
                         required
                     />
                 </div>

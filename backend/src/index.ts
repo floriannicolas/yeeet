@@ -218,7 +218,7 @@ app.post(`${API_PREFIX}/forgot-password`, async (req: Request, res: Response) =>
     res.json({ message: 'If an account exists with that email, you will receive password reset instructions.' });
   } catch (error) {
     console.error('Error in forgot password:', error);
-    res.status(500).json({ message: 'An error occurred' });
+    res.status(500).json({ message: 'An internal error occurred, please try later.' });
   }
 });
 
@@ -238,7 +238,7 @@ app.post(`${API_PREFIX}/reset-password`, async (req: Request, res: Response) => 
           .limit(1);
 
       if (resetToken.length === 0) {
-          res.status(400).json({ message: 'Invalid or expired reset token' });
+          res.status(400).json({ message: 'Invalid or expired reset token. Please ask a new mail using the "forgot password?" feature.' });
           return;
       }
 
@@ -254,10 +254,10 @@ app.post(`${API_PREFIX}/reset-password`, async (req: Request, res: Response) => 
               .where(eq(passwordResetTokensTable.id, resetToken[0].id));
       });
 
-      res.json({ message: 'Password reset successful' });
+      res.json({ message: 'Password reset successful.' });
   } catch (error) {
       console.error('Error resetting password:', error);
-      res.status(500).json({ message: 'An error occurred' });
+      res.status(500).json({ message: 'An internal error occurred, please try later.' });
   }
 });
 

@@ -120,13 +120,13 @@ export default function Header({
                                         <DropdownMenuSeparator />
                                     </>
                                 )}
-                                <DropdownMenuItem onClick={handleDownloadApp}>
+                                <DropdownMenuItem onClick={handleDownloadApp} className='cursor-pointer'>
                                     <AppWindowMac />
                                     <span>Download app</span>
                                     <DropdownMenuShortcut>v{MACOS_APP_VERSION}</DropdownMenuShortcut>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleLogout()}>
+                                <DropdownMenuItem onClick={() => handleLogout()} className='cursor-pointer'>
                                     <LogOut />
                                     <span>Log out</span>
                                 </DropdownMenuItem>

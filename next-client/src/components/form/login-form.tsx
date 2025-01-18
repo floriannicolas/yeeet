@@ -22,10 +22,14 @@ export default function LoginForm() {
                     Enter your email or your username below to login to your account
                 </p>
             </div>
-            {errorMessage && <p className="text-red-500 mb-4">{errorMessage}</p>}
             <div className="grid gap-6">
                 <div className="grid gap-2">
-                    <Label htmlFor="email">Email (or username)</Label>
+                    <Label
+                        htmlFor="email"
+                        className={!!errorMessage ? 'text-red-500' : ''}
+                    >
+                        Email (or username)
+                    </Label>
                     <Input
                         id="email"
                         type="text"
@@ -44,13 +48,19 @@ export default function LoginForm() {
                             required
                         />
                         <div className="flex items-center">
-                            <Label htmlFor="password">Password</Label>
+                            <Label
+                                htmlFor="password"
+                                className={!!errorMessage ? 'text-red-500' : ''}
+                            >
+                                Password
+                            </Label>
                             <Link href="/forgot-password" className="ml-auto text-sm underline-offset-4 hover:underline">
                                 Forgot your password?
                             </Link>
                         </div>
                     </div>
                 </div>
+                {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
                 <Button type="submit" className="w-full" aria-disabled={isPending} disabled={isPending}>
                     Login
                 </Button>

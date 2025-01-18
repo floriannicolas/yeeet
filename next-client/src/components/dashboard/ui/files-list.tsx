@@ -187,21 +187,21 @@ export default function FilesList({
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="">
                                         <DropdownMenuGroup>
-                                            <DropdownMenuItem onClick={() => handleCopyLink(file.viewUrl)}>
+                                            <DropdownMenuItem onClick={() => handleCopyLink(file.viewUrl)} className='cursor-pointer'>
                                                 <ClipboardCopy />
                                                 Copy link
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleOpenLink(file.viewUrl)}>
+                                            <DropdownMenuItem onClick={() => handleOpenLink(file.viewUrl)} className='cursor-pointer'>
                                                 <Eye />
                                                 View
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleOpenLink(file.downloadUrl)}>
+                                            <DropdownMenuItem onClick={() => handleOpenLink(file.downloadUrl)} className='cursor-pointer'>
                                                 <Download />
                                                 Download
                                             </DropdownMenuItem>
                                         </DropdownMenuGroup>
                                         <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={() => handleToggleExpiration(file.id)}>
+                                        <DropdownMenuItem onClick={() => handleToggleExpiration(file.id)} className='cursor-pointer'>
                                             {
                                                 file.expiresAt ? (
                                                     <>
@@ -218,7 +218,7 @@ export default function FilesList({
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
                                         <AlertDialogTrigger asChild>
-                                            <DropdownMenuItem>
+                                            <DropdownMenuItem className='cursor-pointer'>
                                                 <div className="w-full h-full text-red-500">
                                                     <Trash className="w-4 h-4 inline-block mr-2 align-middle" />
                                                     <span className="inline-block align-middle">Delete</span>

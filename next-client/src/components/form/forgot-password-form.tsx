@@ -8,20 +8,20 @@ import { Label } from "@/components/ui/label";
 import Link from 'next/link';
 
 export default function ForgotPasswordForm() {
-    const [state, formAction, isPending] = useActionState(
+    const [formState, formAction, isPending] = useActionState(
         forgotPassword,
         {},
     );
 
     return (
         <>
-            {state?.success ? (
+            {formState?.status === 'success' ? (
                 <div className="text-center text-semibold">
-                    {state.success}
+                    {formState.message}
                 </div>
             ) : (
                 <form action={formAction}>
-                    {state?.error && <p className="text-red-500 mb-4">{state.error}</p>}
+                    {formState?.status === 'error' && <p className="text-red-500 mb-4">{formState.message}</p>}
                     <div className="flex flex-col gap-6">
                         <div className="grid gap-2">
                             <Label htmlFor="email">Email</Label>
