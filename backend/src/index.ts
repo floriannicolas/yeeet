@@ -28,7 +28,7 @@ import {
   getUserStorageUsed,
 } from './utils/storage';
 import { formatFileSize } from './utils/format';
-import mime from 'mime';
+import mime from 'mime-types';
 import { sendPasswordResetEmail } from './utils/email';
 
 // Cleanup expired files every day at 3am
@@ -530,7 +530,7 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
       output.on('finish', async () => {
         finalPath = await convertImageToWebp(finalPath, mimeType);
         const fileStats = fs.statSync(finalPath);
-        mimeType = mime.getType(finalPath);
+        mimeType = mime.lookup(finalPath) || null;
         const s3Path = await storageProvider.saveFile(
           finalPath,
           path.join(userId.toString(), path.basename(finalPath))

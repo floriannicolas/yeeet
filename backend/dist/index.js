@@ -24,7 +24,7 @@ const cleanup_1 = require("./tasks/cleanup");
 const index_1 = require("./storage/index");
 const storage_1 = require("./utils/storage");
 const format_1 = require("./utils/format");
-const mime_1 = __importDefault(require("mime"));
+const mime_types_1 = __importDefault(require("mime-types"));
 const email_1 = require("./utils/email");
 // Cleanup expired files every day at 3am
 node_cron_1.default.schedule('0 3 * * *', async () => {
@@ -467,7 +467,7 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
             output.on('finish', async () => {
                 finalPath = await (0, index_1.convertImageToWebp)(finalPath, mimeType);
                 const fileStats = fs_1.default.statSync(finalPath);
-                mimeType = mime_1.default.getType(finalPath);
+                mimeType = mime_types_1.default.lookup(finalPath) || null;
                 const s3Path = await storageProvider.saveFile(finalPath, path_1.default.join(userId.toString(), path_1.default.basename(finalPath)));
                 try {
                     const downloadToken = generateRandomToken();
