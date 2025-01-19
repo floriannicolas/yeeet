@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import dotenv from "dotenv";
 import express, { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import cookieParser from 'cookie-parser';
@@ -43,6 +43,7 @@ const TAURI_URL = process.env.TAURI_URL || 'tauri://localhost';
 const TAURI_URL_DEV = process.env.TAURI_URL_DEV || 'http://localhost:1420';
 const API_PREFIX = '/api';
 const app = express();
+dotenv.config();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 let server;
