@@ -33,7 +33,7 @@ const sendEmail = async (to: string, subject: string, html: string): Promise<voi
 
 
 export async function sendPasswordResetEmail(email: string, resetToken: string): Promise<void> {
-    const resetLink = `${process.env.CLIENT_URL}/#/reset-password/${resetToken}`;
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
     const subject = 'Reset your password';
 
     const html = `
