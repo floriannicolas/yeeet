@@ -262,6 +262,14 @@ app.post(`${API_PREFIX}/reset-password`, async (req: Request, res: Response) => 
   }
 });
 
+app.get(`/`, async (req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    message: 'Yeeet api is running',
+    uptime: process.uptime()
+  });
+});
+
 app.get(`/health-check`, async (req: Request, res: Response) => {
   res.json({
     status: 'ok',

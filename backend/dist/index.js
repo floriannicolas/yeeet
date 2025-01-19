@@ -1,0 +1,457 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+require("dotenv/config");
+const express_1 = __importDefault(require("express"));
+const multer_1 = __importDefault(require("multer"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const fs_1 = __importDefault(require("fs"));
+const http_1 = __importDefault(require("http"));
+const socket_io_1 = require("socket.io");
+const path_1 = __importDefault(require("path"));
+const express_session_1 = __importDefault(require("express-session"));
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const crypto_1 = __importDefault(require("crypto"));
+const cors_1 = __importDefault(require("cors"));
+const drizzle_orm_1 = require("drizzle-orm");
+const database_1 = require("./database");
+const schema_1 = require("./db/schema");
+const session_1 = require("./session");
+const node_cron_1 = __importDefault(require("node-cron"));
+const cleanup_1 = require("./tasks/cleanup");
+// Cleanup expired files every day at 3am
+node_cron_1.default.schedule('0 3 * * *', async () => {
+    console.log('Running cleanup task...');
+    await (0, cleanup_1.cleanupExpiredFiles)();
+});
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const TAURI_URL = process.env.TAURI_URL || 'tauri://localhost';
+const TAURI_URL_DEV = process.env.TAURI_URL_DEV || 'http://localhost:1420';
+const API_PREFIX = '/api';
+const app = (0, express_1.default)();
+app.use(express_1.default.json());
+app.use(express_1.default.urlencoded({ extended: true }));
+let server;
+let io;
+// En développement local
+server = http_1.default.createServer(app);
+io = new socket_io_1.Server(server);
+const PORT = process.env.PORT || 3000;
+const UPLOAD_DIR = path_1.default.join(__dirname, '..', 'uploads');
+if (!fs_1.default.existsSync(UPLOAD_DIR))
+    fs_1.default.mkdirSync(UPLOAD_DIR, { recursive: true });
+app.use((0, express_session_1.default)({
+    secret: process.env.SESSION_SECRET || 'votre_secret_key_très_sécurisée',
+    resave: false,
+    saveUninitialized: false
+}));
+app.use((0, cookie_parser_1.default)());
+// Configurer CORS avec les nouvelles origines
+const ALLOWED_ORIGINS = [
+    CLIENT_URL,
+    TAURI_URL,
+    TAURI_URL_DEV,
+];
+app.use((0, cors_1.default)({
+    origin: (origin, callback) => {
+        if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+const requireAuth = async (req, res, next) => {
+    const token = req.cookies?.session;
+    if (token) {
+        const { user } = await (0, session_1.validateSessionToken)(token);
+        if (!user || !user.id) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+    }
+    else {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+    }
+    next();
+};
+app.post(`${API_PREFIX}/register`, async (req, res) => {
+    const { username, email, password, invitationKey } = req.body;
+    if (invitationKey !== 'YEEEEEEEEEEEEET') {
+        res.status(401).send('Invalid invitation key. You need an invitation key to create an account.');
+        return;
+    }
+    try {
+        const hashedPassword = await bcrypt_1.default.hash(password, 10);
+        await database_1.db.insert(schema_1.usersTable).values({
+            username,
+            email,
+            password: hashedPassword
+        });
+        res.redirect('/login');
+    }
+    catch (error) {
+        if (error.code === '23505') {
+            res.status(400).send('Username already exists');
+        }
+        else {
+            console.error(error);
+            res.status(500).send('Server error');
+        }
+    }
+});
+app.post(`${API_PREFIX}/login`, async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const user = await database_1.db.select().from(schema_1.usersTable)
+            .where((0, drizzle_orm_1.or)((0, drizzle_orm_1.eq)(schema_1.usersTable.username, username), (0, drizzle_orm_1.eq)(schema_1.usersTable.email, username)))
+            .limit(1);
+        if (user.length > 0) {
+            const isPasswordValid = await bcrypt_1.default.compare(password, user[0].password);
+            if (isPasswordValid) {
+                const token = (0, session_1.generateSessionToken)();
+                const session = await (0, session_1.createSession)(token, user[0].id);
+                (0, session_1.setSessionTokenCookie)(res, token, session.expiresAt);
+                res.status(200).send('Login successful');
+            }
+            else {
+                res.status(401).send('Invalid password');
+            }
+        }
+        else {
+            res.status(404).send('User not found');
+        }
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).send('Server error');
+    }
+});
+app.get(`/health-check`, async (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'Server is running',
+        uptime: process.uptime()
+    });
+});
+app.get(`${API_PREFIX}/check-auth`, async (req, res) => {
+    const token = req.cookies?.session;
+    let isAuthenticated = false;
+    if (token) {
+        const { user } = await (0, session_1.validateSessionToken)(token);
+        isAuthenticated = !!user;
+    }
+    res.json({ isAuthenticated });
+});
+app.post(`${API_PREFIX}/logout`, (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            res.status(500).json({ message: 'Error logging out' });
+        }
+        else {
+            const token = req.cookies?.session;
+            (0, session_1.invalidateSession)(token);
+            (0, session_1.deleteSessionTokenCookie)(res);
+            res.json({ message: 'Logged out successfully' });
+        }
+    });
+});
+// Step 2: Multer setup for handling file chunks
+const storage = multer_1.default.diskStorage({
+    destination: async (req, file, cb) => {
+        let userId = -1;
+        const token = req.cookies?.session;
+        if (token) {
+            const { user } = await (0, session_1.validateSessionToken)(token);
+            if (!user || !user.id) {
+                return cb(new Error('User not authenticated'), '');
+            }
+            userId = user.id;
+        }
+        else {
+            return cb(new Error('User not authenticated'), '');
+        }
+        const metadata = JSON.parse(decodeURIComponent(file.originalname));
+        const userDir = path_1.default.join(UPLOAD_DIR, userId.toString());
+        const dir = path_1.default.join(userDir, metadata.uploadId);
+        if (!fs_1.default.existsSync(userDir))
+            fs_1.default.mkdirSync(userDir, { recursive: true });
+        if (!fs_1.default.existsSync(dir))
+            fs_1.default.mkdirSync(dir, { recursive: true });
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        const metadata = JSON.parse(decodeURIComponent(file.originalname));
+        cb(null, `chunk_${metadata.index}`);
+    }
+});
+const upload = (0, multer_1.default)({ storage });
+const generateDownloadToken = () => {
+    return crypto_1.default.randomBytes(32).toString('hex');
+};
+app.get(`${API_PREFIX}/download/:token`, async (req, res) => {
+    try {
+        const result = await database_1.db.select()
+            .from(schema_1.filesTable)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.filesTable.downloadToken, req.params.token)))
+            .limit(1);
+        if (result.length === 0) {
+            res.status(404).json({ message: 'File not found' });
+            return;
+        }
+        const file = result[0];
+        res.download(file.filePath, file.originalName);
+    }
+    catch (error) {
+        console.error('Error downloading file:', error);
+        res.status(500).json({ message: 'Error downloading file' });
+    }
+});
+app.get(`${API_PREFIX}/view/:token`, async (req, res) => {
+    try {
+        const result = await database_1.db.select()
+            .from(schema_1.filesTable)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.filesTable.downloadToken, req.params.token)))
+            .limit(1);
+        if (result.length === 0) {
+            res.status(404).json({ message: 'File not found' });
+            return;
+        }
+        const file = result[0];
+        // Liste des types MIME pour la visualisation en ligne
+        const viewableMimeTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'image/svg+xml',
+            'application/pdf',
+            'text/plain',
+            'text/html',
+            'text/css',
+            'text/javascript',
+            'application/json',
+            'video/mp4',
+            'video/webm',
+            'audio/mpeg',
+            'audio/wav',
+            'audio/webm'
+        ];
+        if (!viewableMimeTypes.includes(file.mimeType ?? '')) {
+            res.status(400).json({ message: 'File type not supported for viewing' });
+            return;
+        }
+        // Configuration des en-têtes pour la visualisation
+        res.setHeader('Content-Type', file.mimeType ?? '');
+        // Forcer la visualisation inline pour les PDF, notamment sur Firefox
+        if (file.mimeType === 'application/pdf') {
+            res.setHeader('Content-Disposition', 'inline');
+        }
+        else {
+            res.setHeader('Content-Disposition', `inline; filename="${file.originalName}"`);
+        }
+        res.sendFile(file.filePath);
+    }
+    catch (error) {
+        console.error('Error viewing file:', error);
+        res.status(500).json({ message: 'Error viewing file' });
+    }
+});
+app.use(requireAuth, express_1.default.static('public'));
+app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req, res) => {
+    if (!req.file) {
+        res.status(400).json({ message: 'No file uploaded' });
+        return;
+    }
+    let userId = -1;
+    const token = req.cookies?.session;
+    if (token) {
+        const { user } = await (0, session_1.validateSessionToken)(token);
+        if (!user || !user.id) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+        userId = user.id;
+    }
+    else {
+        res.status(401).json({ message: 'Unauthorized' });
+        return;
+    }
+    const metadata = JSON.parse(decodeURIComponent(req.file.originalname));
+    const { index, totalChunks, uploadId, originalName } = metadata;
+    const userDir = path_1.default.join(UPLOAD_DIR, userId.toString());
+    const dir = path_1.default.join(userDir, uploadId);
+    if (!fs_1.default.existsSync(userDir)) {
+        res.status(400).json({ message: 'User directory does not exist.' });
+        return;
+    }
+    if (!fs_1.default.existsSync(dir)) {
+        res.status(400).json({ message: 'Upload directory does not exist.' });
+        return;
+    }
+    const uploadedChunks = fs_1.default.readdirSync(dir).length;
+    io.emit('progress', { uploadId, uploadedChunks, totalChunks });
+    if (uploadedChunks === parseInt(totalChunks)) {
+        const getUniqueFilename = (originalPath) => {
+            const dir = path_1.default.dirname(originalPath);
+            const ext = path_1.default.extname(originalPath);
+            const baseName = path_1.default.basename(originalPath, ext);
+            let counter = 1;
+            let finalPath = originalPath;
+            while (fs_1.default.existsSync(finalPath)) {
+                finalPath = path_1.default.join(dir, `${baseName} (${counter})${ext}`);
+                counter++;
+            }
+            return finalPath;
+        };
+        let finalPath = path_1.default.join(userDir, originalName);
+        finalPath = getUniqueFilename(finalPath);
+        try {
+            const output = fs_1.default.createWriteStream(finalPath);
+            for (let i = 0; i < totalChunks; i++) {
+                const chunkPath = path_1.default.join(dir, `chunk_${i}`);
+                output.write(fs_1.default.readFileSync(chunkPath));
+            }
+            output.on('finish', async () => {
+                const fileStats = fs_1.default.statSync(finalPath);
+                try {
+                    const downloadToken = generateDownloadToken();
+                    const result = await database_1.db.insert(schema_1.filesTable).values({
+                        userId: userId,
+                        originalName: path_1.default.basename(finalPath),
+                        filePath: finalPath,
+                        mimeType: req.file?.mimetype,
+                        size: fileStats.size,
+                        downloadToken: downloadToken,
+                        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30) // 30 days
+                    }).returning({
+                        id: schema_1.filesTable.id,
+                        downloadToken: schema_1.filesTable.downloadToken
+                    });
+                    // Clear  chunks
+                    setTimeout(() => {
+                        fs_1.default.rmSync(dir, { recursive: true });
+                    }, 1000);
+                    io.emit('completed', {
+                        uploadId,
+                        originalName: path_1.default.basename(finalPath),
+                        viewUrl: `${BACKEND_URL}${API_PREFIX}/view/${result[0].downloadToken}`
+                    });
+                    res.status(200).json({
+                        message: 'File uploaded successfully',
+                        fileId: result[0].id,
+                        downloadToken: result[0].downloadToken
+                    });
+                }
+                catch (error) {
+                    console.error('Error saving file info to database:', error);
+                    res.status(500).json({ message: 'Error saving file information' });
+                }
+            });
+            output.end();
+        }
+        catch (error) {
+            console.error('Error processing file:', error);
+            res.status(500).json({ message: 'Error processing file' });
+            return;
+        }
+    }
+    else {
+        res.status(200).json({ message: 'Chunk uploaded' });
+    }
+});
+app.use('/socket.io', express_1.default.static('node_modules/socket.io/client-dist'));
+app.get(`${API_PREFIX}/files`, requireAuth, async (req, res) => {
+    try {
+        const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
+        let userId = -1;
+        const token = req.cookies?.session;
+        if (token) {
+            const { user } = await (0, session_1.validateSessionToken)(token);
+            if (!user || !user.id) {
+                res.status(401).json({ message: 'Unauthorized' });
+                return;
+            }
+            userId = user.id;
+        }
+        else {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+        let query = database_1.db.select({
+            id: schema_1.filesTable.id,
+            originalName: schema_1.filesTable.originalName,
+            mimeType: schema_1.filesTable.mimeType,
+            size: schema_1.filesTable.size,
+            createdAt: schema_1.filesTable.createdAt,
+            expiresAt: schema_1.filesTable.expiresAt,
+            downloadToken: schema_1.filesTable.downloadToken
+        })
+            .from(schema_1.filesTable)
+            .where((0, drizzle_orm_1.eq)(schema_1.filesTable.userId, userId))
+            .orderBy((0, drizzle_orm_1.desc)(schema_1.filesTable.createdAt));
+        if (limit) {
+            query.limit(limit);
+        }
+        const result = await query;
+        const filesWithUrls = result.map(file => ({
+            ...file,
+            downloadUrl: `${BACKEND_URL}${API_PREFIX}/download/${file.downloadToken}`,
+            viewUrl: `${BACKEND_URL}${API_PREFIX}/view/${file.downloadToken}`
+        }));
+        res.json(filesWithUrls);
+    }
+    catch (error) {
+        console.error('Error fetching files:', error);
+        res.status(500).json({ message: 'Error fetching files' });
+    }
+});
+app.delete(`${API_PREFIX}/files/:id`, requireAuth, async (req, res) => {
+    try {
+        let userId = -1;
+        const token = req.cookies?.session;
+        if (token) {
+            const { user } = await (0, session_1.validateSessionToken)(token);
+            if (!user || !user.id) {
+                res.status(401).json({ message: 'Unauthorized' });
+                return;
+            }
+            userId = user.id;
+        }
+        else {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+        const file = await database_1.db.select()
+            .from(schema_1.filesTable)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.filesTable.id, parseInt(req.params.id)), (0, drizzle_orm_1.eq)(schema_1.filesTable.userId, userId)))
+            .limit(1);
+        if (file.length === 0) {
+            res.status(404).json({ message: 'File not found' });
+            return;
+        }
+        // Supprimer le fichier physique
+        if (fs_1.default.existsSync(file[0].filePath)) {
+            fs_1.default.unlinkSync(file[0].filePath);
+        }
+        // Supprimer l'entrée dans la base de données
+        await database_1.db.delete(schema_1.filesTable)
+            .where((0, drizzle_orm_1.eq)(schema_1.filesTable.id, parseInt(req.params.id)));
+        res.json({ message: 'File deleted successfully' });
+    }
+    catch (error) {
+        console.error('Error deleting file:', error);
+        res.status(500).json({ message: 'Error deleting file' });
+    }
+});
+server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
