@@ -39,11 +39,13 @@ const AlertDialogContent = React.forwardRef<
           if (children && children.length > 1) {
             const child = children[1] as React.ReactElement;
             if (child) {
-              const childChildren = React.Children.toArray(child.props.children);
+              const childProps = child.props as React.PropsWithChildren;
+              const childChildren = React.Children.toArray(childProps.children);
               if (childChildren && childChildren.length > 1) {
                 const secondChild = childChildren[1] as React.ReactElement;
                 if (secondChild) {
-                  secondChild.props.onClick?.();
+                  const secondChildProps = secondChild.props as { onClick: () => unknown };
+                  secondChildProps.onClick?.();
                 }
               }
             }
