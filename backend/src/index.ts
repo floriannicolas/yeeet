@@ -800,6 +800,3 @@ app.post(`${API_PREFIX}/files/:id/toggle-expiration`, requireAuth, async (req: R
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
-// Export the Express API
-module.exports = server;

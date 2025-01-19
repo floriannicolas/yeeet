@@ -8,8 +8,12 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src"
-  },
+    "rootDir": "./src",
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "sourceMap": true
+  }, 
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
 } 
