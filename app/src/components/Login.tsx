@@ -76,7 +76,7 @@ export const Login = () => {
                                 <div className="text-center text-sm">
                                     Don&apos;t have an account?{" "}
                                     <a
-                                        href={`${import.meta.env.VITE_CLIENT_URL}/#/register`}
+                                        href={`${import.meta.env.VITE_CLIENT_URL}/register`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="underline underline-offset-4"
@@ -111,7 +111,7 @@ export const Login = () => {
                                         <div className="flex items-center">
                                             <Label htmlFor="password">Password</Label>
                                             <a
-                                                href={`${import.meta.env.VITE_CLIENT_URL}/#/forgot-password`}
+                                                href={`${import.meta.env.VITE_CLIENT_URL}/forgot-password`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="ml-auto text-sm underline-offset-4 hover:underline"
