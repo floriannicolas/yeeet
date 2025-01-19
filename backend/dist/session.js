@@ -61,22 +61,26 @@ async function invalidateSession(sessionId) {
     await database_1.db.delete(schema_1.sessionsTable).where((0, drizzle_orm_1.eq)(schema_1.sessionsTable.id, sessionId));
 }
 function setSessionTokenCookie(response, token, expiresAt) {
-    if (process.env.NODE_ENV === 'production') {
-        // When deployed over HTTPS
-        response.setHeader("Set-Cookie", `session=${token}; HttpOnly; SameSite=Lax; Expires=${expiresAt.toUTCString()}; Path=/; Secure;`);
-    }
-    else {
-        // When deployed over HTTP (localhost)
-        response.setHeader("Set-Cookie", `session=${token}; HttpOnly; SameSite=Lax; Expires=${expiresAt.toUTCString()}; Path=/`);
-    }
+    const cookieOptions = {
+        httpOnly: true,
+        secure: (process.env.TRANSFERT_PROTOCOL === 'https'),
+        sameSite: 'None', // Permet le cross-origin
+        path: '/',
+        maxAge: expiresAt.getTime() - Date.now(),
+        partitioned: true
+    };
+    response.setHeader('Set-Cookie', `session=${token}; ${Object.entries(cookieOptions)
+        .map(([key, value]) => `${key}=${value}`)
+        .join('; ')}`);
 }
 function deleteSessionTokenCookie(response) {
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.TRANSFERT_PROTOCOL === 'https') {
         // When deployed over HTTPS
-        response.setHeader("Set-Cookie", "session=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/; Secure;");
+        response.setHeader("Set-Cookie", "session=; HttpOnly; SameSite=None; Max-Age=0; Path=/; Secure; Partitioned;");
     }
     else {
         // When deployed over HTTP (localhost)
         response.setHeader("Set-Cookie", "session=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/");
     }
 }
+//# sourceMappingURL=session.js.map

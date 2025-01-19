@@ -47,3 +47,4 @@ const pool = new pg_1.Pool({
 });
 exports.db = (0, node_postgres_1.drizzle)(pool, { schema });
 exports.default = pool;
+//# sourceMappingURL=database.js.map
