@@ -11,20 +11,14 @@ exports.setSessionTokenCookie = setSessionTokenCookie;
 exports.deleteSessionTokenCookie = deleteSessionTokenCookie;
 const schema_1 = require("./db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
-const encoding_1 = require("@oslojs/encoding");
-const sha2_1 = require("@oslojs/crypto/sha2");
 const database_1 = require("./database");
 const crypto_1 = __importDefault(require("crypto"));
 function generateSessionToken() {
-    const bytes = new Uint8Array(20);
-    crypto_1.default.getRandomValues(bytes);
-    const token = (0, encoding_1.encodeBase32LowerCaseNoPadding)(bytes);
-    return token;
+    return crypto_1.default.randomBytes(32).toString('hex');
 }
 async function createSession(token, userId) {
-    const sessionId = (0, encoding_1.encodeHexLowerCase)((0, sha2_1.sha256)(new TextEncoder().encode(token)));
     const session = {
-        id: sessionId,
+        id: token,
         userId,
         expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
     };
@@ -32,12 +26,11 @@ async function createSession(token, userId) {
     return session;
 }
 async function validateSessionToken(token) {
-    const sessionId = (0, encoding_1.encodeHexLowerCase)((0, sha2_1.sha256)(new TextEncoder().encode(token)));
     const result = await database_1.db
         .select({ user: schema_1.usersTable, session: schema_1.sessionsTable })
         .from(schema_1.sessionsTable)
         .innerJoin(schema_1.usersTable, (0, drizzle_orm_1.eq)(schema_1.sessionsTable.userId, schema_1.usersTable.id))
-        .where((0, drizzle_orm_1.eq)(schema_1.sessionsTable.id, sessionId));
+        .where((0, drizzle_orm_1.eq)(schema_1.sessionsTable.id, token));
     if (result.length < 1) {
         return { session: null, user: null };
     }

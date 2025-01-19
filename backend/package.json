@@ -16,8 +16,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.717.0",
     "@aws-sdk/lib-storage": "^3.717.0",
-    "@oslojs/crypto": "^1.0.1",
-    "@oslojs/encoding": "^1.1.0",
     "@types/heic-convert": "^2.1.0",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
@@ -53,8 +51,8 @@
     "typescript": "^5.7.2"
   },
   "pre-commit": [
-      "ts.check",
-      "build",
-      "add-build"
+    "ts.check",
+    "build",
+    "add-build"
   ]
 }
