@@ -24,8 +24,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { formatFileSize } from '@/utils/format';
 import { handleLogout } from '@/lib/actions';
 import { StorageInfo } from '@/lib/definitions';
-import { useState } from 'react';
-import { getAppVersionAlertClosed, setAppVersionAlertClosed } from '@/utils/app-version-alert';
+import { useEffect, useState } from 'react';
+import { useSessionStorage } from 'usehooks-ts';
+import { IS_APP_NEW_VERSION_ALERT_CLOSED } from '@/lib/constants';
 
 const MACOS_APP_VERSION = process.env.NEXT_PUBLIC_MACOS_APP_VERSION;
 
@@ -38,11 +39,17 @@ export default function Header({
     progress: number,
     lastAppVersion: string | null | undefined,
 }) {
-    const [showAppUpdate, setShowAppUpdate] = useState(
-        !getAppVersionAlertClosed() &&
-        MACOS_APP_VERSION &&
-        (!lastAppVersion || (lastAppVersion < MACOS_APP_VERSION))
-    );
+    const [isAppNewVersionAlertClosed, setIsAppNewVersionAlertClosed] = useSessionStorage(IS_APP_NEW_VERSION_ALERT_CLOSED, false);
+    const [showAppUpdate, setShowAppUpdate] = useState(false);
+
+    useEffect(() => {
+        setShowAppUpdate(
+            !isAppNewVersionAlertClosed &&
+            !!MACOS_APP_VERSION &&
+            (!lastAppVersion || (lastAppVersion < MACOS_APP_VERSION))
+        );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleDownloadApp = () => {
         window.open(`/releases/download/Yeeet_${MACOS_APP_VERSION}_x64.dmg`, '_blank');
@@ -56,7 +63,7 @@ export default function Header({
                         className="absolute top-0 right-0 p-2 cursor-pointer"
                         onClick={() => {
                             setShowAppUpdate(false);
-                            setAppVersionAlertClosed(true);
+                            setIsAppNewVersionAlertClosed(true);
                         }}
                     >
                         <X className="w-4 h-4" />

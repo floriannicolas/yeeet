@@ -6,7 +6,7 @@ export type User = {
     token: string;
 };
 
-export interface FileInfo {
+export type FileInfo = {
     id: number;
     originalName: string;
     mimeType: string;
@@ -23,19 +23,18 @@ export type CheckAuthResponse = {
     lastAppVersion: string;
 };
 
-
-export interface UploadProgress {
+export type UploadProgress = {
     uploadId: string;
     uploadedChunks: number;
     totalChunks: number;
 }
 
-export interface UploadComplete {
+export type UploadComplete = {
     uploadId: string;
     originalName: string;
 }
 
-export interface StorageInfo {
+export type StorageInfo = {
     used: number;
     limit: number;
     available: number;
