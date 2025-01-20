@@ -9,7 +9,6 @@ const multer_1 = __importDefault(require("multer"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const fs_1 = __importDefault(require("fs"));
 const http_1 = __importDefault(require("http"));
-const socket_io_1 = require("socket.io");
 const path_1 = __importDefault(require("path"));
 const express_session_1 = __importDefault(require("express-session"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
@@ -41,7 +40,6 @@ dotenv_1.default.config();
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 let server;
-let io;
 // Configurer CORS avec les nouvelles origines
 const ALLOWED_ORIGINS = [
     CLIENT_URL,
@@ -50,12 +48,6 @@ const ALLOWED_ORIGINS = [
 ];
 // En développement local
 server = http_1.default.createServer(app);
-io = new socket_io_1.Server(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-});
 const PORT = process.env.PORT || 3000;
 const UPLOAD_DIR = process.env.VERCEL
     ? '/tmp'
@@ -409,7 +401,7 @@ app.post(`${API_PREFIX}/update-app-version`, requireAuth, async (req, res) => {
 });
 app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req, res) => {
     if (!req.file) {
-        res.status(400).json({ message: 'No file uploaded' });
+        res.status(400).json({ message: 'No file uploaded', status: 'error' });
         return;
     }
     let userId = -1;
@@ -418,20 +410,20 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
     if (token) {
         const { user } = await (0, session_1.validateSessionToken)(token);
         if (!user || !user.id) {
-            res.status(401).json({ message: 'Unauthorized' });
+            res.status(401).json({ message: 'Unauthorized', status: 'error' });
             return;
         }
         currentUser = user;
         userId = user.id;
     }
     else {
-        res.status(401).json({ message: 'Unauthorized' });
+        res.status(401).json({ message: 'Unauthorized', status: 'error' });
         return;
     }
     const metadata = JSON.parse(decodeURIComponent(req.file.originalname));
     const { index, totalChunks, uploadId, originalName, originalSize } = metadata;
     if (!originalSize) {
-        res.status(400).json({ message: 'metadata.originalSize is required' });
+        res.status(400).json({ message: 'metadata.originalSize is required', status: 'error' });
         return;
     }
     const hasSpace = await (0, storage_1.hasEnoughStorageSpace)(currentUser.id, currentUser.storageLimit, originalSize);
@@ -440,22 +432,22 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
         const storageInMb = (0, format_1.formatFileSize)(maximumStorageSpace);
         res.status(400).json({
             message: `You have ${storageInMb} of storage space left and you want to upload ${(0, format_1.formatFileSize)(originalSize)}.`,
-            code: 'STORAGE_LIMIT_EXCEEDED'
+            code: 'STORAGE_LIMIT_EXCEEDED',
+            status: 'error',
         });
         return;
     }
     const userDir = path_1.default.join(UPLOAD_DIR, userId.toString());
     const dir = path_1.default.join(userDir, uploadId);
     if (!fs_1.default.existsSync(userDir)) {
-        res.status(400).json({ message: 'User directory does not exist.' });
+        res.status(400).json({ message: 'User directory does not exist.', status: 'error' });
         return;
     }
     if (!fs_1.default.existsSync(dir)) {
-        res.status(400).json({ message: 'Upload directory does not exist.' });
+        res.status(400).json({ message: 'Upload directory does not exist.', status: 'error' });
         return;
     }
     const uploadedChunks = fs_1.default.readdirSync(dir).length;
-    io.emit(`progress.${userId}`, { uploadId, uploadedChunks, totalChunks });
     if (uploadedChunks === parseInt(totalChunks)) {
         let finalPath = path_1.default.join(userDir, originalName);
         finalPath = (0, index_1.getUniqueFilename)(finalPath);
@@ -490,35 +482,32 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
                     setTimeout(() => {
                         fs_1.default.rmSync(dir, { recursive: true });
                     }, 1000);
-                    io.emit(`completed.${userId}`, {
-                        uploadId,
-                        originalName: path_1.default.basename(finalPath),
-                        viewUrl: `${BACKEND_URL}${API_PREFIX}/view/${result[0].downloadToken}`
-                    });
                     res.status(200).json({
                         message: 'File uploaded successfully',
+                        status: 'completed',
                         fileId: result[0].id,
-                        downloadToken: result[0].downloadToken
+                        downloadToken: result[0].downloadToken,
+                        originalName: path_1.default.basename(finalPath),
+                        viewUrl: `${BACKEND_URL}${API_PREFIX}/view/${result[0].downloadToken}`,
                     });
                 }
                 catch (error) {
                     console.error('Error saving file info to database:', error);
-                    res.status(500).json({ message: 'Error saving file information' });
+                    res.status(500).json({ message: 'Error saving file information', status: 'error' });
                 }
             });
             output.end();
         }
         catch (error) {
             console.error('Error processing file:', error);
-            res.status(500).json({ message: 'Error processing file' });
+            res.status(500).json({ message: 'Error processing file', status: 'error' });
             return;
         }
     }
     else {
-        res.status(200).json({ message: 'Chunk uploaded' });
+        res.status(200).json({ message: 'Chunk uploaded', status: 'partial', uploadId, uploadedChunks, totalChunks });
     }
 });
-app.use('/socket.io', express_1.default.static('node_modules/socket.io/client-dist'));
 app.get(`${API_PREFIX}/storage-info`, requireAuth, async (req, res) => {
     try {
         const { user } = await (0, session_1.validateSessionToken)(getTokenFromRequest(req));
