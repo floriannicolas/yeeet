@@ -38,11 +38,15 @@ import { deleteUserFile, toggleUserFileExpiration } from '@/lib/actions';
 export default function FilesList({
     files,
     limit,
+    deleteOptimisticFile,
+    updateOptimisticFile,
     fetchFiles,
 }: {
     files: FileInfo[],
     limit: number,
-    fetchFiles: (limit?: number) => Promise<void>
+    deleteOptimisticFile: (id: number) => Promise<void>,
+    updateOptimisticFile: (file: FileInfo) => Promise<void>,
+    fetchFiles: (limit?: number) => Promise<void>,
 }) {
     const { toast } = useToast();
 
@@ -57,6 +61,7 @@ export default function FilesList({
     const handleDelete = async (id: number) => {
         try {
             deleteUserFile(id);
+            deleteOptimisticFile(id);
             toast({
                 title: "File deleted successfully",
                 description: <>Your file is now deleted.</>
@@ -70,6 +75,14 @@ export default function FilesList({
     const handleToggleExpiration = async (id: number) => {
         try {
             toggleUserFileExpiration(id);
+            const targetFile = files.find((file) => (file.id === id));
+            if (targetFile) {
+                targetFile.expiresAt =
+                    targetFile.expiresAt
+                    ? undefined
+                    : new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString();
+                updateOptimisticFile(targetFile);
+            }
             fetchFiles(limit);
         } catch (error) {
             console.error('Error toggling file expiration:', error);

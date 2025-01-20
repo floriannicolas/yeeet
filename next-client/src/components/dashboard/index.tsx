@@ -43,6 +43,18 @@ export default function Dashboard({
         }
     };
 
+    const deleteOptimisticFile = async (id: number) => {
+        const newFiles = files.filter((file) => file.id !== id);
+        setFiles(newFiles);
+    };
+
+    const updateOptimisticFile = async (file: FileInfo) => {
+        const newFiles = files.map((aFile) => (
+            aFile.id !== file.id ? aFile : file
+        ));
+        setFiles(newFiles);
+    };
+
     const fetchStorageInfo = async () => {
         const newStorageInfo = await getUserStorageInfo();
         setStorageInfo(newStorageInfo);
@@ -61,6 +73,7 @@ export default function Dashboard({
         const chunkSize = 1024 * 1024; // 1MB
         const totalChunks = Math.ceil(file.size / chunkSize);
         const uploadId = Date.now().toString();
+        setProgress(2);
 
         for (let i = 0; i < totalChunks; i++) {
             const start = i * chunkSize;
@@ -82,6 +95,7 @@ export default function Dashboard({
                 const data = response.data;
                 if (!response.ok) {
                     const title = data.code === 'STORAGE_LIMIT_EXCEEDED' ? 'Storage limit exceeded' : 'Error uploading file';
+                    setProgress(0);
                     toast({
                         title,
                         description: data.message,
@@ -104,6 +118,7 @@ export default function Dashboard({
                 }
             } catch (e) {
                 const error = e as Error;
+                setProgress(0);
                 toast({
                     title: 'Error uploading file',
                     description: error.message,
@@ -191,7 +206,15 @@ export default function Dashboard({
                 </div>
                 {isLoading && (<Loader />)}
                 {!isLoading && files.length === 0 && (<EmptyState fileInputRef={fileInputRef} />)}
-                {!isLoading && (<FilesList files={files} limit={FILES_LIMIT} fetchFiles={fetchFiles} />)}
+                {!isLoading && (
+                    <FilesList
+                        files={files}
+                        limit={FILES_LIMIT}
+                        fetchFiles={fetchFiles}
+                        deleteOptimisticFile={deleteOptimisticFile}
+                        updateOptimisticFile={updateOptimisticFile}
+                    />
+                )}
             </div>
             <DropZone isVisible={isDragging} />
         </div>
