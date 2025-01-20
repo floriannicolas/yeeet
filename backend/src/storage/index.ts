@@ -204,7 +204,9 @@ export function createStorageProvider(): StorageProvider {
         );
     }
 
-    const uploadDir = path.join(__dirname, '..', '..', 'uploads');
+    const uploadDir = process.env.VERCEL
+        ? '/tmp'
+        : path.join(__dirname, '..', '..', 'uploads');
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
     return new LocalStorageProvider(uploadDir);

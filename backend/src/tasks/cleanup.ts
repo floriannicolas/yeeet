@@ -17,7 +17,9 @@ export async function cleanupExpiredFiles() {
 
         for (const file of expiredFiles) {
             try {
-                const filePath = path.join(__dirname, '../../uploads', file.filePath);
+                const filePath = process.env.VERCEL
+                    ? path.join('/tmp', file.filePath)
+                    : path.join(__dirname, '../../uploads', file.filePath);
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
                 }
