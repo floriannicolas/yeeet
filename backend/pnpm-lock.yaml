@@ -20,9 +20,6 @@ importers:
       '@types/mime-types':
         specifier: ^2.1.4
         version: 2.1.4
-      '@vercel/postgres':
-        specifier: ^0.10.0
-        version: 0.10.0
       bcrypt:
         specifier: ^5.1.1
         version: 5.1.1
@@ -62,9 +59,6 @@ importers:
       pg:
         specifier: ^8.13.1
         version: 8.13.1
-      postgres:
-        specifier: ^3.4.5
-        version: 3.4.5
       sharp:
         specifier: ^0.33.5
         version: 0.33.5
@@ -2970,6 +2964,7 @@ snapshots:
   '@neondatabase/serverless@0.9.5':
     dependencies:
       '@types/pg': 8.11.6
+    optional: true
 
   '@smithy/abort-controller@3.1.9':
     dependencies:
@@ -3378,6 +3373,7 @@ snapshots:
       '@types/node': 22.10.2
       pg-protocol: 1.7.0
       pg-types: 4.0.2
+    optional: true
 
   '@types/qs@6.9.17': {}
 
@@ -3401,6 +3397,7 @@ snapshots:
       ws: 8.18.0(bufferutil@4.0.9)
     transitivePeerDependencies:
       - utf-8-validate
+    optional: true
 
   abbrev@1.1.1: {}
 
@@ -3517,6 +3514,7 @@ snapshots:
   bufferutil@4.0.9:
     dependencies:
       node-gyp-build: 4.8.4
+    optional: true
 
   busboy@1.6.0:
     dependencies:
@@ -4069,7 +4067,8 @@ snapshots:
     dependencies:
       whatwg-url: 5.0.0
 
-  node-gyp-build@4.8.4: {}
+  node-gyp-build@4.8.4:
+    optional: true
 
   node-mailjet@6.0.6:
     dependencies:
@@ -4211,7 +4210,8 @@ snapshots:
 
   postgres-range@1.1.4: {}
 
-  postgres@3.4.5: {}
+  postgres@3.4.5:
+    optional: true
 
   pre-commit@1.2.2:
     dependencies:
@@ -4562,6 +4562,7 @@ snapshots:
   ws@8.18.0(bufferutil@4.0.9):
     optionalDependencies:
       bufferutil: 4.0.9
+    optional: true
 
   xtend@4.0.2: {}
 

@@ -35,22 +35,17 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.db = void 0;
 require("dotenv/config");
-const postgres_1 = require("@vercel/postgres");
+const node_postgres_1 = require("drizzle-orm/node-postgres");
 const pg_1 = require("pg");
 const schema = __importStar(require("./db/schema"));
-const node_postgres_1 = require("drizzle-orm/node-postgres");
-const vercel_postgres_1 = require("drizzle-orm/vercel-postgres");
 const pool = new pg_1.Pool({
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),
     database: process.env.DB_NAME,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
+    ssl: (process.env.DB_SSL === 'true'),
 });
-exports.db = (process.env.VERCEL)
-    ? (0, vercel_postgres_1.drizzle)((0, postgres_1.createClient)({
-        connectionString: process.env.POSTGRES_URL,
-    }), { schema })
-    : (0, node_postgres_1.drizzle)(pool, { schema });
+exports.db = (0, node_postgres_1.drizzle)(pool, { schema });
 exports.default = exports.db;
 //# sourceMappingURL=database.js.map
