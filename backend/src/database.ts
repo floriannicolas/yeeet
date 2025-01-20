@@ -1,10 +1,9 @@
 import 'dotenv/config';
-import { sql } from '@vercel/postgres';
+import { createPool, sql } from '@vercel/postgres';
 import { Pool } from 'pg';
 import * as schema from './db/schema';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { drizzle as vercelDrizzle } from 'drizzle-orm/vercel-postgres';
-
 
 const pool = new Pool({
   host: process.env.DB_HOST,
@@ -15,7 +14,9 @@ const pool = new Pool({
 });
 
 export const db = (process.env.VERCEL)
-  ? vercelDrizzle({ client: sql, schema })
+  ? vercelDrizzle(createPool({
+    connectionString: process.env.POSTGRES_URL,
+  }), { schema })
   : drizzle(pool, { schema });
 
 export default db; 

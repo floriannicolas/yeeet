@@ -48,7 +48,9 @@ const pool = new pg_1.Pool({
     password: process.env.DB_PASSWORD,
 });
 exports.db = (process.env.VERCEL)
-    ? (0, vercel_postgres_1.drizzle)({ client: postgres_1.sql, schema })
+    ? (0, vercel_postgres_1.drizzle)((0, postgres_1.createPool)({
+        connectionString: process.env.POSTGRES_URL,
+    }), { schema })
     : (0, node_postgres_1.drizzle)(pool, { schema });
 exports.default = exports.db;
 //# sourceMappingURL=database.js.map
