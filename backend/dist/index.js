@@ -57,7 +57,9 @@ io = new socket_io_1.Server(server, {
     }
 });
 const PORT = process.env.PORT || 3000;
-const UPLOAD_DIR = path_1.default.join(__dirname, '..', 'uploads');
+const UPLOAD_DIR = process.env.VERCEL
+    ? '/tmp'
+    : path_1.default.join(__dirname, '..', 'uploads');
 const storageProvider = (0, index_1.createStorageProvider)();
 app.use((0, express_session_1.default)({
     secret: process.env.SESSION_SECRET || 'votre_secret_key_très_sécurisée',

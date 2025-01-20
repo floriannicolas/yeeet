@@ -175,7 +175,9 @@ function createStorageProvider() {
     if (process.env.USE_S3_STORAGE === 'true') {
         return new S3StorageProvider(process.env.AWS_BUCKET_NAME, process.env.AWS_REGION, process.env.AWS_ACCESS_KEY_ID, process.env.AWS_SECRET_ACCESS_KEY);
     }
-    const uploadDir = path_1.default.join(__dirname, '..', '..', 'uploads');
+    const uploadDir = process.env.VERCEL
+        ? '/tmp'
+        : path_1.default.join(__dirname, '..', '..', 'uploads');
     if (!fs_1.default.existsSync(uploadDir))
         fs_1.default.mkdirSync(uploadDir, { recursive: true });
     return new LocalStorageProvider(uploadDir);

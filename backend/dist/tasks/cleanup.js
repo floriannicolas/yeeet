@@ -20,7 +20,9 @@ async function cleanupExpiredFiles() {
             .where((0, drizzle_orm_1.lt)(schema_1.filesTable.expiresAt, new Date()));
         for (const file of expiredFiles) {
             try {
-                const filePath = path_1.default.join(__dirname, '../../uploads', file.filePath);
+                const filePath = process.env.VERCEL
+                    ? path_1.default.join('/tmp', file.filePath)
+                    : path_1.default.join(__dirname, '../../uploads', file.filePath);
                 if (fs_1.default.existsSync(filePath)) {
                     fs_1.default.unlinkSync(filePath);
                 }
