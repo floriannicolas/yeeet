@@ -4,7 +4,6 @@ import multer from 'multer';
 import cookieParser from 'cookie-parser';
 import fs from 'fs';
 import http from 'http';
-import { Server } from 'socket.io';
 import path from 'path';
 import session from 'express-session';
 import bcrypt from 'bcrypt';
@@ -47,7 +46,6 @@ dotenv.config();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 let server;
-let io;
 
 // Configurer CORS avec les nouvelles origines
 const ALLOWED_ORIGINS = [
@@ -58,12 +56,6 @@ const ALLOWED_ORIGINS = [
 
 // En développement local
 server = http.createServer(app);
-io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
-});
 
 const PORT = process.env.PORT || 3000;
 const UPLOAD_DIR = process.env.VERCEL
@@ -462,7 +454,7 @@ app.post(`${API_PREFIX}/update-app-version`, requireAuth, async (req: Request, r
 
 app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req: Request, res: Response): Promise<void> => {
   if (!req.file) {
-    res.status(400).json({ message: 'No file uploaded' });
+    res.status(400).json({ message: 'No file uploaded', status: 'error' });
     return;
   }
 
@@ -472,13 +464,13 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
   if (token) {
     const { user } = await validateSessionToken(token);
     if (!user || !user.id) {
-      res.status(401).json({ message: 'Unauthorized' });
+      res.status(401).json({ message: 'Unauthorized', status: 'error' });
       return;
     }
     currentUser = user;
     userId = user.id;
   } else {
-    res.status(401).json({ message: 'Unauthorized' });
+    res.status(401).json({ message: 'Unauthorized', status: 'error' });
     return;
   }
 
@@ -486,7 +478,7 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
   const { index, totalChunks, uploadId, originalName, originalSize } = metadata;
 
   if (!originalSize) {
-    res.status(400).json({ message: 'metadata.originalSize is required' });
+    res.status(400).json({ message: 'metadata.originalSize is required', status: 'error' });
     return;
   }
 
@@ -496,7 +488,8 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
     const storageInMb = formatFileSize(maximumStorageSpace);
     res.status(400).json({
       message: `You have ${storageInMb} of storage space left and you want to upload ${formatFileSize(originalSize)}.`,
-      code: 'STORAGE_LIMIT_EXCEEDED'
+      code: 'STORAGE_LIMIT_EXCEEDED',
+      status: 'error',
     });
     return;
   }
@@ -505,16 +498,15 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
   const dir = path.join(userDir, uploadId);
 
   if (!fs.existsSync(userDir)) {
-    res.status(400).json({ message: 'User directory does not exist.' });
+    res.status(400).json({ message: 'User directory does not exist.', status: 'error' });
     return;
   }
   if (!fs.existsSync(dir)) {
-    res.status(400).json({ message: 'Upload directory does not exist.' });
+    res.status(400).json({ message: 'Upload directory does not exist.', status: 'error' });
     return;
   }
 
   const uploadedChunks = fs.readdirSync(dir).length;
-  io.emit(`progress.${userId}`, { uploadId, uploadedChunks, totalChunks });
 
   if (uploadedChunks === parseInt(totalChunks)) {
     let finalPath = path.join(userDir, originalName);
@@ -558,34 +550,30 @@ app.post(`${API_PREFIX}/upload`, requireAuth, upload.single('chunk'), async (req
             fs.rmSync(dir, { recursive: true });
           }, 1000);
 
-          io.emit(`completed.${userId}`, {
-            uploadId,
-            originalName: path.basename(finalPath),
-            viewUrl: `${BACKEND_URL}${API_PREFIX}/view/${result[0].downloadToken}`
-          });
-
           res.status(200).json({
             message: 'File uploaded successfully',
+            status: 'completed',
             fileId: result[0].id,
-            downloadToken: result[0].downloadToken
+            downloadToken: result[0].downloadToken,
+            originalName: path.basename(finalPath),
+            viewUrl: `${BACKEND_URL}${API_PREFIX}/view/${result[0].downloadToken}`,
           });
         } catch (error) {
           console.error('Error saving file info to database:', error);
-          res.status(500).json({ message: 'Error saving file information' });
+          res.status(500).json({ message: 'Error saving file information', status: 'error' });
         }
       });
       output.end();
 
     } catch (error) {
       console.error('Error processing file:', error);
-      res.status(500).json({ message: 'Error processing file' });
+      res.status(500).json({ message: 'Error processing file', status: 'error' });
       return;
     }
   } else {
-    res.status(200).json({ message: 'Chunk uploaded' });
+    res.status(200).json({ message: 'Chunk uploaded', status: 'partial', uploadId, uploadedChunks, totalChunks });
   }
 });
-app.use('/socket.io', express.static('node_modules/socket.io/client-dist'));
 
 app.get(`${API_PREFIX}/storage-info`, requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {

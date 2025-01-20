@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { FileInfo, StorageInfo, UploadComplete, UploadProgress } from '@/lib/definitions';
+import { FileInfo, StorageInfo } from '@/lib/definitions';
 import { useToast } from "@/hooks/use-toast";
 import { Upload } from 'lucide-react';
 import { Input } from "@/components/ui/input"
@@ -25,8 +24,7 @@ export default function Dashboard({
 }) {
     const [progress, setProgress] = useState(0);
     const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
-    const socketRef = useRef<Socket>(undefined);
-    const { userId, lastAppVersion } = session;
+    const { lastAppVersion } = session;
     const [files, setFiles] = useState<FileInfo[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -49,36 +47,6 @@ export default function Dashboard({
         const newStorageInfo = await getUserStorageInfo();
         setStorageInfo(newStorageInfo);
     };
-
-    useEffect(() => {
-        socketRef.current = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-            path: '/socket.io',
-            withCredentials: true,
-            transports: ['websocket', 'polling'],
-        });
-
-        socketRef.current.on(`progress.${userId}`, (data: UploadProgress) => {
-            setProgress((data.uploadedChunks / data.totalChunks) * 100);
-        });
-
-        socketRef.current.on(`completed.${userId}`, (data: UploadComplete) => {
-            fetchFiles(FILES_LIMIT);
-            setProgress(0);
-            toast({
-                title: "File uploaded successfully",
-                description: <>Your file <span className="font-semibold">{data.originalName}</span> is now available.</>
-            });
-            if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-            }
-            manageUploadQueueList();
-        });
-
-        return () => {
-            socketRef.current?.disconnect();
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     useEffect(() => {
         fetchFiles(FILES_LIMIT);
@@ -111,21 +79,35 @@ export default function Dashboard({
 
             try {
                 const response = await uploadUserFileChunk(formData);
+                const data = response.data;
                 if (!response.ok) {
-                    const error = response.error;
-                    const title = error.code === 'STORAGE_LIMIT_EXCEEDED' ? 'Storage limit exceeded' : 'Error uploading file';
+                    const title = data.code === 'STORAGE_LIMIT_EXCEEDED' ? 'Storage limit exceeded' : 'Error uploading file';
                     toast({
                         title,
-                        description: error.message,
+                        description: data.message,
                     });
                     break;
+                }
+                if (data.status === 'completed') { // Upload completed
+                    fetchFiles(FILES_LIMIT);
+                    setProgress(0);
+                    toast({
+                        title: "File uploaded successfully",
+                        description: <>Your file <span className="font-semibold">{data.originalName}</span> is now available.</>
+                    });
+                    if (fileInputRef.current) {
+                        fileInputRef.current.value = '';
+                    }
+                    manageUploadQueueList();
+                } else { // partial
+                    setProgress((data.uploadedChunks / data.totalChunks) * 100);
                 }
             } catch (e) {
                 const error = e as Error;
                 toast({
                     title: 'Error uploading file',
                     description: error.message,
-                });  
+                });
                 break;
             }
         }

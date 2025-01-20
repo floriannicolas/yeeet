@@ -23,17 +23,6 @@ export type CheckAuthResponse = {
     lastAppVersion: string;
 };
 
-export type UploadProgress = {
-    uploadId: string;
-    uploadedChunks: number;
-    totalChunks: number;
-}
-
-export type UploadComplete = {
-    uploadId: string;
-    originalName: string;
-}
-
 export type StorageInfo = {
     used: number;
     limit: number;

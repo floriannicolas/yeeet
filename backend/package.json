@@ -31,8 +31,7 @@
     "node-cron": "^3.0.3",
     "node-mailjet": "^6.0.6",
     "pg": "^8.13.1",
-    "sharp": "^0.33.5",
-    "socket.io": "^4.7.2"
+    "sharp": "^0.33.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

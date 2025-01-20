@@ -263,12 +263,10 @@ export async function uploadUserFileChunk(formData: FormData) {
         body: formData,
         headers: { Authorization: `Bearer ${session?.accessToken}` }
     });
-    console.log('response', response);
-
-    const error = (!response.ok) ? await response.json() : null;
+    const data = await response.json();
 
     return {
         ok: response.ok,
-        error,
+        data,
     }
 }
