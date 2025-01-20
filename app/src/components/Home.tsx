@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { io, Socket } from 'socket.io-client';
-import { StorageInfo, UploadProgress } from '../types';
+import { StorageInfo } from '../types';
 import { FlameKindling, LogOut, EllipsisVertical, Upload, Settings, CircleHelp } from 'lucide-react';
 import { LogicalSize, getCurrentWindow } from '@tauri-apps/api/window';
 import {
@@ -36,7 +35,7 @@ import {
 import { getApiToken, removeApiToken } from '@/utils/api-token';
 import { useToast } from "@/hooks/use-toast";
 import { formatFileSize } from '@/utils/format';
-import { 
+import {
   getDeleteScreenshotAfterUpload,
   getIsShottrFriendly,
   getScreenshotPath,
@@ -67,9 +66,8 @@ const FILES_LIMIT = 3;
 export const Home = () => {
   const [progress, setProgress] = useState(0);
   const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
-  const socketRef = useRef<Socket>();
   const navigate = useNavigate();
-  const { logout, userId } = useAuth();
+  const { logout } = useAuth();
   const [deleteScreenshotAfterUploadState, setDeleteScreenshotAfterUploadState] = useState(getDeleteScreenshotAfterUpload());
   const [isShottrFriendlyState, setIsShottrFriendlyState] = useState(getIsShottrFriendly());
   const [screenshotPathState, setScreenshotPathState] = useState(getScreenshotPath());
@@ -278,39 +276,6 @@ export const Home = () => {
   }, []);
 
   useEffect(() => {
-    socketRef.current = io(API_URL, {
-      path: '/socket.io',
-      withCredentials: true,
-      transports: ['websocket', 'polling'],
-    }).on('error', (error) => {
-      toast({
-        title: 'Error connecting to socket server',
-        description: error instanceof Error ? error.message : 'Check your internet connection',
-      });
-      errorLog(error instanceof Error ? error.message : 'Check your internet connection');
-    });
-
-    socketRef.current.on(`progress.${userId}`, (data: UploadProgress) => {
-      setProgress((data.uploadedChunks / data.totalChunks) * 100);
-    });
-
-    socketRef.current.on(`completed.${userId}`, async (result: any) => {
-      infoLog(`completed.${userId} :: ${result.viewUrl}`);
-      await writeText(result.viewUrl);
-      fetchFiles(FILES_LIMIT);
-      setProgress(0);
-      new Audio("/yeeet.mp3").play();
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    });
-
-    return () => {
-      socketRef.current?.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
     const unlistenScreenshot = listen('screenshot-created', async (event) => {
       infoLog(`listen.screenshot-created :: ${event.payload as string}`);
       try {
@@ -360,9 +325,14 @@ export const Home = () => {
   }, []);
 
   const handleUpload = async (file: File) => {
+    if (progress > 0) {
+      return;
+    }
+
     const chunkSize = 1024 * 1024; // 1MB
     const totalChunks = Math.ceil(file.size / chunkSize);
     const uploadId = Date.now().toString();
+    setProgress(2);
 
     for (let i = 0; i < totalChunks; i++) {
       const start = i * chunkSize;
@@ -380,17 +350,40 @@ export const Home = () => {
       formData.append('chunk', new Blob([chunk], { type: file.type }), metadata);
 
 
-      const response = await fetch(`${API_URL}/api/upload`, {
-        method: 'POST',
-        body: formData,
-        headers: { Authorization: `Bearer ${getApiToken()}` }
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        const title = error.code === 'STORAGE_LIMIT_EXCEEDED' ? 'Storage limit exceeded' : 'Error uploading file';
-        errorLog(`handleUpload :: error :: ${title} :: ${error.message}`);
+      try {
+        const response = await fetch(`${API_URL}/api/upload`, {
+          method: 'POST',
+          body: formData,
+          headers: { Authorization: `Bearer ${getApiToken()}` }
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          const title = data.code === 'STORAGE_LIMIT_EXCEEDED' ? 'Storage limit exceeded' : 'Error uploading file';
+          errorLog(`handleUpload :: error :: ${title} :: ${data.message}`);
+          toast({
+            title,
+            description: data.message,
+          });
+          break;
+        }
+        if (data.status === 'completed') { // Upload completed
+          infoLog(`completed :: ${data.viewUrl}`);
+          await writeText(data.viewUrl);
+          fetchFiles(FILES_LIMIT);
+          setProgress(0);
+          new Audio("/yeeet.mp3").play();
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+        } else { // partial
+          setProgress((data.uploadedChunks / data.totalChunks) * 100);
+        }
+      } catch (e) {
+        const error = e as Error;
+        errorLog(`handleUpload :: error :: Error uploading file :: ${error.message}`);
+        setProgress(0);
         toast({
-          title,
+          title: 'Error uploading file',
           description: error.message,
         });
         break;
