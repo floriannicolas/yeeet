@@ -66,7 +66,9 @@ io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3000;
-const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
+const UPLOAD_DIR = process.env.VERCEL
+  ? '/tmp'
+  : path.join(__dirname, '..', 'uploads');
 const storageProvider = createStorageProvider();
 
 app.use(session({
