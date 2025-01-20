@@ -159,9 +159,11 @@ app.post(`${API_PREFIX}/register`, async (req: Request, res: Response) => {
 app.post(`${API_PREFIX}/login`, async (req: Request, res: Response) => {
   const { username, password } = req.body;
   try {
+    console.log('before');
     const user = await db.select().from(usersTable)
       .where(or(eq(usersTable.username, username), eq(usersTable.email, username)))
       .limit(1);
+    console.log('here', user);
     if (user.length > 0) {
       const isPasswordValid = await bcrypt.compare(password, user[0].password);
       if (isPasswordValid) {
@@ -181,6 +183,7 @@ app.post(`${API_PREFIX}/login`, async (req: Request, res: Response) => {
       res.status(404).send('User not found');
     }
   } catch (error: any) {
+    console.log('error here');
     console.error(error);
     res.status(500).send('Server error');
   }

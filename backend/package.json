@@ -18,6 +18,7 @@
     "@aws-sdk/lib-storage": "^3.717.0",
     "@types/heic-convert": "^2.1.0",
     "@types/mime-types": "^2.1.4",
+    "@vercel/postgres": "^0.10.0",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -31,6 +32,7 @@
     "node-cron": "^3.0.3",
     "node-mailjet": "^6.0.6",
     "pg": "^8.13.1",
+    "postgres": "^3.4.5",
     "sharp": "^0.33.5"
   },
   "devDependencies": {

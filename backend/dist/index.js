@@ -144,9 +144,11 @@ app.post(`${API_PREFIX}/register`, async (req, res) => {
 app.post(`${API_PREFIX}/login`, async (req, res) => {
     const { username, password } = req.body;
     try {
+        console.log('before');
         const user = await database_1.db.select().from(schema_1.usersTable)
             .where((0, drizzle_orm_1.or)((0, drizzle_orm_1.eq)(schema_1.usersTable.username, username), (0, drizzle_orm_1.eq)(schema_1.usersTable.email, username)))
             .limit(1);
+        console.log('here', user);
         if (user.length > 0) {
             const isPasswordValid = await bcrypt_1.default.compare(password, user[0].password);
             if (isPasswordValid) {
@@ -169,6 +171,7 @@ app.post(`${API_PREFIX}/login`, async (req, res) => {
         }
     }
     catch (error) {
+        console.log('error here');
         console.error(error);
         res.status(500).send('Server error');
     }
