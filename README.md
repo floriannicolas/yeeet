@@ -23,8 +23,9 @@ YEEET is a secure file sharing platform built with modern web technologies. It f
 
 ### Frontend
 - React 19
-- Nextjs
+- Nextjs 15
 - TypeScript
+- Shadcn UI
 - Axios
 
 ### Desktop Application
@@ -54,13 +55,12 @@ YEEET is a secure file sharing platform built with modern web technologies. It f
 │ │ └── database.ts # Database configuration
 │ └── uploads/ # File storage directory
 │
-├── next-client/ # Web client application
-│ ├── src/
-│ │ ├── components/ # React components
-│ │ ├── contexts/ # React contexts
-│ │ ├── types/ # TypeScript types
-│ │ └── App.tsx # Main application component
-│ └── public/ # Static assets
+├── next-client/ # Next.js web client
+│ ├── app/ # App router directory
+│ ├── components/ # React components
+│ ├── lib/ # Utility functions and configurations
+│ ├── public/ # Static assets
+│ └── types/ # TypeScript types
 │
 └── app/ # Tauri desktop application
 ├── src/
