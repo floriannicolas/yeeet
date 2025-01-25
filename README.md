@@ -22,11 +22,9 @@ YEEET is a secure file sharing platform built with modern web technologies. It f
 - express-session for session management
 
 ### Frontend
-- React 18
+- React 19
+- Nextjs
 - TypeScript
-- Vite
-- React Router v7
-- Socket.IO Client
 - Axios
 
 ### Desktop Application
@@ -56,7 +54,7 @@ YEEET is a secure file sharing platform built with modern web technologies. It f
 │ │ └── database.ts # Database configuration
 │ └── uploads/ # File storage directory
 │
-├── client/ # Web client application
+├── next-client/ # Web client application
 │ ├── src/
 │ │ ├── components/ # React components
 │ │ ├── contexts/ # React contexts
@@ -118,13 +116,13 @@ AWS_SECRET_ACCESS_KEY=your-secret-access-key
 
 4. Install frontend dependencies
 ```bash
-cd ../client
+cd ../next-client
 pnpm install
 ```
 
 5. Configure environment variables:
 
-Create a `.env` file in the client directory:
+Create a `.env` file in the next-client directory:
 
 ```bash
 touch .env
@@ -192,7 +190,7 @@ pnpm tauri dev
 ### Web Application
 
 ```bash
-cd client
+cd next-client
 pnpm build
 ```
 
