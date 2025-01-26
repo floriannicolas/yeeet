@@ -303,6 +303,57 @@ app.post(`${API_PREFIX}/logout`, (req: Request, res: Response) => {
   });
 });
 
+app.get(`${API_PREFIX}/cron-jobs`, async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const jobsLaunched = [];
+    const jobsAlreadyLaunched = [];
+
+    const cronJobCleanupExpiredFiles = await db.select()
+      .from(cronJobsTable)
+      .where(
+        and(
+          eq(cronJobsTable.type, CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES),
+          gte(cronJobsTable.createdAt, today),
+          lt(cronJobsTable.createdAt, tomorrow)
+        )
+      )
+      .limit(1);
+
+    if (cronJobCleanupExpiredFiles.length === 0) {
+      await db.insert(cronJobsTable).values({
+        type: CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES
+      });
+      cleanupExpiredFiles();
+      jobsLaunched.push(CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
+    } else {
+      jobsAlreadyLaunched.push(CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
+    }
+
+    if (jobsLaunched.length > 0) {
+      await db.delete(cronJobsTable)
+        .where(lt(cronJobsTable.createdAt, today));
+    }
+
+    res.json({
+      status: 'success',
+      jobsLaunched,
+      jobsAlreadyLaunched
+    });
+  } catch (error) {
+    console.error('Error getting storage info:', error);
+    res.status(500).json({ message: 'Error getting storage info' });
+  }
+});
+
 
 // Step 2: Multer setup for handling file chunks
 const storage = multer.diskStorage({
@@ -595,58 +646,6 @@ app.get(`${API_PREFIX}/storage-info`, requireAuth, async (req: Request, res: Res
     res.status(500).json({ message: 'Error getting storage info' });
   }
 });
-
-app.get(`${API_PREFIX}/cron-jobs`, requireAuth, async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { user } = await validateSessionToken(getTokenFromRequest(req)!);
-    if (!user || !user.id) {
-      res.status(401).json({ message: 'Unauthorized' });
-      return;
-    }
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const jobsLaunched = [];
-    const jobsAlreadyLaunched = [];
-
-    const cronJobCleanupExpiredFiles = await db.select()
-      .from(cronJobsTable)
-      .where(
-        and(
-          eq(cronJobsTable.type, CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES),
-          gte(cronJobsTable.createdAt, today),
-          lt(cronJobsTable.createdAt, tomorrow)
-        )
-      )
-      .limit(1);
-
-    if (cronJobCleanupExpiredFiles.length === 0) {
-      await db.insert(cronJobsTable).values({
-        type: CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES
-      });
-      cleanupExpiredFiles();
-      jobsLaunched.push(CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
-    } else {
-      jobsAlreadyLaunched.push(CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
-    }
-
-    if (jobsLaunched.length > 0) {
-      await db.delete(cronJobsTable)
-        .where(lt(cronJobsTable.createdAt, today));
-    }
-
-    res.json({
-      status: 'success',
-      jobsLaunched,
-      jobsAlreadyLaunched
-    });
-  } catch (error) {
-    console.error('Error getting storage info:', error);
-    res.status(500).json({ message: 'Error getting storage info' });
-  }
-});
-
 
 app.get(`${API_PREFIX}/files`, requireAuth, async (req: Request, res: Response): Promise<void> => {
   try {

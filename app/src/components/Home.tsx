@@ -192,21 +192,6 @@ export const Home = () => {
     }
   };
 
-  const fetchCronJobs = async () => {
-    const now = new Date();
-    if (now.getHours() < 2) {
-      return;
-    }
-    try {
-      await axios.get(
-        `${API_URL}/api/cron-jobs`, {
-        headers: { Authorization: `Bearer ${getApiToken()}` },
-      });
-    } catch (error) {
-      console.error('Error fetching cron jobs:', error);
-    }
-  };
-
   const fetchAppVersion = async () => {
     const version = await getVersion();
     setAppVersion(version);
@@ -219,10 +204,6 @@ export const Home = () => {
 
   useEffect(() => {
     fetchAppVersion()
-    fetchCronJobs();
-    const interval = setInterval(fetchCronJobs, 3600000); // Every hour
-
-    return () => clearInterval(interval);
   }, []);
 
   const fetchStorageInfo = async () => {

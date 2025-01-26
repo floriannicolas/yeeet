@@ -271,6 +271,47 @@ app.post(`${API_PREFIX}/logout`, (req, res) => {
         }
     });
 });
+app.get(`${API_PREFIX}/cron-jobs`, async (req, res) => {
+    try {
+        if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
+            res.status(401).json({ message: 'Unauthorized' });
+            return;
+        }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const jobsLaunched = [];
+        const jobsAlreadyLaunched = [];
+        const cronJobCleanupExpiredFiles = await database_1.db.select()
+            .from(schema_1.cronJobsTable)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.cronJobsTable.type, cleanup_1.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES), (0, drizzle_orm_1.gte)(schema_1.cronJobsTable.createdAt, today), (0, drizzle_orm_1.lt)(schema_1.cronJobsTable.createdAt, tomorrow)))
+            .limit(1);
+        if (cronJobCleanupExpiredFiles.length === 0) {
+            await database_1.db.insert(schema_1.cronJobsTable).values({
+                type: cleanup_1.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES
+            });
+            (0, cleanup_1.cleanupExpiredFiles)();
+            jobsLaunched.push(cleanup_1.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
+        }
+        else {
+            jobsAlreadyLaunched.push(cleanup_1.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
+        }
+        if (jobsLaunched.length > 0) {
+            await database_1.db.delete(schema_1.cronJobsTable)
+                .where((0, drizzle_orm_1.lt)(schema_1.cronJobsTable.createdAt, today));
+        }
+        res.json({
+            status: 'success',
+            jobsLaunched,
+            jobsAlreadyLaunched
+        });
+    }
+    catch (error) {
+        console.error('Error getting storage info:', error);
+        res.status(500).json({ message: 'Error getting storage info' });
+    }
+});
 // Step 2: Multer setup for handling file chunks
 const storage = multer_1.default.diskStorage({
     destination: async (req, file, cb) => {
@@ -521,48 +562,6 @@ app.get(`${API_PREFIX}/storage-info`, requireAuth, async (req, res) => {
             limit: user.storageLimit,
             available: user.storageLimit - usedStorage,
             usedPercentage: Math.round((usedStorage / user.storageLimit) * 100)
-        });
-    }
-    catch (error) {
-        console.error('Error getting storage info:', error);
-        res.status(500).json({ message: 'Error getting storage info' });
-    }
-});
-app.get(`${API_PREFIX}/cron-jobs`, requireAuth, async (req, res) => {
-    try {
-        const { user } = await (0, session_1.validateSessionToken)(getTokenFromRequest(req));
-        if (!user || !user.id) {
-            res.status(401).json({ message: 'Unauthorized' });
-            return;
-        }
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const jobsLaunched = [];
-        const jobsAlreadyLaunched = [];
-        const cronJobCleanupExpiredFiles = await database_1.db.select()
-            .from(schema_1.cronJobsTable)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.cronJobsTable.type, cleanup_1.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES), (0, drizzle_orm_1.gte)(schema_1.cronJobsTable.createdAt, today), (0, drizzle_orm_1.lt)(schema_1.cronJobsTable.createdAt, tomorrow)))
-            .limit(1);
-        if (cronJobCleanupExpiredFiles.length === 0) {
-            await database_1.db.insert(schema_1.cronJobsTable).values({
-                type: cleanup_1.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES
-            });
-            (0, cleanup_1.cleanupExpiredFiles)();
-            jobsLaunched.push(cleanup_1.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
-        }
-        else {
-            jobsAlreadyLaunched.push(cleanup_1.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
-        }
-        if (jobsLaunched.length > 0) {
-            await database_1.db.delete(schema_1.cronJobsTable)
-                .where((0, drizzle_orm_1.lt)(schema_1.cronJobsTable.createdAt, today));
-        }
-        res.json({
-            status: 'success',
-            jobsLaunched,
-            jobsAlreadyLaunched
         });
     }
     catch (error) {
