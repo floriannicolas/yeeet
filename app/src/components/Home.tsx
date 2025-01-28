@@ -62,6 +62,7 @@ interface FileInfo {
 const API_URL = import.meta.env.VITE_API_URL;
 const CLIENT_URL = import.meta.env.VITE_CLIENT_URL;
 const FILES_LIMIT = 3;
+const NOT_SCREENSHOT_PATH = 'NOT_SCREENSHOT_PATH';
 
 export const Home = () => {
   const [progress, setProgress] = useState(0);
@@ -79,7 +80,9 @@ export const Home = () => {
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
   const lastScreenshotRef = useRef<string | null>(null);
+  const uploadPathsQueue = useRef<string[]>([]);
   const [appVersion, setAppVersion] = useState<string | null>(null);
+  const filesToUploadQueue = useRef<File[]>([]);
 
   const detectDefaultScreenshot = (event: WatchEvent) => {
     const regex = /\d{2}\.\d{2}\.\d{2}\.(png|jpg)(-[\w\-]+)?$/;
@@ -192,6 +195,41 @@ export const Home = () => {
     }
   };
 
+  const removeFileFromQueueList = async (isSuccess: boolean = false) => {
+    if (filesToUploadQueue.current.length > 0) {
+      const [, ...otherFiles] = filesToUploadQueue.current;
+      filesToUploadQueue.current = otherFiles;
+    }
+    if (uploadPathsQueue.current.length > 0) {
+      const [uploadedPath, ...otherPaths] = uploadPathsQueue.current;
+      uploadPathsQueue.current = otherPaths;
+      if (
+        isSuccess
+        && uploadedPath
+        && uploadedPath !== NOT_SCREENSHOT_PATH
+        && getDeleteScreenshotAfterUpload()
+      ) {
+          try {
+            infoLog(`listen.screenshot-created :: delete-screenshot-after-upload :: ${uploadedPath}`);
+            await remove(uploadedPath);
+          } catch (error) {
+            console.error('Failed to delete screenshot after upload:', error);
+            errorLog('Failed to delete screenshot after upload :: ' + error);
+          }
+      }
+    }
+  }
+
+  const manageUploadQueueList = (file?: File, path?: string) => {
+    if (file) {
+      filesToUploadQueue.current = [...filesToUploadQueue.current, file];
+      uploadPathsQueue.current = [...uploadPathsQueue.current, path ? path : NOT_SCREENSHOT_PATH];
+    }
+    if (filesToUploadQueue.current.length > 0) {
+      handleUpload(filesToUploadQueue.current[0]);
+    }
+  }
+
   const fetchAppVersion = async () => {
     const version = await getVersion();
     setAppVersion(version);
@@ -274,12 +312,8 @@ export const Home = () => {
           type: mimeType
         });
 
-        await handleUpload(file);
+        manageUploadQueueList(file, path);
         infoLog(`listen.screenshot-created :: screenshot uploaded :: ${path}`);
-        if (getDeleteScreenshotAfterUpload()) {
-          infoLog(`listen.screenshot-created :: delete-screenshot-after-upload :: ${path}`);
-          await remove(path);
-        }
       } catch (error) {
         errorLog(`listen.screenshot-created :: error :: ${error instanceof Error ? error.message : 'Screenshot not handled'}`);
         toast({
@@ -345,6 +379,8 @@ export const Home = () => {
             title,
             description: data.message,
           });
+          removeFileFromQueueList();
+          manageUploadQueueList();
           break;
         }
         if (data.status === 'completed') { // Upload completed
@@ -356,6 +392,8 @@ export const Home = () => {
           if (fileInputRef.current) {
             fileInputRef.current.value = '';
           }
+          removeFileFromQueueList(true);
+          manageUploadQueueList();
         } else { // partial
           setProgress((data.uploadedChunks / data.totalChunks) * 100);
         }
@@ -367,6 +405,8 @@ export const Home = () => {
           title: 'Error uploading file',
           description: error.message,
         });
+        removeFileFromQueueList();
+        manageUploadQueueList();
         break;
       }
     }
@@ -408,7 +448,7 @@ export const Home = () => {
       droppedFiles.forEach(file => dataTransfer.items.add(file));
       fileInputRef.current.files = dataTransfer.files;
 
-      handleUpload(droppedFiles[0]);
+      manageUploadQueueList(droppedFiles[0]);
     }
   };
 
@@ -538,7 +578,7 @@ export const Home = () => {
                   id="dropzone-file" className="hidden"
                   ref={fileInputRef}
                   type="file"
-                  onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+                  onChange={(e) => e.target.files?.[0] && manageUploadQueueList(e.target.files[0])} />
               </Label>
             </div>
           </div>

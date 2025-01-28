@@ -55,7 +55,7 @@ const convertImageToAvif = async (filePath, mimeType) => {
 };
 exports.convertImageToAvif = convertImageToAvif;
 const convertImageToWebp = async (filePath, mimeType) => {
-    if (!mimeType || !mimeType.startsWith('image/')) {
+    if (!mimeType || !mimeType.startsWith('image/') || mimeType === 'image/gif') {
         return filePath;
     }
     if (mimeType === 'image/heic') {

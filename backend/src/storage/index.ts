@@ -60,7 +60,7 @@ export const convertImageToAvif = async (filePath: string, mimeType: string | nu
 }
 
 export const convertImageToWebp = async (filePath: string, mimeType: string | null): Promise<string> => {
-    if (!mimeType || !mimeType.startsWith('image/')) {
+    if (!mimeType || !mimeType.startsWith('image/') || mimeType === 'image/gif') {
         return filePath;
     }
     if (mimeType === 'image/heic') {

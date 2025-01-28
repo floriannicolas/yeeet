@@ -6,7 +6,7 @@
     "client": "cd client && pnpm run dev",
     "server": "cd backend && pnpm run dev",
     "next-client": "cd next-client && pnpm run dev",
-    "dev": "concurrently \"pnpm run server\" \"pnpm run client\" \"pnpm run next-client\"",
+    "dev": "concurrently \"pnpm run server\" \"pnpm run next-client\"",
     "install-all": "pnpm install && cd client && pnpm install && cd ../backend && pnpm install",
     "generate": "cd backend && pnpm run generate",
     "migrate": "cd backend && pnpm run migrate",

@@ -100,6 +100,8 @@ export default function Dashboard({
                         title,
                         description: data.message,
                     });
+                    removeFileFromQueueList();
+                    manageUploadQueueList();
                     break;
                 }
                 if (data.status === 'completed') { // Upload completed
@@ -112,6 +114,7 @@ export default function Dashboard({
                     if (fileInputRef.current) {
                         fileInputRef.current.value = '';
                     }
+                    removeFileFromQueueList();
                     manageUploadQueueList();
                 } else { // partial
                     setProgress((data.uploadedChunks / data.totalChunks) * 100);
@@ -123,6 +126,8 @@ export default function Dashboard({
                     title: 'Error uploading file',
                     description: error.message,
                 });
+                removeFileFromQueueList();
+                manageUploadQueueList();
                 break;
             }
         }
@@ -148,18 +153,24 @@ export default function Dashboard({
             droppedFiles.forEach(file => dataTransfer.items.add(file));
             fileInputRef.current.files = dataTransfer.files;
 
-            filesToUploadQueue.current = droppedFiles;
-            handleUpload(droppedFiles[0]);
+            filesToUploadQueue.current = [...filesToUploadQueue.current, ...droppedFiles];
+            manageUploadQueueList();
         }
     };
 
-    const manageUploadQueueList = () => {
+    const removeFileFromQueueList = () => {
         if (filesToUploadQueue.current.length > 0) {
             const [, ...otherFiles] = filesToUploadQueue.current;
             filesToUploadQueue.current = otherFiles;
-            if (otherFiles.length > 0) {
-                handleUpload(otherFiles[0]);
-            }
+        }
+    }
+
+    const manageUploadQueueList = (file?: File) => {
+        if (file) {
+            filesToUploadQueue.current = [...filesToUploadQueue.current, file];
+        }
+        if (filesToUploadQueue.current.length > 0) {
+            handleUpload(filesToUploadQueue.current[0]);
         }
     }
 
@@ -198,7 +209,7 @@ export default function Dashboard({
                                         ref={fileInputRef}
                                         disabled={progress > 0}
                                         type="file"
-                                        onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+                                        onChange={(e) => e.target.files?.[0] && manageUploadQueueList(e.target.files[0])} />
                                 </Label>
                             </div>
                         </div>
