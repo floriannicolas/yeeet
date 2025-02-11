@@ -40,14 +40,12 @@ export default function FilesList({
     files,
     limit,
     setOptimisticFiles,
-    toggleFileExpiration,
     fetchFiles,
 }: {
     files: FileInfo[],
     limit: number,
     setOptimisticFiles: (action: { type: filesReducerAction, file: FileInfo }) => void,
     fetchFiles: (limit?: number) => Promise<void>,
-    toggleFileExpiration: (file: FileInfo) => FileInfo,
 }) {
     const { toast } = useToast();
 
@@ -75,7 +73,7 @@ export default function FilesList({
 
     const handleToggleExpiration = async (file: FileInfo) => {
         try {
-            setOptimisticFiles({ type: 'UPDATE', file: toggleFileExpiration(file) });
+            setOptimisticFiles({ type: 'TOGGLE_EXPIRATION', file: file });
             toggleUserFileExpiration(file.id);
             fetchFiles(limit);
         } catch (error) {

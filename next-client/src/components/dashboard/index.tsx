@@ -17,7 +17,7 @@ import FilesList from '@/components/dashboard/ui/files-list';
 
 const FILES_LIMIT = 50;
 
-export type filesReducerAction = 'ADD' | 'DELETE' | 'UPDATE';
+export type filesReducerAction = 'ADD' | 'DELETE' | 'UPDATE' | 'TOGGLE_EXPIRATION';
 
 const filesReducer = (
     files: FileInfo[],
@@ -32,6 +32,14 @@ const filesReducer = (
             return [...files.map((file) => (
                 file.id !== action.file?.id ? file : action.file
             ))];
+        case 'TOGGLE_EXPIRATION':
+            return [
+                ...files.map((file) => (
+                    file.id !== action.file?.id ? file : {
+                        ...file,
+                        expiresAt: file.expiresAt ? undefined : new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
+                    }
+                ))];
         default:
             return files;
     }
