@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useOptimistic, useRef, useState } from 'react';
 import { FileInfo, StorageInfo } from '@/lib/definitions';
 import { useToast } from "@/hooks/use-toast";
 import { Upload } from 'lucide-react';
@@ -17,6 +17,26 @@ import FilesList from '@/components/dashboard/ui/files-list';
 
 const FILES_LIMIT = 50;
 
+export type filesReducerAction = 'ADD' | 'DELETE' | 'UPDATE';
+
+const filesReducer = (
+    files: FileInfo[],
+    action: { type: filesReducerAction, file: FileInfo }
+): FileInfo[] => {
+    switch (action.type) {
+        case 'ADD':
+            return [...files, action.file];
+        case 'DELETE':
+            return files.filter((file) => file.id !== action.file.id);
+        case 'UPDATE':
+            return [...files.map((file) => (
+                file.id !== action.file?.id ? file : action.file
+            ))];
+        default:
+            return files;
+    }
+};
+
 export default function Dashboard({
     session,
 }: {
@@ -26,6 +46,7 @@ export default function Dashboard({
     const [storageInfo, setStorageInfo] = useState<StorageInfo | null>(null);
     const { lastAppVersion } = session;
     const [files, setFiles] = useState<FileInfo[]>([]);
+    const [optimisticFiles, setOptimisticFiles] = useOptimistic(files, filesReducer);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -41,18 +62,6 @@ export default function Dashboard({
         } catch (error) {
             console.error('Error fetching files:', error);
         }
-    };
-
-    const deleteOptimisticFile = async (id: number) => {
-        const newFiles = files.filter((file) => file.id !== id);
-        setFiles(newFiles);
-    };
-
-    const updateOptimisticFile = async (file: FileInfo) => {
-        const newFiles = files.map((aFile) => (
-            aFile.id !== file.id ? aFile : file
-        ));
-        setFiles(newFiles);
     };
 
     const fetchStorageInfo = async () => {
@@ -216,14 +225,13 @@ export default function Dashboard({
                     </div>
                 </div>
                 {isLoading && (<Loader />)}
-                {!isLoading && files.length === 0 && (<EmptyState fileInputRef={fileInputRef} />)}
+                {!isLoading && optimisticFiles.length === 0 && (<EmptyState fileInputRef={fileInputRef} />)}
                 {!isLoading && (
                     <FilesList
-                        files={files}
+                        files={optimisticFiles}
                         limit={FILES_LIMIT}
                         fetchFiles={fetchFiles}
-                        deleteOptimisticFile={deleteOptimisticFile}
-                        updateOptimisticFile={updateOptimisticFile}
+                        setOptimisticFiles={setOptimisticFiles}
                     />
                 )}
             </div>

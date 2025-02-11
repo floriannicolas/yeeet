@@ -34,19 +34,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatFileSize } from '@/utils/format';
 import { deleteUserFile, toggleUserFileExpiration } from '@/lib/actions';
+import { filesReducerAction } from '..';
 
 export default function FilesList({
     files,
     limit,
-    deleteOptimisticFile,
-    updateOptimisticFile,
+    setOptimisticFiles,
+    toggleFileExpiration,
     fetchFiles,
 }: {
     files: FileInfo[],
     limit: number,
-    deleteOptimisticFile: (id: number) => Promise<void>,
-    updateOptimisticFile: (file: FileInfo) => Promise<void>,
+    setOptimisticFiles: (action: { type: filesReducerAction, file: FileInfo }) => void,
     fetchFiles: (limit?: number) => Promise<void>,
+    toggleFileExpiration: (file: FileInfo) => FileInfo,
 }) {
     const { toast } = useToast();
 
@@ -58,10 +59,10 @@ export default function FilesList({
         navigator.clipboard.writeText(url);
     };
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (file: FileInfo) => {
         try {
-            deleteUserFile(id);
-            deleteOptimisticFile(id);
+            setOptimisticFiles({ type: 'DELETE', file: file });
+            deleteUserFile(file.id);
             toast({
                 title: "File deleted successfully",
                 description: <>Your file is now deleted.</>
@@ -72,17 +73,10 @@ export default function FilesList({
         }
     };
 
-    const handleToggleExpiration = async (id: number) => {
+    const handleToggleExpiration = async (file: FileInfo) => {
         try {
-            toggleUserFileExpiration(id);
-            const targetFile = files.find((file) => (file.id === id));
-            if (targetFile) {
-                targetFile.expiresAt =
-                    targetFile.expiresAt
-                    ? undefined
-                    : new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString();
-                updateOptimisticFile(targetFile);
-            }
+            setOptimisticFiles({ type: 'UPDATE', file: toggleFileExpiration(file) });
+            toggleUserFileExpiration(file.id);
             fetchFiles(limit);
         } catch (error) {
             console.error('Error toggling file expiration:', error);
@@ -214,7 +208,7 @@ export default function FilesList({
                                             </DropdownMenuItem>
                                         </DropdownMenuGroup>
                                         <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={() => handleToggleExpiration(file.id)} className='cursor-pointer'>
+                                        <DropdownMenuItem onClick={() => handleToggleExpiration(file)} className='cursor-pointer'>
                                             {
                                                 file.expiresAt ? (
                                                     <>
@@ -249,7 +243,7 @@ export default function FilesList({
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDelete(file.id)}>Continue</AlertDialogAction>
+                                        <AlertDialogAction onClick={() => handleDelete(file)}>Continue</AlertDialogAction>
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
