@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useOptimistic, useRef, useState } from 'react';
-import { FileInfo, StorageInfo } from '@/lib/definitions';
+import { FileInfo, FileReducerAction, StorageInfo } from '@/lib/definitions';
 import { useToast } from "@/hooks/use-toast";
 import { Upload } from 'lucide-react';
 import { Input } from "@/components/ui/input"
@@ -17,29 +17,27 @@ import FilesList from '@/components/dashboard/ui/files-list';
 
 const FILES_LIMIT = 50;
 
-export type filesReducerAction = 'ADD' | 'DELETE' | 'UPDATE' | 'TOGGLE_EXPIRATION';
-
 const filesReducer = (
     files: FileInfo[],
-    action: { type: filesReducerAction, file: FileInfo }
+    action: FileReducerAction
 ): FileInfo[] => {
-    switch (action.type) {
+    const { item, type } = action;
+    switch (type) {
         case 'ADD':
-            return [...files, action.file];
+            return [...files, item];
         case 'DELETE':
-            return files.filter((file) => file.id !== action.file.id);
+            return files.filter((file) => file.id !== item.id);
         case 'UPDATE':
-            return [...files.map((file) => (
-                file.id !== action.file?.id ? file : action.file
-            ))];
+            return files.map((file) => (
+                file.id !== file.id ? file : item
+            ));
         case 'TOGGLE_EXPIRATION':
-            return [
-                ...files.map((file) => (
-                    file.id !== action.file?.id ? file : {
+            return files.map((file) => (
+                    file.id !== item.id ? file : {
                         ...file,
                         expiresAt: file.expiresAt ? undefined : new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
                     }
-                ))];
+                ));
         default:
             return files;
     }

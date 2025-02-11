@@ -1,4 +1,4 @@
-import { FileInfo} from '@/lib/definitions';
+import { FileInfo, FileReducerAction } from '@/lib/definitions';
 import { useToast } from "@/hooks/use-toast";
 import {
     EllipsisVertical,
@@ -34,7 +34,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatFileSize } from '@/utils/format';
 import { deleteUserFile, toggleUserFileExpiration } from '@/lib/actions';
-import { filesReducerAction } from '..';
 
 export default function FilesList({
     files,
@@ -44,7 +43,7 @@ export default function FilesList({
 }: {
     files: FileInfo[],
     limit: number,
-    setOptimisticFiles: (action: { type: filesReducerAction, file: FileInfo }) => void,
+    setOptimisticFiles: (action: FileReducerAction) => void,
     fetchFiles: (limit?: number) => Promise<void>,
 }) {
     const { toast } = useToast();
@@ -59,7 +58,7 @@ export default function FilesList({
 
     const handleDelete = async (file: FileInfo) => {
         try {
-            setOptimisticFiles({ type: 'DELETE', file: file });
+            setOptimisticFiles({ type: 'DELETE', item: file });
             deleteUserFile(file.id);
             toast({
                 title: "File deleted successfully",
@@ -73,7 +72,7 @@ export default function FilesList({
 
     const handleToggleExpiration = async (file: FileInfo) => {
         try {
-            setOptimisticFiles({ type: 'TOGGLE_EXPIRATION', file: file });
+            setOptimisticFiles({ type: 'TOGGLE_EXPIRATION', item: file });
             toggleUserFileExpiration(file.id);
             fetchFiles(limit);
         } catch (error) {

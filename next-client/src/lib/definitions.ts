@@ -29,3 +29,8 @@ export type StorageInfo = {
     available: number;
     usedPercentage: number;
 }
+
+export type FileReducerAction = {
+    type: 'ADD' | 'DELETE' | 'UPDATE' | 'TOGGLE_EXPIRATION',
+    item: FileInfo
+}
