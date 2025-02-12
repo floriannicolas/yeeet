@@ -13,6 +13,7 @@ import Header from '@/components/dashboard/ui/header';
 import Loader from '@/components/ui/loader';
 import EmptyState from '@/components/dashboard/ui/empty-state';
 import FilesList from '@/components/dashboard/ui/files-list';
+import { useUploadQueue } from '@/hooks/use-upload-queue';
 
 
 const FILES_LIMIT = 50;
@@ -29,7 +30,7 @@ const filesReducer = (
             return files.filter((file) => file.id !== item.id);
         case 'UPDATE':
             return files.map((file) => (
-                file.id !== file.id ? file : item
+                file.id === item.id ? item : file
             ));
         case 'TOGGLE_EXPIRATION':
             return files.map((file) => (
@@ -56,30 +57,6 @@ export default function Dashboard({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const filesToUploadQueue = useRef<File[]>([]);
-    const { toast } = useToast();
-
-    const fetchFiles = async (limit?: number) => {
-        try {
-            const newFiles = await getUserFiles(limit);
-            setFiles(newFiles);
-            fetchStorageInfo();
-            setIsLoading(false);
-        } catch (error) {
-            console.error('Error fetching files:', error);
-        }
-    };
-
-    const fetchStorageInfo = async () => {
-        const newStorageInfo = await getUserStorageInfo();
-        setStorageInfo(newStorageInfo);
-    };
-
-    useEffect(() => {
-        fetchFiles(FILES_LIMIT);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
     const handleUpload = async (file: File) => {
         if (progress > 0) {
             return;
@@ -115,8 +92,7 @@ export default function Dashboard({
                         title,
                         description: data.message,
                     });
-                    removeFileFromQueueList();
-                    manageUploadQueueList();
+                    uploadQueue.after();
                     break;
                 }
                 if (data.status === 'completed') { // Upload completed
@@ -129,8 +105,7 @@ export default function Dashboard({
                     if (fileInputRef.current) {
                         fileInputRef.current.value = '';
                     }
-                    removeFileFromQueueList();
-                    manageUploadQueueList();
+                    uploadQueue.after();
                 } else { // partial
                     setProgress((data.uploadedChunks / data.totalChunks) * 100);
                 }
@@ -141,12 +116,38 @@ export default function Dashboard({
                     title: 'Error uploading file',
                     description: error.message,
                 });
-                removeFileFromQueueList();
-                manageUploadQueueList();
+                uploadQueue.after();
                 break;
             }
         }
     };
+    const uploadQueue = useUploadQueue(handleUpload);
+    const { toast } = useToast();
+
+    const fetchFiles = async (limit?: number) => {
+        try {
+            const newFiles = await getUserFiles(limit);
+            setFiles(newFiles);
+            fetchStorageInfo();
+            setIsLoading(false);
+        } catch (error) {
+            toast({
+                title: 'Unexpected error',
+                description: 'Unable to fetch files. Please try again later.',
+            });
+            console.error('Error fetching files:', error);
+        }
+    };
+
+    const fetchStorageInfo = async () => {
+        const newStorageInfo = await getUserStorageInfo();
+        setStorageInfo(newStorageInfo);
+    };
+
+    useEffect(() => {
+        fetchFiles(FILES_LIMIT);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -167,27 +168,9 @@ export default function Dashboard({
             const dataTransfer = new DataTransfer();
             droppedFiles.forEach(file => dataTransfer.items.add(file));
             fileInputRef.current.files = dataTransfer.files;
-
-            filesToUploadQueue.current = [...filesToUploadQueue.current, ...droppedFiles];
-            manageUploadQueueList();
+            uploadQueue.manage(droppedFiles);
         }
     };
-
-    const removeFileFromQueueList = () => {
-        if (filesToUploadQueue.current.length > 0) {
-            const [, ...otherFiles] = filesToUploadQueue.current;
-            filesToUploadQueue.current = otherFiles;
-        }
-    }
-
-    const manageUploadQueueList = (file?: File) => {
-        if (file) {
-            filesToUploadQueue.current = [...filesToUploadQueue.current, file];
-        }
-        if (filesToUploadQueue.current.length > 0) {
-            handleUpload(filesToUploadQueue.current[0]);
-        }
-    }
 
     return (
         <div className="min-h-svh flex flex-col"
@@ -224,7 +207,7 @@ export default function Dashboard({
                                         ref={fileInputRef}
                                         disabled={progress > 0}
                                         type="file"
-                                        onChange={(e) => e.target.files?.[0] && manageUploadQueueList(e.target.files[0])} />
+                                        onChange={(e) => e.target.files?.[0] && uploadQueue.manage(Array.from(e.target.files))} />
                                 </Label>
                             </div>
                         </div>
