@@ -3,9 +3,42 @@ import { Upload } from '@aws-sdk/lib-storage';
 import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
-import { formatFileSize } from '../utils/format';
+import { formatFileSize } from '../lib/formatters';
 import heicConvert from 'heic-convert';
+import { db } from '../config/database';
+import { filesTable } from '../db/schema';
+import { eq, sum } from 'drizzle-orm';
 
+export const UPLOAD_DIR = process.env.VERCEL
+    ? '/tmp'
+    : path.join(__dirname, '..', '..', 'uploads');
+
+export const convertBytesToMb = (bytes: number) => {
+    return Math.round(bytes / (1024 * 1024));
+}
+
+export async function getUserStorageUsed(userId: number): Promise<number> {
+    const result = await db
+        .select({ totalSize: sum(filesTable.size) })
+        .from(filesTable)
+        .where(eq(filesTable.userId, userId));
+
+    let totalSize = result[0].totalSize;
+    if (totalSize) {
+        return parseInt(totalSize);
+    }
+    return 0;
+}
+
+export async function getMaxUserStorageSpace(userId: number, limit: number): Promise<number> {
+    const usedStorage = await getUserStorageUsed(userId);
+    return limit - usedStorage;
+}
+
+export async function hasEnoughStorageSpace(userId: number, limit: number, fileSize: number): Promise<boolean> {
+    const usedStorage = await getUserStorageUsed(userId);
+    return (usedStorage + fileSize) <= limit;
+}
 
 export interface StorageProvider {
     saveFile(filePath: string, destinationPath: string): Promise<string | null>;
@@ -204,10 +237,7 @@ export function createStorageProvider(): StorageProvider {
         );
     }
 
-    const uploadDir = process.env.VERCEL
-        ? '/tmp'
-        : path.join(__dirname, '..', '..', 'uploads');
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-    return new LocalStorageProvider(uploadDir);
+    if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+    return new LocalStorageProvider(UPLOAD_DIR);
 } 

@@ -37,7 +37,7 @@ exports.db = void 0;
 require("dotenv/config");
 const node_postgres_1 = require("drizzle-orm/node-postgres");
 const pg_1 = require("pg");
-const schema = __importStar(require("./db/schema"));
+const schema = __importStar(require("../db/schema"));
 const pool = new pg_1.Pool({
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),

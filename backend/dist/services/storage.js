@@ -3,15 +3,47 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.convertImageToWebp = exports.convertImageToAvif = exports.getUniqueFilename = void 0;
+exports.convertImageToWebp = exports.convertImageToAvif = exports.getUniqueFilename = exports.convertBytesToMb = exports.UPLOAD_DIR = void 0;
+exports.getUserStorageUsed = getUserStorageUsed;
+exports.getMaxUserStorageSpace = getMaxUserStorageSpace;
+exports.hasEnoughStorageSpace = hasEnoughStorageSpace;
 exports.createStorageProvider = createStorageProvider;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const lib_storage_1 = require("@aws-sdk/lib-storage");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const sharp_1 = __importDefault(require("sharp"));
-const format_1 = require("../utils/format");
+const formatters_1 = require("../lib/formatters");
 const heic_convert_1 = __importDefault(require("heic-convert"));
+const database_1 = require("../config/database");
+const schema_1 = require("../db/schema");
+const drizzle_orm_1 = require("drizzle-orm");
+exports.UPLOAD_DIR = process.env.VERCEL
+    ? '/tmp'
+    : path_1.default.join(__dirname, '..', '..', 'uploads');
+const convertBytesToMb = (bytes) => {
+    return Math.round(bytes / (1024 * 1024));
+};
+exports.convertBytesToMb = convertBytesToMb;
+async function getUserStorageUsed(userId) {
+    const result = await database_1.db
+        .select({ totalSize: (0, drizzle_orm_1.sum)(schema_1.filesTable.size) })
+        .from(schema_1.filesTable)
+        .where((0, drizzle_orm_1.eq)(schema_1.filesTable.userId, userId));
+    let totalSize = result[0].totalSize;
+    if (totalSize) {
+        return parseInt(totalSize);
+    }
+    return 0;
+}
+async function getMaxUserStorageSpace(userId, limit) {
+    const usedStorage = await getUserStorageUsed(userId);
+    return limit - usedStorage;
+}
+async function hasEnoughStorageSpace(userId, limit, fileSize) {
+    const usedStorage = await getUserStorageUsed(userId);
+    return (usedStorage + fileSize) <= limit;
+}
 const getUniqueFilename = (originalPath) => {
     const dir = path_1.default.dirname(originalPath);
     const ext = path_1.default.extname(originalPath);
@@ -43,11 +75,11 @@ const convertImageToAvif = async (filePath, mimeType) => {
     const testNewFilePath = (0, exports.getUniqueFilename)(newFilePath);
     console.time('convertImageToAvif.fs.writeFile');
     const fileStats = fs_1.default.statSync(newFilePath);
-    console.log('convertImageToAvif.sharp.fileSize', (0, format_1.formatFileSize)(fileStats.size));
+    console.log('convertImageToAvif.sharp.fileSize', (0, formatters_1.formatFileSize)(fileStats.size));
     await fs_1.default.writeFileSync(testNewFilePath, image);
     console.timeEnd('convertImageToAvif.fs.writeFile');
     const testFileStats = fs_1.default.statSync(testNewFilePath);
-    console.log('convertImageToAvif.fs.writeFileSync.fileSize', (0, format_1.formatFileSize)(testFileStats.size));
+    console.log('convertImageToAvif.fs.writeFileSync.fileSize', (0, formatters_1.formatFileSize)(testFileStats.size));
     fs_1.default.unlinkSync(testNewFilePath);
     fs_1.default.unlinkSync(filePath);
     console.timeEnd('convertImageToAvif');
@@ -175,11 +207,8 @@ function createStorageProvider() {
     if (process.env.USE_S3_STORAGE === 'true') {
         return new S3StorageProvider(process.env.AWS_BUCKET_NAME, process.env.AWS_REGION, process.env.AWS_ACCESS_KEY_ID, process.env.AWS_SECRET_ACCESS_KEY);
     }
-    const uploadDir = process.env.VERCEL
-        ? '/tmp'
-        : path_1.default.join(__dirname, '..', '..', 'uploads');
-    if (!fs_1.default.existsSync(uploadDir))
-        fs_1.default.mkdirSync(uploadDir, { recursive: true });
-    return new LocalStorageProvider(uploadDir);
+    if (!fs_1.default.existsSync(exports.UPLOAD_DIR))
+        fs_1.default.mkdirSync(exports.UPLOAD_DIR, { recursive: true });
+    return new LocalStorageProvider(exports.UPLOAD_DIR);
 }
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=storage.js.map

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const migrator_1 = require("drizzle-orm/node-postgres/migrator");
-const database_1 = require("../database");
+const database_1 = require("../config/database");
 async function runMigration() {
     console.log('Running migrations...');
     await (0, migrator_1.migrate)(database_1.db, { migrationsFolder: 'drizzle' });

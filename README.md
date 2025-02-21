@@ -50,7 +50,13 @@ YEEET is a secure file sharing platform built with modern web technologies. It f
 ```
 ├── backend/
 │ ├── src/
+│ │ ├── config/ # Constants and configurations
 │ │ ├── db/ # Database schemas and migrations
+│ │ ├── lib/ # formatters and utility functions
+│ │ ├── middleware/ # Custom middlewares
+│ │ ├── routes/ # API routes
+│ │ ├── services/ # Service classes
+│ │ ├── tasks/ # Background tasks
 │ │ ├── index.ts # Main server file
 │ │ └── database.ts # Database configuration
 │ └── uploads/ # File storage directory
@@ -63,10 +69,10 @@ YEEET is a secure file sharing platform built with modern web technologies. It f
 │ └── types/ # TypeScript types
 │
 └── app/ # Tauri desktop application
-├── src/
-│ ├── components/ # React components
-│ ├── contexts/ # React contexts
-│ └── App.tsx # Main application component
+│ ├── src/
+│ │ ├── components/ # React components
+│ │ ├── contexts/ # React contexts
+│ │ ├── App.tsx # Main application component
 └── src-tauri/ # Rust/Tauri backend
 ```
 

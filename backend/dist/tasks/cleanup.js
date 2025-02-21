@@ -5,12 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES = void 0;
 exports.cleanupExpiredFiles = cleanupExpiredFiles;
-const database_1 = require("../database");
+const database_1 = require("../config/database");
 const schema_1 = require("../db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
-const storage_1 = require("../storage");
+const storage_1 = require("../services/storage");
 exports.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES = 'cleanup_expired_files';
 async function cleanupExpiredFiles() {
     const storageProvider = (0, storage_1.createStorageProvider)();

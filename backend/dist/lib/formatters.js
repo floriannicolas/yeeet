@@ -11,4 +11,4 @@ function formatFileSize(bytes) {
     }
     return `${Math.round(size)} ${units[unitIndex]}`;
 }
-//# sourceMappingURL=format.js.map
+//# sourceMappingURL=formatters.js.map

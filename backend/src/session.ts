@@ -1,13 +1,35 @@
 import { type User, type Session, sessionsTable, usersTable } from './db/schema';
 import { eq } from 'drizzle-orm';
-import { db } from './database';
+import { db } from './config/database';
 import crypto from 'crypto';
 import type { Response } from 'express';
-
+import { Request } from 'express';
 
 export function generateSessionToken(): string {
 	return crypto.randomBytes(32).toString('hex');
 }
+
+/**
+ * Get the token from the request.
+ * @param req 
+ * @returns 
+ */
+export const getTokenFromRequest = (req: Request) => {
+    const token = req.cookies?.session;
+    if (token) {
+        return token;
+    }
+
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+        const [type, token] = authHeader.split(' ');
+        if (type === 'Bearer') {
+            return token;
+        }
+    }
+
+    return null;
+};
 
 export async function createSession(token: string, userId: number): Promise<Session> {
 	const session: Session = {

@@ -1,9 +1,9 @@
-import { db } from '../database';
+import { db } from '../config/database';
 import { filesTable } from '../db/schema';
 import { lt, eq } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
-import { createStorageProvider } from '../storage';
+import { createStorageProvider } from '../services/storage';
 
 
 export const CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES = 'cleanup_expired_files';

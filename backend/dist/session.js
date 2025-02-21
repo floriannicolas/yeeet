@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getTokenFromRequest = void 0;
 exports.generateSessionToken = generateSessionToken;
 exports.createSession = createSession;
 exports.validateSessionToken = validateSessionToken;
@@ -11,11 +12,31 @@ exports.setSessionTokenCookie = setSessionTokenCookie;
 exports.deleteSessionTokenCookie = deleteSessionTokenCookie;
 const schema_1 = require("./db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
-const database_1 = require("./database");
+const database_1 = require("./config/database");
 const crypto_1 = __importDefault(require("crypto"));
 function generateSessionToken() {
     return crypto_1.default.randomBytes(32).toString('hex');
 }
+/**
+ * Get the token from the request.
+ * @param req
+ * @returns
+ */
+const getTokenFromRequest = (req) => {
+    const token = req.cookies?.session;
+    if (token) {
+        return token;
+    }
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+        const [type, token] = authHeader.split(' ');
+        if (type === 'Bearer') {
+            return token;
+        }
+    }
+    return null;
+};
+exports.getTokenFromRequest = getTokenFromRequest;
 async function createSession(token, userId) {
     const session = {
         id: token,
