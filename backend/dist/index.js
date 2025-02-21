@@ -54,11 +54,11 @@ app.get(`/`, async (req, res) => {
     });
 });
 // Routes
+app.use(auth_1.requireAuth, express_1.default.static('public'));
 app.use(`${constants_1.API_PREFIX}`, auth_2.default);
 app.use(`${constants_1.API_PREFIX}`, cron_1.default);
 app.use(`${constants_1.API_PREFIX}`, user_1.default);
 app.use(`${constants_1.API_PREFIX}`, files_1.default);
-app.use(auth_1.requireAuth, express_1.default.static('public'));
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
