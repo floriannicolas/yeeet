@@ -47,9 +47,17 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.get(`/`, async (req: Request, res: Response) => {
+app.get('/', async (req: Request, res: Response) => {
   res.json({
     status: 'ok',
+    message: 'Yeeet api is running',
+    uptime: process.uptime()
+  });
+});
+
+app.get('/test', async (req: Request, res: Response) => {
+  res.json({
+    status: 'test',
     message: 'Yeeet api is running',
     uptime: process.uptime()
   });
