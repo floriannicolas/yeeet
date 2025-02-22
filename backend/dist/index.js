@@ -46,9 +46,16 @@ app.use((0, cors_1.default)({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.get(`/`, async (req, res) => {
+app.get('/', async (req, res) => {
     res.json({
         status: 'ok',
+        message: 'Yeeet api is running',
+        uptime: process.uptime()
+    });
+});
+app.get('/test', async (req, res) => {
+    res.json({
+        status: 'test',
         message: 'Yeeet api is running',
         uptime: process.uptime()
     });

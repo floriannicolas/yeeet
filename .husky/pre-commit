@@ -1,0 +1,1 @@
+cd backend && pnpm run ts.check && pnpm run build && git add dist
