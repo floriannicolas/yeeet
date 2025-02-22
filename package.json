@@ -3,15 +3,14 @@
   "version": "1.0.0",
   "description": "File upload application with React frontend and Express backend",
   "scripts": {
-    "client": "cd client && pnpm run dev",
-    "server": "cd backend && pnpm run dev",
-    "next-client": "cd next-client && pnpm run dev",
-    "dev": "concurrently \"pnpm run server\" \"pnpm run next-client\"",
+    "backend": "cd backend && pnpm run dev",
+    "client": "cd next-client && pnpm run dev",
+    "dev": "concurrently \"pnpm run backend\" \"pnpm run next-client\"",
     "install-all": "pnpm install && cd next-client && pnpm install && cd ../backend && pnpm install",
     "generate": "cd backend && pnpm run generate",
     "migrate": "cd backend && pnpm run migrate",
     "init-db": "cd backend && pnpm run init-db",
-    "preCommit": "cd backend && pnpm run ts.check && pnpm run build && pnpm run add-buid"
+    "preCommit": "cd backend && pnpm run ts.check && pnpm run build && git add dist"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
