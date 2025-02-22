@@ -55,14 +55,6 @@ app.get('/', async (req: Request, res: Response) => {
   });
 });
 
-app.get('/test', async (req: Request, res: Response) => {
-  res.json({
-    status: 'test',
-    message: 'Yeeet api is running',
-    uptime: process.uptime()
-  });
-});
-
 // Routes
 app.use(`${API_PREFIX}`, authRoutes);
 app.use(`${API_PREFIX}`, cronRoutes);

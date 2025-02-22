@@ -53,13 +53,6 @@ app.get('/', async (req, res) => {
         uptime: process.uptime()
     });
 });
-app.get('/test', async (req, res) => {
-    res.json({
-        status: 'test',
-        message: 'Yeeet api is running',
-        uptime: process.uptime()
-    });
-});
 // Routes
 app.use(`${constants_1.API_PREFIX}`, auth_2.default);
 app.use(`${constants_1.API_PREFIX}`, cron_1.default);
