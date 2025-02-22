@@ -4,7 +4,7 @@ import { usersTable } from '../db/schema';
 import { eq } from 'drizzle-orm';
 import { validateSessionToken, getTokenFromRequest } from '../session';
 import { requireAuth } from '../middleware/auth';
-import { getUserStorageUsed } from '../services/storage';
+import { UserStorageService } from '../services/user-storage';
 
 const router = Router();
 
@@ -36,7 +36,7 @@ router.get('/storage-info', requireAuth, async (req: Request, res: Response): Pr
             return;
         }
 
-        const usedStorage = await getUserStorageUsed(user.id);
+        const usedStorage = await UserStorageService.getUserStorageUsed(user.id);
         res.json({
             used: usedStorage,
             limit: user.storageLimit,

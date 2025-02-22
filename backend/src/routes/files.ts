@@ -13,10 +13,9 @@ import {
     convertImageToWebp,
     createStorageProvider,
     getUniqueFilename,
-    getMaxUserStorageSpace,
-    hasEnoughStorageSpace,
     UPLOAD_DIR,
 } from '../services/storage';
+import { UserStorageService } from '../services/user-storage';
 import { formatFileSize } from '../lib/formatters';
 import mime from 'mime-types';
 import { BACKEND_URL, API_PREFIX } from "../config/constants";
@@ -178,9 +177,9 @@ router.post('/upload', requireAuth, upload.single('chunk'), async (req: Request,
         return;
     }
 
-    const hasSpace = await hasEnoughStorageSpace(currentUser.id, currentUser.storageLimit, originalSize);
+    const hasSpace = await UserStorageService.hasEnoughStorageSpace(currentUser.id, currentUser.storageLimit, originalSize);
     if (!hasSpace) {
-        const maximumStorageSpace = await getMaxUserStorageSpace(currentUser.id, currentUser.storageLimit);
+        const maximumStorageSpace = await UserStorageService.getMaxUserStorageSpace(currentUser.id, currentUser.storageLimit);
         const storageInMb = formatFileSize(maximumStorageSpace);
         res.status(400).json({
             message: `You have ${storageInMb} of storage space left and you want to upload ${formatFileSize(originalSize)}.`,

@@ -98,7 +98,7 @@ router.post('/forgot-password', async (req, res) => {
             token: resetToken,
             expiresAt
         });
-        await (0, email_1.sendPasswordResetEmail)(email, resetToken);
+        await email_1.EmailService.sendPasswordResetEmail(email, resetToken);
         res.json({ message: 'If an account exists with that email, you will receive password reset instructions.' });
     }
     catch (error) {

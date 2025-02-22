@@ -6,7 +6,7 @@ const schema_1 = require("../db/schema");
 const drizzle_orm_1 = require("drizzle-orm");
 const session_1 = require("../session");
 const auth_1 = require("../middleware/auth");
-const storage_1 = require("../services/storage");
+const user_storage_1 = require("../services/user-storage");
 const router = (0, express_1.Router)();
 router.post('/update-app-version', auth_1.requireAuth, async (req, res) => {
     const { appVersion } = req.body;
@@ -34,7 +34,7 @@ router.get('/storage-info', auth_1.requireAuth, async (req, res) => {
             res.status(401).json({ message: 'Unauthorized' });
             return;
         }
-        const usedStorage = await (0, storage_1.getUserStorageUsed)(user.id);
+        const usedStorage = await user_storage_1.UserStorageService.getUserStorageUsed(user.id);
         res.json({
             used: usedStorage,
             limit: user.storageLimit,

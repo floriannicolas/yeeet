@@ -3,10 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.convertImageToWebp = exports.convertImageToAvif = exports.getUniqueFilename = exports.convertBytesToMb = exports.UPLOAD_DIR = void 0;
-exports.getUserStorageUsed = getUserStorageUsed;
-exports.getMaxUserStorageSpace = getMaxUserStorageSpace;
-exports.hasEnoughStorageSpace = hasEnoughStorageSpace;
+exports.convertImageToWebp = exports.convertImageToAvif = exports.getUniqueFilename = exports.UPLOAD_DIR = void 0;
 exports.createStorageProvider = createStorageProvider;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const lib_storage_1 = require("@aws-sdk/lib-storage");
@@ -15,35 +12,9 @@ const path_1 = __importDefault(require("path"));
 const sharp_1 = __importDefault(require("sharp"));
 const formatters_1 = require("../lib/formatters");
 const heic_convert_1 = __importDefault(require("heic-convert"));
-const database_1 = require("../config/database");
-const schema_1 = require("../db/schema");
-const drizzle_orm_1 = require("drizzle-orm");
 exports.UPLOAD_DIR = process.env.VERCEL
     ? '/tmp'
     : path_1.default.join(__dirname, '..', '..', 'uploads');
-const convertBytesToMb = (bytes) => {
-    return Math.round(bytes / (1024 * 1024));
-};
-exports.convertBytesToMb = convertBytesToMb;
-async function getUserStorageUsed(userId) {
-    const result = await database_1.db
-        .select({ totalSize: (0, drizzle_orm_1.sum)(schema_1.filesTable.size) })
-        .from(schema_1.filesTable)
-        .where((0, drizzle_orm_1.eq)(schema_1.filesTable.userId, userId));
-    let totalSize = result[0].totalSize;
-    if (totalSize) {
-        return parseInt(totalSize);
-    }
-    return 0;
-}
-async function getMaxUserStorageSpace(userId, limit) {
-    const usedStorage = await getUserStorageUsed(userId);
-    return limit - usedStorage;
-}
-async function hasEnoughStorageSpace(userId, limit, fileSize) {
-    const usedStorage = await getUserStorageUsed(userId);
-    return (usedStorage + fileSize) <= limit;
-}
 const getUniqueFilename = (originalPath) => {
     const dir = path_1.default.dirname(originalPath);
     const ext = path_1.default.extname(originalPath);

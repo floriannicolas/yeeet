@@ -4,7 +4,7 @@ import { usersTable, passwordResetTokensTable } from '../db/schema';
 import bcrypt from 'bcrypt';
 import { or, eq, and, isNull, gt } from 'drizzle-orm';
 import { generateSessionToken, createSession, invalidateSession, validateSessionToken, getTokenFromRequest } from '../session';
-import { sendPasswordResetEmail } from '../services/email';
+import { EmailService } from '../services/email';
 import { generateRandomToken } from '../lib/tokens';
 
 const router = Router();
@@ -96,7 +96,7 @@ router.post('/forgot-password', async (req: Request, res: Response) => {
             expiresAt
         });
 
-        await sendPasswordResetEmail(email, resetToken);
+        await EmailService.sendPasswordResetEmail(email, resetToken);
         res.json({ message: 'If an account exists with that email, you will receive password reset instructions.' });
     } catch (error) {
         console.error('Error in forgot password:', error);

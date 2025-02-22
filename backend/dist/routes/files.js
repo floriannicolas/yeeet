@@ -12,6 +12,7 @@ const database_1 = require("../config/database");
 const schema_1 = require("../db/schema");
 const session_1 = require("../session");
 const storage_1 = require("../services/storage");
+const user_storage_1 = require("../services/user-storage");
 const formatters_1 = require("../lib/formatters");
 const mime_types_1 = __importDefault(require("mime-types"));
 const constants_1 = require("../config/constants");
@@ -150,9 +151,9 @@ router.post('/upload', auth_1.requireAuth, upload.single('chunk'), async (req, r
         res.status(400).json({ message: 'metadata.originalSize is required', status: 'error' });
         return;
     }
-    const hasSpace = await (0, storage_1.hasEnoughStorageSpace)(currentUser.id, currentUser.storageLimit, originalSize);
+    const hasSpace = await user_storage_1.UserStorageService.hasEnoughStorageSpace(currentUser.id, currentUser.storageLimit, originalSize);
     if (!hasSpace) {
-        const maximumStorageSpace = await (0, storage_1.getMaxUserStorageSpace)(currentUser.id, currentUser.storageLimit);
+        const maximumStorageSpace = await user_storage_1.UserStorageService.getMaxUserStorageSpace(currentUser.id, currentUser.storageLimit);
         const storageInMb = (0, formatters_1.formatFileSize)(maximumStorageSpace);
         res.status(400).json({
             message: `You have ${storageInMb} of storage space left and you want to upload ${(0, formatters_1.formatFileSize)(originalSize)}.`,
