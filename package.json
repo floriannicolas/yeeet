@@ -10,9 +10,14 @@
     "install-all": "pnpm install && cd next-client && pnpm install && cd ../backend && pnpm install",
     "generate": "cd backend && pnpm run generate",
     "migrate": "cd backend && pnpm run migrate",
-    "init-db": "cd backend && pnpm run init-db"
+    "init-db": "cd backend && pnpm run init-db",
+    "preCommit": "cd backend && pnpm run ts.check && pnpm run build && pnpm run add-buid"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
-  }
+    "concurrently": "^8.2.2",
+    "pre-commit": "^1.2.2"
+  },
+  "pre-commit": [
+    "preCommit"
+  ]
 }
