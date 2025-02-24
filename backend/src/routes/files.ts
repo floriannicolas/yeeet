@@ -1,12 +1,16 @@
-import { Router, Request, Response } from 'express';
-import multer from 'multer';
-import fs from 'fs';
-import path from 'path';
 import { eq, and, desc } from 'drizzle-orm';
+import { Router, Request, Response } from 'express';
+import fs from 'fs';
+import mime from 'mime-types';
+import multer from 'multer';
+import path from 'path';
 import { Readable } from 'stream';
+import { BACKEND_URL, API_PREFIX } from '../config/constants';
 import { db } from '../config/database';
 import { filesTable } from '../db/schema';
-import { getTokenFromRequest, validateSessionToken } from '../session';
+import { formatFileSize } from '../lib/formatters';
+import { generateRandomToken } from '../lib/tokens';
+import { requireAuth } from '../middleware/auth';
 import {
   convertImageToWebp,
   createStorageProvider,
@@ -14,11 +18,7 @@ import {
   UPLOAD_DIR,
 } from '../services/storage';
 import { UserStorageService } from '../services/user-storage';
-import { formatFileSize } from '../lib/formatters';
-import mime from 'mime-types';
-import { BACKEND_URL, API_PREFIX } from '../config/constants';
-import { generateRandomToken } from '../lib/tokens';
-import { requireAuth } from '../middleware/auth';
+import { getTokenFromRequest, validateSessionToken } from '../session';
 
 const storageProvider = createStorageProvider();
 

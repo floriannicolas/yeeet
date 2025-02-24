@@ -1,9 +1,14 @@
-import { type User, type Session, sessionsTable, usersTable } from './db/schema';
-import { eq } from 'drizzle-orm';
-import { db } from './config/database';
 import crypto from 'crypto';
+import { eq } from 'drizzle-orm';
 import type { Response } from 'express';
 import { Request } from 'express';
+import { db } from './config/database';
+import { 
+	type User,
+	type Session,
+	sessionsTable,
+	usersTable,
+} from './db/schema';
 
 export function generateSessionToken(): string {
   return crypto.randomBytes(32).toString('hex');

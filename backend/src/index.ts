@@ -1,15 +1,20 @@
-import dotenv from 'dotenv';
-import express, { Request, Response } from 'express';
-import cookieParser from 'cookie-parser';
-import http from 'http';
-import session from 'express-session';
 import cors from 'cors';
-import { CLIENT_URL, TAURI_URL, TAURI_URL_DEV, API_PREFIX } from './config/constants';
+import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import express, { Request, Response } from 'express';
+import session from 'express-session';
+import http from 'http';
+import { 
+  CLIENT_URL,
+  TAURI_URL,
+  TAURI_URL_DEV,
+  API_PREFIX,
+} from './config/constants';
 import { requireAuth } from './middleware/auth';
 import authRoutes from './routes/auth';
 import cronRoutes from './routes/cron';
-import userRoutes from './routes/user';
 import filesRoutes from './routes/files';
+import userRoutes from './routes/user';
 
 const app = express();
 dotenv.config();

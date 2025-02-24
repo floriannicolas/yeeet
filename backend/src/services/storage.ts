@@ -6,11 +6,11 @@ import {
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import fs from 'fs';
+import heicConvert from 'heic-convert';
 import path from 'path';
 import sharp from 'sharp';
-import { formatFileSize } from '../lib/formatters';
-import heicConvert from 'heic-convert';
 import { Readable } from 'stream';
+import { formatFileSize } from '../lib/formatters';
 
 export const UPLOAD_DIR = process.env.VERCEL ? '/tmp' : path.join(__dirname, '..', '..', 'uploads');
 

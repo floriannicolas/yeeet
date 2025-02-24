@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserStorageService = void 0;
+const drizzle_orm_1 = require("drizzle-orm");
 const database_1 = require("../config/database");
 const schema_1 = require("../db/schema");
-const drizzle_orm_1 = require("drizzle-orm");
 class UserStorageService {
     static async getUserStorageUsed(userId) {
         const result = await database_1.db

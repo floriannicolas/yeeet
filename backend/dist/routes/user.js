@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const drizzle_orm_1 = require("drizzle-orm");
 const express_1 = require("express");
 const database_1 = require("../config/database");
 const schema_1 = require("../db/schema");
-const drizzle_orm_1 = require("drizzle-orm");
-const session_1 = require("../session");
 const auth_1 = require("../middleware/auth");
 const user_storage_1 = require("../services/user-storage");
+const session_1 = require("../session");
 const router = (0, express_1.Router)();
 router.post('/update-app-version', auth_1.requireAuth, async (req, res) => {
     const { appVersion } = req.body;

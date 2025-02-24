@@ -9,7 +9,6 @@ import {
   uniqueIndex,
   AnyPgColumn,
 } from 'drizzle-orm/pg-core';
-
 import type { InferSelectModel } from 'drizzle-orm';
 import { SQL, sql } from 'drizzle-orm';
 

@@ -1,8 +1,10 @@
+import bcrypt from 'bcrypt';
+import { or, eq, and, isNull, gt } from 'drizzle-orm';
 import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
 import { usersTable, passwordResetTokensTable } from '../db/schema';
-import bcrypt from 'bcrypt';
-import { or, eq, and, isNull, gt } from 'drizzle-orm';
+import { generateRandomToken } from '../lib/tokens';
+import { EmailService } from '../services/email';
 import {
   generateSessionToken,
   createSession,
@@ -10,8 +12,6 @@ import {
   validateSessionToken,
   getTokenFromRequest,
 } from '../session';
-import { EmailService } from '../services/email';
-import { generateRandomToken } from '../lib/tokens';
 
 const router = Router();
 

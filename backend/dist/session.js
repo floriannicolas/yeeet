@@ -10,10 +10,10 @@ exports.validateSessionToken = validateSessionToken;
 exports.invalidateSession = invalidateSession;
 exports.setSessionTokenCookie = setSessionTokenCookie;
 exports.deleteSessionTokenCookie = deleteSessionTokenCookie;
-const schema_1 = require("./db/schema");
+const crypto_1 = __importDefault(require("crypto"));
 const drizzle_orm_1 = require("drizzle-orm");
 const database_1 = require("./config/database");
-const crypto_1 = __importDefault(require("crypto"));
+const schema_1 = require("./db/schema");
 function generateSessionToken() {
     return crypto_1.default.randomBytes(32).toString('hex');
 }

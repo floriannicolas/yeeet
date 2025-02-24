@@ -3,14 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const drizzle_orm_1 = require("drizzle-orm");
 const express_1 = require("express");
 const database_1 = require("../config/database");
 const schema_1 = require("../db/schema");
-const bcrypt_1 = __importDefault(require("bcrypt"));
-const drizzle_orm_1 = require("drizzle-orm");
-const session_1 = require("../session");
-const email_1 = require("../services/email");
 const tokens_1 = require("../lib/tokens");
+const email_1 = require("../services/email");
+const session_1 = require("../session");
 const router = (0, express_1.Router)();
 router.post('/register', async (req, res) => {
     const { username, email, password, invitationKey } = req.body;

@@ -8,10 +8,10 @@ exports.createStorageProvider = createStorageProvider;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const lib_storage_1 = require("@aws-sdk/lib-storage");
 const fs_1 = __importDefault(require("fs"));
+const heic_convert_1 = __importDefault(require("heic-convert"));
 const path_1 = __importDefault(require("path"));
 const sharp_1 = __importDefault(require("sharp"));
 const formatters_1 = require("../lib/formatters");
-const heic_convert_1 = __importDefault(require("heic-convert"));
 exports.UPLOAD_DIR = process.env.VERCEL ? '/tmp' : path_1.default.join(__dirname, '..', '..', 'uploads');
 const getUniqueFilename = (originalPath) => {
     const dir = path_1.default.dirname(originalPath);

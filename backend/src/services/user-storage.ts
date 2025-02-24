@@ -1,7 +1,6 @@
+import { eq, sum } from 'drizzle-orm';
 import { db } from '../config/database';
 import { filesTable } from '../db/schema';
-import { eq, sum } from 'drizzle-orm';
-
 export class UserStorageService {
   static async getUserStorageUsed(userId: number): Promise<number> {
     const result = await db

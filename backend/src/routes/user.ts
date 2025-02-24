@@ -1,10 +1,10 @@
+import { eq } from 'drizzle-orm';
 import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
 import { usersTable } from '../db/schema';
-import { eq } from 'drizzle-orm';
-import { validateSessionToken, getTokenFromRequest } from '../session';
 import { requireAuth } from '../middleware/auth';
 import { UserStorageService } from '../services/user-storage';
+import { validateSessionToken, getTokenFromRequest } from '../session';
 
 const router = Router();
 
