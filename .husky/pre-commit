@@ -3,4 +3,5 @@ if git diff --staged --quiet backend/; then
   exit 0
 fi
 
+echo "Building backend"
 cd backend && pnpm run ts.check && pnpm run build && git add dist
