@@ -9,11 +9,9 @@
     "install-all": "pnpm install && cd next-client && pnpm install && cd ../backend && pnpm install",
     "generate": "cd backend && pnpm run generate",
     "migrate": "cd backend && pnpm run migrate",
-    "init-db": "cd backend && pnpm run init-db",
-    "prepare": "husky"
+    "init-db": "cd backend && pnpm run init-db"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
-    "husky": "^9.1.7"
+    "concurrently": "^8.2.2"
   }
 }

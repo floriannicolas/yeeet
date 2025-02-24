@@ -54,6 +54,14 @@ app.get('/', async (req: Request, res: Response) => {
   });
 });
 
+app.get('/ping', async (req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    message: 'Pong 🏓',
+    uptime: process.uptime(),
+  });
+});
+
 // Routes
 app.use(`${API_PREFIX}`, authRoutes);
 app.use(`${API_PREFIX}`, cronRoutes);
