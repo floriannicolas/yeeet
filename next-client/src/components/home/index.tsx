@@ -32,11 +32,11 @@ export default function Home() {
             <h2 className="text-5xl md:text-7xl font-bold mb-6">Share instantly</h2>
             <p className="text-xl font-light mb-6"><span className="font-bold">Yeeet</span> is a quick and simple way to share <span className="font-bold">screenshots</span> & <span className="font-bold">files</span>.</p>
             <div className='text-center'>
-              <Link href="/register">
-                <Button size="lg">
+              <Button size="lg" asChild>
+                <Link href="/register">
                   Get started
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         </div>

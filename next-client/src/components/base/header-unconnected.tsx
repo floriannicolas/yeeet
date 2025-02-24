@@ -43,11 +43,11 @@ export const HeaderUnconnected = () => {
           </NavigationMenu>
         </div> */}
         <div className="flex items-center gap-2 font-medium ml-auto">
-          <Link href="/login">
-            <Button>
+          <Button asChild>
+            <Link href="/login">
               Login
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
         {/* <div className="flex items-center gap-2 font-medium ml-auto block md:hidden">
           <Sheet>
