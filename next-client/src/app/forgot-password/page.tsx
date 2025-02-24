@@ -1,13 +1,7 @@
 import { FlameKindling } from 'lucide-react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ForgotPasswordForm from '@/components/form/forgot-password-form';
 
 export const metadata: Metadata = {

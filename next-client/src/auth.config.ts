@@ -21,7 +21,7 @@ export const authConfig = {
         ...session,
         accessToken: token.accessToken,
       };
-    }
+    },
   },
   providers: [], // Add providers with an empty array for now
 } satisfies NextAuthConfig;

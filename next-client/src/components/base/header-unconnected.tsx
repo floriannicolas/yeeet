@@ -1,6 +1,4 @@
-import {
-  FlameKindling,
-} from 'lucide-react';
+import { FlameKindling } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -44,9 +42,7 @@ export const HeaderUnconnected = () => {
         </div> */}
         <div className="flex items-center gap-2 font-medium ml-auto">
           <Button asChild>
-            <Link href="/login">
-              Login
-            </Link>
+            <Link href="/login">Login</Link>
           </Button>
         </div>
         {/* <div className="flex items-center gap-2 font-medium ml-auto block md:hidden">

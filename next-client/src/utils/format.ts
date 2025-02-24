@@ -9,4 +9,4 @@ export function formatFileSize(bytes: number): string {
   }
 
   return `${Math.round(size)} ${units[unitIndex]}`;
-} 
+}

@@ -36,7 +36,10 @@ export default function Login() {
         />
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">
-            <p className="text-lg">“Yeeet has saved me countless hours of work by helping me share screenshots faster than ever before.”</p>
+            <p className="text-lg">
+              “Yeeet has saved me countless hours of work by helping me share screenshots faster
+              than ever before.”
+            </p>
             <footer className="text-sm">Eric Martin</footer>
           </blockquote>
         </div>

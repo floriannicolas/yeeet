@@ -1,13 +1,7 @@
 import { FlameKindling } from 'lucide-react';
 import { Metadata } from 'next';
 import Link from 'next/link';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ResetPasswordForm from '@/components/form/reset-password-form';
 
 export const metadata: Metadata = {
@@ -31,9 +25,7 @@ export default async function ResetPassword(props: { params: Promise<{ token: st
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">Reset your password</CardTitle>
-            <CardDescription>
-              Enter your new password below
-            </CardDescription>
+            <CardDescription>Enter your new password below</CardDescription>
           </CardHeader>
           <CardContent>
             <ResetPasswordForm token={token} />

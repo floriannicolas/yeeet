@@ -1,36 +1,35 @@
-
 export type User = {
-    id: string;
-    username: string;
-    email: string;
-    token: string;
+  id: string;
+  username: string;
+  email: string;
+  token: string;
 };
 
 export type FileInfo = {
-    id: number;
-    originalName: string;
-    mimeType: string;
-    size: number;
-    createdAt: string;
-    expiresAt?: string;
-    downloadUrl: string;
-    viewUrl: string;
-}
+  id: number;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  createdAt: string;
+  expiresAt?: string;
+  downloadUrl: string;
+  viewUrl: string;
+};
 
 export type CheckAuthResponse = {
-    isAuthenticated: string; 
-    userId: string;
-    lastAppVersion: string;
+  isAuthenticated: string;
+  userId: string;
+  lastAppVersion: string;
 };
 
 export type StorageInfo = {
-    used: number;
-    limit: number;
-    available: number;
-    usedPercentage: number;
-}
+  used: number;
+  limit: number;
+  available: number;
+  usedPercentage: number;
+};
 
 export type FileReducerAction = {
-    type: 'ADD' | 'DELETE' | 'UPDATE' | 'TOGGLE_EXPIRATION',
-    item: FileInfo
-}
+  type: 'ADD' | 'DELETE' | 'UPDATE' | 'TOGGLE_EXPIRATION';
+  item: FileInfo;
+};
