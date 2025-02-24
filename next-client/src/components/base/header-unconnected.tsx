@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 
 export const HeaderUnconnected = () => {
   return (
-    <header className="flex sticky top-0 bg-background z-10 h-16 shrink-0 items-center gap-2 border-b px-6">
+    <header className="flex sticky top-0 bg-background z-10 h-16 shrink-0 items-center gap-2 border-b px-6 bg-black/50 backdrop-blur-lg">
       <div className="flex justify-center gap-2 md:justify-start w-full">
         <Link href="/" className="flex items-center gap-2 font-medium mr-auto">
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">

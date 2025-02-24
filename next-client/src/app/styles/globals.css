@@ -34,6 +34,7 @@ html {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -66,6 +67,7 @@ html {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -80,14 +82,47 @@ input:autofill, select:autofill {
 
 
 .flame-kindling-animation {
-    animation: flame-kindling 2.6s infinite;
+  animation: flame-kindling 2.6s infinite;
 }
 
-@keyframes flame-kindling
-{
-    0%      {color:white;}
-    25%     {color: hsl(var(--muted-foreground));}
-    75%     {color: hsl(var(--muted-foreground));}
-    100%    {color:white;}
+@keyframes flame-kindling {
+  0% {
+    color: white;
+  }
+
+  25% {
+    color: hsl(var(--muted-foreground));
+  }
+
+  75% {
+    color: hsl(var(--muted-foreground));
+  }
+
+  100% {
+    color: white;
+  }
 }
 
+/*
+---break---*/
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.bg-pattern {
+  background:
+      radial-gradient(35.36% 35.36% at 100% 25%,#0000 66%,#1d1d1d 68% 70%,#0000 72%) 32px 32px/calc(2*32px) calc(2*32px),
+      radial-gradient(35.36% 35.36% at 0    75%,#0000 66%,#1d1d1d 68% 70%,#0000 72%) 32px 32px/calc(2*32px) calc(2*32px),
+      radial-gradient(35.36% 35.36% at 100% 25%,#0000 66%,#1d1d1d 68% 70%,#0000 72%) 0 0/calc(2*32px) calc(2*32px),
+      radial-gradient(35.36% 35.36% at 0    75%,#0000 66%,#1d1d1d 68% 70%,#0000 72%) 0 0/calc(2*32px) calc(2*32px),
+      repeating-conic-gradient(#000000 0 25%,#0000 0 50%) 0 0/calc(2*32px) calc(2*32px),
+      radial-gradient(#0000 66%,#1d1d1d 68% 70%,#0000 72%) 0 calc(32px/2)/32px 32px
+      #000000;
+}
