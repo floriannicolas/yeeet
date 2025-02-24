@@ -132,7 +132,7 @@ export default function Dashboard({
             setFiles(newFiles);
             fetchStorageInfo();
             setIsLoading(false);
-            setIsLoadingButton(true);
+            setIsLoadingButton(false);
         } catch (error) {
             toast({
                 title: 'Unexpected error',
