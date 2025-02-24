@@ -10,19 +10,17 @@ const sendEmail = async (to, subject, html) => {
         apiKey: process.env.MAILJET_API_KEY,
         apiSecret: process.env.MAILJET_API_SECRET,
     });
-    const request = mailjet
-        .post('send', { version: 'v3.1' })
-        .request({
+    const request = mailjet.post('send', { version: 'v3.1' }).request({
         Messages: [
             {
                 From: {
                     Email: process.env.MAILJET_SENDER_EMAIL,
-                    Name: 'Yeeet - No Reply'
+                    Name: 'Yeeet - No Reply',
                 },
                 To: [{ Email: to }],
                 Subject: subject,
-                HTMLPart: html
-            }
+                HTMLPart: html,
+            },
         ],
     });
     request

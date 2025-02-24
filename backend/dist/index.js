@@ -19,23 +19,18 @@ const app = (0, express_1.default)();
 dotenv_1.default.config();
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-let server;
-const ALLOWED_ORIGINS = [
-    constants_1.CLIENT_URL,
-    constants_1.TAURI_URL,
-    constants_1.TAURI_URL_DEV,
-];
-server = http_1.default.createServer(app);
+const ALLOWED_ORIGINS = [constants_1.CLIENT_URL, constants_1.TAURI_URL, constants_1.TAURI_URL_DEV];
+const server = http_1.default.createServer(app);
 const PORT = process.env.PORT || 3000;
 app.use((0, express_session_1.default)({
     secret: process.env.SESSION_SECRET || 'your_very_secure_secret_key',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
 }));
 app.use((0, cookie_parser_1.default)());
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {
-        if (!origin || ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes("*")) {
+        if (!origin || ALLOWED_ORIGINS.includes(origin) || ALLOWED_ORIGINS.includes('*')) {
             callback(null, true);
         }
         else {
@@ -44,13 +39,13 @@ app.use((0, cors_1.default)({
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.get('/', async (req, res) => {
     res.json({
         status: 'ok',
         message: 'Yeeet api is running',
-        uptime: process.uptime()
+        uptime: process.uptime(),
     });
 });
 // Routes

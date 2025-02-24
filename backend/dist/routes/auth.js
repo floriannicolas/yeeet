@@ -23,34 +23,40 @@ router.post('/register', async (req, res) => {
         return;
     }
     try {
+        const user = await database_1.db
+            .select()
+            .from(schema_1.usersTable)
+            .where((0, drizzle_orm_1.or)((0, drizzle_orm_1.eq)(schema_1.usersTable.username, username), (0, drizzle_orm_1.eq)(schema_1.usersTable.email, username)))
+            .limit(1);
+        if (user.length > 0) {
+            res.status(400).json({
+                errors: {
+                    username: ['Username or email already exists'],
+                },
+            });
+            return;
+        }
         const hashedPassword = await bcrypt_1.default.hash(password, 10);
         await database_1.db.insert(schema_1.usersTable).values({
             username,
             email,
-            password: hashedPassword
+            password: hashedPassword,
         });
         res.status(200).send({ message: 'Register successful' });
     }
     catch (error) {
-        if (error.code === '23505') {
-            res.status(400).json({
-                errors: {
-                    username: ['Username already exists'],
-                },
-            });
-        }
-        else {
-            console.error(error);
-            res.status(500).json({
-                message: 'Server error'
-            });
-        }
+        console.error(error);
+        res.status(500).json({
+            message: 'Server error',
+        });
     }
 });
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
     try {
-        const user = await database_1.db.select().from(schema_1.usersTable)
+        const user = await database_1.db
+            .select()
+            .from(schema_1.usersTable)
             .where((0, drizzle_orm_1.or)((0, drizzle_orm_1.eq)(schema_1.usersTable.username, username), (0, drizzle_orm_1.eq)(schema_1.usersTable.email, username)))
             .limit(1);
         if (user.length > 0) {
@@ -82,13 +88,12 @@ router.post('/login', async (req, res) => {
 router.post('/forgot-password', async (req, res) => {
     try {
         const { email } = req.body;
-        const user = await database_1.db.select()
-            .from(schema_1.usersTable)
-            .where((0, drizzle_orm_1.eq)(schema_1.usersTable.email, email))
-            .limit(1);
+        const user = await database_1.db.select().from(schema_1.usersTable).where((0, drizzle_orm_1.eq)(schema_1.usersTable.email, email)).limit(1);
         if (user.length === 0) {
             // Pour des raisons de sécurité, on renvoie toujours un succès
-            res.json({ message: 'If an account exists with that email, you will receive password reset instructions.' });
+            res.json({
+                message: 'If an account exists with that email, you will receive password reset instructions.',
+            });
             return;
         }
         const resetToken = (0, tokens_1.generateRandomToken)();
@@ -96,10 +101,12 @@ router.post('/forgot-password', async (req, res) => {
         await database_1.db.insert(schema_1.passwordResetTokensTable).values({
             userId: user[0].id,
             token: resetToken,
-            expiresAt
+            expiresAt,
         });
         await email_1.EmailService.sendPasswordResetEmail(email, resetToken);
-        res.json({ message: 'If an account exists with that email, you will receive password reset instructions.' });
+        res.json({
+            message: 'If an account exists with that email, you will receive password reset instructions.',
+        });
     }
     catch (error) {
         console.error('Error in forgot password:', error);
@@ -109,20 +116,27 @@ router.post('/forgot-password', async (req, res) => {
 router.post('/reset-password', async (req, res) => {
     try {
         const { token, password } = req.body;
-        const resetToken = await database_1.db.select()
+        const resetToken = await database_1.db
+            .select()
             .from(schema_1.passwordResetTokensTable)
             .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.passwordResetTokensTable.token, token), (0, drizzle_orm_1.isNull)(schema_1.passwordResetTokensTable.usedAt), (0, drizzle_orm_1.gt)(schema_1.passwordResetTokensTable.expiresAt, new Date())))
             .limit(1);
         if (resetToken.length === 0) {
-            res.status(400).json({ message: 'Invalid or expired reset token. Please ask a new mail using the "forgot password?" feature.' });
+            res
+                .status(400)
+                .json({
+                message: 'Invalid or expired reset token. Please ask a new mail using the "forgot password?" feature.',
+            });
             return;
         }
         const hashedPassword = await bcrypt_1.default.hash(password, 10);
         await database_1.db.transaction(async (tx) => {
-            await tx.update(schema_1.usersTable)
+            await tx
+                .update(schema_1.usersTable)
                 .set({ password: hashedPassword })
                 .where((0, drizzle_orm_1.eq)(schema_1.usersTable.id, resetToken[0].userId));
-            await tx.update(schema_1.passwordResetTokensTable)
+            await tx
+                .update(schema_1.passwordResetTokensTable)
                 .set({ usedAt: new Date() })
                 .where((0, drizzle_orm_1.eq)(schema_1.passwordResetTokensTable.id, resetToken[0].id));
         });

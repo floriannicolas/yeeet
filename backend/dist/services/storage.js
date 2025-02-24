@@ -12,9 +12,7 @@ const path_1 = __importDefault(require("path"));
 const sharp_1 = __importDefault(require("sharp"));
 const formatters_1 = require("../lib/formatters");
 const heic_convert_1 = __importDefault(require("heic-convert"));
-exports.UPLOAD_DIR = process.env.VERCEL
-    ? '/tmp'
-    : path_1.default.join(__dirname, '..', '..', 'uploads');
+exports.UPLOAD_DIR = process.env.VERCEL ? '/tmp' : path_1.default.join(__dirname, '..', '..', 'uploads');
 const getUniqueFilename = (originalPath) => {
     const dir = path_1.default.dirname(originalPath);
     const ext = path_1.default.extname(originalPath);
@@ -67,7 +65,7 @@ const convertImageToWebp = async (filePath, mimeType) => {
         const outputBuffer = await (0, heic_convert_1.default)({
             buffer: inputBuffer,
             format: 'JPEG',
-            quality: 1
+            quality: 1,
         });
         const newFilePath = (0, exports.getUniqueFilename)(filePath.replace(/\.[^.]+$/, '.jpg'));
         fs_1.default.writeFileSync(newFilePath, Buffer.from(outputBuffer));
@@ -99,7 +97,7 @@ class LocalStorageProvider {
     constructor(baseDir) {
         this.baseDir = baseDir;
     }
-    async saveFile(filePath, destinationPath) {
+    async saveFile() {
         return null;
     }
     async deleteFile(filePath) {
@@ -156,10 +154,10 @@ class S3StorageProvider {
             return true;
         }
         catch (error) {
+            console.log('checkIfFileExist.error', error);
             return false;
         }
     }
-    ;
     async getFile(filePath, localPath) {
         if (filePath === localPath || !this.checkIfFileExist(filePath)) {
             return fs_1.default.readFileSync(localPath);

@@ -39,7 +39,7 @@ router.get('/storage-info', auth_1.requireAuth, async (req, res) => {
             used: usedStorage,
             limit: user.storageLimit,
             available: user.storageLimit - usedStorage,
-            usedPercentage: Math.round((usedStorage / user.storageLimit) * 100)
+            usedPercentage: Math.round((usedStorage / user.storageLimit) * 100),
         });
     }
     catch (error) {

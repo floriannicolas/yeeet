@@ -15,7 +15,8 @@ exports.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES = 'cleanup_expired_files';
 async function cleanupExpiredFiles() {
     const storageProvider = (0, storage_1.createStorageProvider)();
     try {
-        const expiredFiles = await database_1.db.select()
+        const expiredFiles = await database_1.db
+            .select()
             .from(schema_1.filesTable)
             .where((0, drizzle_orm_1.lt)(schema_1.filesTable.expiresAt, new Date()));
         for (const file of expiredFiles) {
@@ -29,8 +30,7 @@ async function cleanupExpiredFiles() {
                 if (file.s3Path) {
                     await storageProvider.deleteFile(file.s3Path);
                 }
-                await database_1.db.delete(schema_1.filesTable)
-                    .where((0, drizzle_orm_1.eq)(schema_1.filesTable.id, file.id));
+                await database_1.db.delete(schema_1.filesTable).where((0, drizzle_orm_1.eq)(schema_1.filesTable.id, file.id));
                 console.log(`Deleted expired file: ${file.originalName}`);
             }
             catch (error) {

@@ -34,14 +34,14 @@ const getTokenFromRequest = (req) => {
             return token;
         }
     }
-    return null;
+    return '';
 };
 exports.getTokenFromRequest = getTokenFromRequest;
 async function createSession(token, userId) {
     const session = {
         id: token,
         userId,
-        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
     };
     await database_1.db.insert(schema_1.sessionsTable).values(session);
     return session;
@@ -65,7 +65,7 @@ async function validateSessionToken(token) {
         await database_1.db
             .update(schema_1.sessionsTable)
             .set({
-            expiresAt: session.expiresAt
+            expiresAt: session.expiresAt,
         })
             .where((0, drizzle_orm_1.eq)(schema_1.sessionsTable.id, session.id));
     }
@@ -77,11 +77,11 @@ async function invalidateSession(sessionId) {
 function setSessionTokenCookie(response, token, expiresAt) {
     const cookieOptions = {
         httpOnly: true,
-        secure: (process.env.TRANSFERT_PROTOCOL === 'https'),
+        secure: process.env.TRANSFERT_PROTOCOL === 'https',
         sameSite: 'None', // Permet le cross-origin
         path: '/',
         maxAge: expiresAt.getTime() - Date.now(),
-        partitioned: true
+        partitioned: true,
     };
     response.setHeader('Set-Cookie', `session=${token}; ${Object.entries(cookieOptions)
         .map(([key, value]) => `${key}=${value}`)
@@ -90,11 +90,11 @@ function setSessionTokenCookie(response, token, expiresAt) {
 function deleteSessionTokenCookie(response) {
     if (process.env.TRANSFERT_PROTOCOL === 'https') {
         // When deployed over HTTPS
-        response.setHeader("Set-Cookie", "session=; HttpOnly; SameSite=None; Max-Age=0; Path=/; Secure; Partitioned;");
+        response.setHeader('Set-Cookie', 'session=; HttpOnly; SameSite=None; Max-Age=0; Path=/; Secure; Partitioned;');
     }
     else {
         // When deployed over HTTP (localhost)
-        response.setHeader("Set-Cookie", "session=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/");
+        response.setHeader('Set-Cookie', 'session=; HttpOnly; SameSite=Lax; Max-Age=0; Path=/');
     }
 }
 //# sourceMappingURL=session.js.map

@@ -5,6 +5,6 @@ import crypto from 'crypto';
  *
  * @returns string
  */
-export const generateRandomToken = () => {
-    return crypto.randomBytes(8).toString('hex');
+export const generateRandomToken = (): string => {
+  return crypto.randomBytes(8).toString('hex');
 };

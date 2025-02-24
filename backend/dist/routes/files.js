@@ -8,6 +8,7 @@ const multer_1 = __importDefault(require("multer"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const drizzle_orm_1 = require("drizzle-orm");
+const stream_1 = require("stream");
 const database_1 = require("../config/database");
 const schema_1 = require("../db/schema");
 const session_1 = require("../session");
@@ -45,13 +46,14 @@ const storage = multer_1.default.diskStorage({
     filename: (req, file, cb) => {
         const metadata = JSON.parse(decodeURIComponent(file.originalname));
         cb(null, `chunk_${metadata.index}`);
-    }
+    },
 });
 const upload = (0, multer_1.default)({ storage });
 const router = (0, express_1.Router)();
 router.get('/download/:token', async (req, res) => {
     try {
-        const result = await database_1.db.select()
+        const result = await database_1.db
+            .select()
             .from(schema_1.filesTable)
             .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.filesTable.downloadToken, req.params.token)))
             .limit(1);
@@ -63,7 +65,7 @@ router.get('/download/:token', async (req, res) => {
         res.setHeader('Content-Type', file.mimeType ?? 'application/octet-stream');
         res.setHeader('Content-Disposition', `attachment; filename="${file.originalName}"`);
         const fileContent = await storageProvider.getFile(file.s3Path || file.filePath, file.filePath);
-        if (fileContent.pipe) {
+        if (fileContent instanceof stream_1.Readable) {
             fileContent.pipe(res);
         }
         else {
@@ -77,7 +79,8 @@ router.get('/download/:token', async (req, res) => {
 });
 router.get('/view/:token', async (req, res) => {
     try {
-        const result = await database_1.db.select()
+        const result = await database_1.db
+            .select()
             .from(schema_1.filesTable)
             .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.filesTable.downloadToken, req.params.token)))
             .limit(1);
@@ -103,7 +106,7 @@ router.get('/view/:token', async (req, res) => {
             'video/webm',
             'audio/mpeg',
             'audio/wav',
-            'audio/webm'
+            'audio/webm',
         ];
         if (!viewableMimeTypes.includes(file.mimeType ?? '')) {
             res.redirect(`${constants_1.BACKEND_URL}${constants_1.API_PREFIX}/download/${file.downloadToken}`);
@@ -112,7 +115,7 @@ router.get('/view/:token', async (req, res) => {
         res.setHeader('Content-Type', file.mimeType ?? '');
         res.setHeader('Content-Disposition', `inline; filename="${file.originalName}"`);
         const fileContent = await storageProvider.getFile(file.s3Path || file.filePath, file.filePath);
-        if (fileContent.pipe) {
+        if (fileContent instanceof stream_1.Readable) {
             fileContent.pipe(res);
         }
         else {
@@ -190,7 +193,9 @@ router.post('/upload', auth_1.requireAuth, upload.single('chunk'), async (req, r
                 const s3Path = await storageProvider.saveFile(finalPath, path_1.default.join(userId.toString(), path_1.default.basename(finalPath)));
                 try {
                     const downloadToken = (0, tokens_1.generateRandomToken)();
-                    const result = await database_1.db.insert(schema_1.filesTable).values({
+                    const result = await database_1.db
+                        .insert(schema_1.filesTable)
+                        .values({
                         userId: userId,
                         originalName: path_1.default.basename(finalPath),
                         filePath: finalPath,
@@ -198,10 +203,11 @@ router.post('/upload', auth_1.requireAuth, upload.single('chunk'), async (req, r
                         mimeType: mimeType || null,
                         size: fileStats.size,
                         downloadToken: downloadToken,
-                        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30) // 30 days
-                    }).returning({
+                        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
+                    })
+                        .returning({
                         id: schema_1.filesTable.id,
-                        downloadToken: schema_1.filesTable.downloadToken
+                        downloadToken: schema_1.filesTable.downloadToken,
                     });
                     // Clear  chunks
                     setTimeout(() => {
@@ -230,7 +236,15 @@ router.post('/upload', auth_1.requireAuth, upload.single('chunk'), async (req, r
         }
     }
     else {
-        res.status(200).json({ message: 'Chunk uploaded', status: 'partial', uploadId, uploadedChunks, totalChunks });
+        res
+            .status(200)
+            .json({
+            message: 'Chunk uploaded',
+            status: 'partial',
+            uploadId,
+            uploadedChunks,
+            totalChunks,
+        });
     }
 });
 router.get('/files', auth_1.requireAuth, async (req, res) => {
@@ -250,14 +264,15 @@ router.get('/files', auth_1.requireAuth, async (req, res) => {
             res.status(401).json({ message: 'Unauthorized' });
             return;
         }
-        let query = database_1.db.select({
+        const query = database_1.db
+            .select({
             id: schema_1.filesTable.id,
             originalName: schema_1.filesTable.originalName,
             mimeType: schema_1.filesTable.mimeType,
             size: schema_1.filesTable.size,
             createdAt: schema_1.filesTable.createdAt,
             expiresAt: schema_1.filesTable.expiresAt,
-            downloadToken: schema_1.filesTable.downloadToken
+            downloadToken: schema_1.filesTable.downloadToken,
         })
             .from(schema_1.filesTable)
             .where((0, drizzle_orm_1.eq)(schema_1.filesTable.userId, userId))
@@ -266,10 +281,10 @@ router.get('/files', auth_1.requireAuth, async (req, res) => {
             query.limit(limit);
         }
         const result = await query;
-        const filesWithUrls = result.map(file => ({
+        const filesWithUrls = result.map((file) => ({
             ...file,
             downloadUrl: `${constants_1.BACKEND_URL}${constants_1.API_PREFIX}/download/${file.downloadToken}`,
-            viewUrl: `${constants_1.BACKEND_URL}${constants_1.API_PREFIX}/view/${file.downloadToken}`
+            viewUrl: `${constants_1.BACKEND_URL}${constants_1.API_PREFIX}/view/${file.downloadToken}`,
         }));
         res.json(filesWithUrls);
     }
@@ -294,7 +309,8 @@ router.delete('/files/:id', auth_1.requireAuth, async (req, res) => {
             res.status(401).json({ message: 'Unauthorized' });
             return;
         }
-        const file = await database_1.db.select()
+        const file = await database_1.db
+            .select()
             .from(schema_1.filesTable)
             .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.filesTable.id, parseInt(req.params.id)), (0, drizzle_orm_1.eq)(schema_1.filesTable.userId, userId)))
             .limit(1);
@@ -310,8 +326,7 @@ router.delete('/files/:id', auth_1.requireAuth, async (req, res) => {
             await storageProvider.deleteFile(file[0].s3Path);
         }
         // Supprimer l'entrée dans la base de données
-        await database_1.db.delete(schema_1.filesTable)
-            .where((0, drizzle_orm_1.eq)(schema_1.filesTable.id, parseInt(req.params.id)));
+        await database_1.db.delete(schema_1.filesTable).where((0, drizzle_orm_1.eq)(schema_1.filesTable.id, parseInt(req.params.id)));
         res.json({ message: 'File deleted successfully' });
     }
     catch (error) {
@@ -335,7 +350,8 @@ router.post('/files/:id/toggle-expiration', auth_1.requireAuth, async (req, res)
             res.status(401).json({ message: 'Unauthorized' });
             return;
         }
-        const file = await database_1.db.select()
+        const file = await database_1.db
+            .select()
             .from(schema_1.filesTable)
             .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.filesTable.id, parseInt(req.params.id)), (0, drizzle_orm_1.eq)(schema_1.filesTable.userId, userId)))
             .limit(1);
@@ -344,12 +360,14 @@ router.post('/files/:id/toggle-expiration', auth_1.requireAuth, async (req, res)
             return;
         }
         if (file[0].expiresAt) {
-            await database_1.db.update(schema_1.filesTable)
+            await database_1.db
+                .update(schema_1.filesTable)
                 .set({ expiresAt: null })
                 .where((0, drizzle_orm_1.eq)(schema_1.filesTable.id, parseInt(req.params.id)));
         }
         else {
-            await database_1.db.update(schema_1.filesTable)
+            await database_1.db
+                .update(schema_1.filesTable)
                 .set({ expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30) }) // 30 days
                 .where((0, drizzle_orm_1.eq)(schema_1.filesTable.id, parseInt(req.params.id)));
         }

@@ -10,7 +10,7 @@ class UserStorageService {
             .select({ totalSize: (0, drizzle_orm_1.sum)(schema_1.filesTable.size) })
             .from(schema_1.filesTable)
             .where((0, drizzle_orm_1.eq)(schema_1.filesTable.userId, userId));
-        let totalSize = result[0].totalSize;
+        const totalSize = result[0].totalSize;
         if (totalSize) {
             return parseInt(totalSize);
         }
@@ -22,7 +22,7 @@ class UserStorageService {
     }
     static async hasEnoughStorageSpace(userId, limit, fileSize) {
         const usedStorage = await UserStorageService.getUserStorageUsed(userId);
-        return (usedStorage + fileSize) <= limit;
+        return usedStorage + fileSize <= limit;
     }
 }
 exports.UserStorageService = UserStorageService;

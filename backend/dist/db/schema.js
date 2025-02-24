@@ -19,15 +19,15 @@ exports.usersTable = (0, pg_core_1.pgTable)('users', {
 function lower(email) {
     return (0, drizzle_orm_1.sql) `lower(${email})`;
 }
-exports.sessionsTable = (0, pg_core_1.pgTable)("sessions", {
-    id: (0, pg_core_1.text)("id").primaryKey(),
-    userId: (0, pg_core_1.integer)("user_id")
+exports.sessionsTable = (0, pg_core_1.pgTable)('sessions', {
+    id: (0, pg_core_1.text)('id').primaryKey(),
+    userId: (0, pg_core_1.integer)('user_id')
         .notNull()
         .references(() => exports.usersTable.id),
-    expiresAt: (0, pg_core_1.timestamp)("expires_at", {
+    expiresAt: (0, pg_core_1.timestamp)('expires_at', {
         withTimezone: true,
-        mode: "date"
-    }).notNull()
+        mode: 'date',
+    }).notNull(),
 });
 exports.filesTable = (0, pg_core_1.pgTable)('files', {
     id: (0, pg_core_1.serial)('id').primaryKey(),
@@ -39,26 +39,24 @@ exports.filesTable = (0, pg_core_1.pgTable)('files', {
     size: (0, pg_core_1.bigint)('size', { mode: 'number' }),
     downloadToken: (0, pg_core_1.varchar)('download_token', { length: 64 }).unique(),
     expiresAt: (0, pg_core_1.timestamp)('expires_at'),
-    createdAt: (0, pg_core_1.timestamp)('created_at').defaultNow().notNull()
+    createdAt: (0, pg_core_1.timestamp)('created_at').defaultNow().notNull(),
 });
 exports.cronJobsTable = (0, pg_core_1.pgTable)('cron_jobs', {
     id: (0, pg_core_1.serial)('id').primaryKey(),
     type: (0, pg_core_1.varchar)('type', { length: 255 }).notNull(),
-    createdAt: (0, pg_core_1.timestamp)('created_at').defaultNow().notNull()
+    createdAt: (0, pg_core_1.timestamp)('created_at').defaultNow().notNull(),
 });
 exports.passwordResetTokensTable = (0, pg_core_1.pgTable)('password_reset_tokens', {
     id: (0, pg_core_1.serial)('id').primaryKey(),
     userId: (0, pg_core_1.integer)('user_id')
         .notNull()
         .references(() => exports.usersTable.id),
-    token: (0, pg_core_1.varchar)('token', { length: 64 })
-        .notNull()
-        .unique(),
+    token: (0, pg_core_1.varchar)('token', { length: 64 }).notNull().unique(),
     expiresAt: (0, pg_core_1.timestamp)('expires_at', {
         withTimezone: true,
-        mode: "date"
+        mode: 'date',
     }).notNull(),
     createdAt: (0, pg_core_1.timestamp)('created_at').defaultNow().notNull(),
-    usedAt: (0, pg_core_1.timestamp)('used_at')
+    usedAt: (0, pg_core_1.timestamp)('used_at'),
 });
 //# sourceMappingURL=schema.js.map

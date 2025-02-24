@@ -44,7 +44,7 @@ const pool = new pg_1.Pool({
     database: process.env.DB_NAME,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    ssl: (process.env.DB_SSL === 'true'),
+    ssl: process.env.DB_SSL === 'true',
 });
 exports.db = (0, node_postgres_1.drizzle)(pool, { schema });
 exports.default = exports.db;

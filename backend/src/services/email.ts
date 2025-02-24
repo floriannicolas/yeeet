@@ -1,42 +1,40 @@
 import Mailjet from 'node-mailjet';
 
 const sendEmail = async (to: string, subject: string, html: string): Promise<void> => {
-    const mailjet = new Mailjet({
-        apiKey: process.env.MAILJET_API_KEY,
-        apiSecret: process.env.MAILJET_API_SECRET,
+  const mailjet = new Mailjet({
+    apiKey: process.env.MAILJET_API_KEY,
+    apiSecret: process.env.MAILJET_API_SECRET,
+  });
+
+  const request = mailjet.post('send', { version: 'v3.1' }).request({
+    Messages: [
+      {
+        From: {
+          Email: process.env.MAILJET_SENDER_EMAIL,
+          Name: 'Yeeet - No Reply',
+        },
+        To: [{ Email: to }],
+        Subject: subject,
+        HTMLPart: html,
+      },
+    ],
+  });
+
+  request
+    .then((result) => {
+      console.log('MailJet.sendEmail.success', result);
+    })
+    .catch((err) => {
+      console.log('MailJet.sendEmail.error', err);
     });
-
-    const request = mailjet
-        .post('send', { version: 'v3.1' })
-        .request({
-            Messages: [
-                {
-                    From: {
-                        Email: process.env.MAILJET_SENDER_EMAIL,
-                        Name: 'Yeeet - No Reply'
-                    },
-                    To: [{ Email: to }],
-                    Subject: subject,
-                    HTMLPart: html
-                }
-            ],
-        });
-
-    request
-        .then((result) => {
-            console.log('MailJet.sendEmail.success', result)
-        })
-        .catch((err) => {
-            console.log('MailJet.sendEmail.error', err);
-        })
-}
+};
 
 export class EmailService {
-    static async sendPasswordResetEmail(email: string, resetToken: string): Promise<void> {
-        const resetLink = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-        const subject = 'Reset your password';
+  static async sendPasswordResetEmail(email: string, resetToken: string): Promise<void> {
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+    const subject = 'Reset your password';
 
-        const html = `
+    const html = `
             <h1><img src="${process.env.CLIENT_URL}/icon.png" alt="Yeeet" style="width: 32px; height: 32px;" /></h1>
             <h2>Password Reset Request</h2>
             <p>You requested to reset your password. Click the link below to proceed:</p>
@@ -45,6 +43,6 @@ export class EmailService {
             <p>If you didn't request this, please ignore this email.</p>
             `;
 
-        await sendEmail(email, subject, html);
-    }
+    await sendEmail(email, subject, html);
+  }
 }

@@ -18,13 +18,14 @@ router.get('/cron-jobs', async (req, res) => {
         tomorrow.setDate(tomorrow.getDate() + 1);
         const jobsLaunched = [];
         const jobsAlreadyLaunched = [];
-        const cronJobCleanupExpiredFiles = await database_1.db.select()
+        const cronJobCleanupExpiredFiles = await database_1.db
+            .select()
             .from(schema_1.cronJobsTable)
             .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.cronJobsTable.type, cleanup_1.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES), (0, drizzle_orm_1.gte)(schema_1.cronJobsTable.createdAt, today), (0, drizzle_orm_1.lt)(schema_1.cronJobsTable.createdAt, tomorrow)))
             .limit(1);
         if (cronJobCleanupExpiredFiles.length === 0) {
             await database_1.db.insert(schema_1.cronJobsTable).values({
-                type: cleanup_1.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES
+                type: cleanup_1.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES,
             });
             (0, cleanup_1.cleanupExpiredFiles)();
             jobsLaunched.push(cleanup_1.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
@@ -33,13 +34,12 @@ router.get('/cron-jobs', async (req, res) => {
             jobsAlreadyLaunched.push(cleanup_1.CRON_JOB_TYPE_CLEANUP_EXPIRED_FILES);
         }
         if (jobsLaunched.length > 0) {
-            await database_1.db.delete(schema_1.cronJobsTable)
-                .where((0, drizzle_orm_1.lt)(schema_1.cronJobsTable.createdAt, today));
+            await database_1.db.delete(schema_1.cronJobsTable).where((0, drizzle_orm_1.lt)(schema_1.cronJobsTable.createdAt, today));
         }
         res.json({
             status: 'success',
             jobsLaunched,
-            jobsAlreadyLaunched
+            jobsAlreadyLaunched,
         });
     }
     catch (error) {
