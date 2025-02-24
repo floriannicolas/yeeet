@@ -1,3 +1,6 @@
+echo "Doing nothin"
+exit 0
+
 if git diff --staged --quiet backend/; then
   echo "No changes in backend directory, skipping backend build"
   exit 0
