@@ -6,6 +6,12 @@ import { useToast } from "@/hooks/use-toast";
 import { RefreshCw, Upload } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { getUserStorageInfo, getUserFiles, uploadUserFileChunk } from '@/lib/actions';
 import { Session } from 'next-auth';
 import DropZone from '@/components/dashboard/ui/drop-zone';
@@ -35,11 +41,11 @@ const filesReducer = (
             ));
         case 'TOGGLE_EXPIRATION':
             return files.map((file) => (
-                    file.id !== item.id ? file : {
-                        ...file,
-                        expiresAt: file.expiresAt ? undefined : new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
-                    }
-                ));
+                file.id !== item.id ? file : {
+                    ...file,
+                    expiresAt: file.expiresAt ? undefined : new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
+                }
+            ));
         default:
             return files;
     }
@@ -202,28 +208,45 @@ export default function Dashboard({
                     </div>
                     <div className="flex items-center space-x-2">
                         <div className="grid w-full items-center gap-1.5">
-                            <div className="flex w-full items-center justify-center relative gap-2">
-                                <Label
-                                    htmlFor="input-file"
-                                    className="flex cursor-pointer flex-col items-center justify-center bg-transparent transition-all duration-300"
-                                >
-                                    <div
-                                        className={`inline-flex items-center justify-center px-4 py-[10px] bg-primary text-primary-foreground shadow font-medium rounded-lg focus:outline-none ${progress > 0 ? 'opacity-50 cursor-default' : 'hover:bg-primary/90 cursor-pointer'}`}
-                                    >
-                                        <Upload className="w-4 h-4 me-2" />
-                                        Upload
-                                    </div>
-                                    <Input
-                                        id="input-file" className="hidden"
-                                        ref={fileInputRef}
-                                        disabled={progress > 0}
-                                        type="file"
-                                        onChange={(e) => e.target.files?.[0] && uploadQueue.manage(Array.from(e.target.files))} />
-                                </Label>
-                                <Button size="icon" onClick={handleReloadList}>
-                                    <RefreshCw className={isLoadingButton ? 'animate-spin' : ''} />
-                                </Button>
-                            </div>
+                            <TooltipProvider>
+                                <div className="flex w-full items-center justify-center relative gap-2">
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Label
+                                                htmlFor="input-file"
+                                                className="flex cursor-pointer flex-col items-center justify-center bg-transparent transition-all duration-300"
+                                            >
+                                                <div
+                                                    className={`inline-flex items-center justify-center px-4 py-[10px] bg-primary text-primary-foreground shadow font-medium rounded-lg focus:outline-none ${progress > 0 ? 'opacity-50 cursor-default' : 'hover:bg-primary/90 cursor-pointer'}`}
+                                                >
+                                                    <Upload className="w-4 h-4 me-2" />
+                                                    Upload
+                                                </div>
+                                                <Input
+                                                    id="input-file" className="hidden"
+                                                    ref={fileInputRef}
+                                                    disabled={progress > 0}
+                                                    type="file"
+                                                    multiple
+                                                    onChange={(e) => e.target.files?.[0] && uploadQueue.manage(Array.from(e.target.files))} />
+                                            </Label>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Upload files</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button size="icon" onClick={handleReloadList}>
+                                                <RefreshCw className={isLoadingButton ? 'animate-spin' : ''} />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Refresh list</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </div>
+                            </TooltipProvider>
                         </div>
                     </div>
                 </div>
