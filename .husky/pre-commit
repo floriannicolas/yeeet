@@ -1,1 +1,8 @@
+. "$(dirname "$0")/_/husky.sh"
+
+if git diff --staged --quiet backend/; then
+  echo "No changes in backend directory, skipping backend build"
+  exit 0
+fi
+
 cd backend && pnpm run ts.check && pnpm run build && git add dist

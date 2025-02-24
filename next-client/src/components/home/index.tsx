@@ -150,40 +150,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* <div className="bg-neutral-950 p-6 py-6 sm:py-12 md:py-24 scroll-m-16" id="getting-started">
-        <div className="mx-auto max-w-4xl">
-          <h3 className="text-4xl mb-6 md:mb-12 font-semibold text-center">Getting started</h3>
-          <div className="mx-auto border rounded-t-lg mb-6 border-2 max-w-2xl">
-            <div className="h-6 bg-neutral-300 rounded-t-lg flex items-center gap-2 px-2">
-              <div className="size-2 rounded-full bg-neutral-900" />
-              <div className="size-2 rounded-full bg-neutral-800" />
-              <div className="size-2 rounded-full bg-neutral-600" />
-            </div>
-            <img src="/home/getting-started.webp" alt="" className="w-full rounded-b-lg"/>
-          </div>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis tincidunt mi eget ligula dignissim, non dignissim felis iaculis. Praesent sed bibendum ex. Maecenas scelerisque id mauris ut maximus. Sed blandit velit nulla, a lobortis risus ultrices id. Nullam rutrum odio quis elit vulputate mattis. Vestibulum et leo venenatis, tincidunt justo vel, viverra ante. Nunc in diam congue, tincidunt dolor id, lacinia neque. Proin at auctor lectus. Aenean vitae ipsum sit amet purus rhoncus egestas. Sed ultrices auctor sem id vehicula. Sed a aliquam justo, sed bibendum diam. Donec scelerisque nisl id mi dignissim, nec laoreet felis aliquet.
-          </p>
-        </div>
-      </div> */}
-      {/* <div className="bg-black p-6 py-6 sm:py-12 md:py-24 scroll-m-16" id="pricing">
-        <div className="mx-auto max-w-4xl">
-          <h3 className="text-4xl mb-6 md:mb-12 font-semibold text-center">Pricing</h3>
-          <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">Unlock all features including unlimited posts for your blog.</p>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis tincidunt mi eget ligula dignissim, non dignissim felis iaculis. Praesent sed bibendum ex. Maecenas scelerisque id mauris ut maximus. Sed blandit velit nulla, a lobortis risus ultrices id. Nullam rutrum odio quis elit vulputate mattis. Vestibulum et leo venenatis, tincidunt justo vel, viverra ante. Nunc in diam congue, tincidunt dolor id, lacinia neque. Proin at auctor lectus. Aenean vitae ipsum sit amet purus rhoncus egestas. Sed ultrices auctor sem id vehicula. Sed a aliquam justo, sed bibendum diam. Donec scelerisque nisl id mi dignissim, nec laoreet felis aliquet.
-          </p>
-        </div>
-      </div> */}
-      {/* <div className="bg-black p-6 py-6 sm:py-12 md:py-24 scroll-m-16" id="download">
-        <div className="mx-auto max-w-4xl">
-          <h3 className="text-4xl mb-6 md:mb-12 font-semibold text-center">Download</h3>
-          <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis tincidunt mi eget ligula dignissim, non dignissim felis iaculis. Praesent sed bibendum ex. Maecenas scelerisque id mauris ut maximus. Sed blandit velit nulla, a lobortis risus ultrices id. Nullam rutrum odio quis elit vulputate mattis. Vestibulum et leo venenatis, tincidunt justo vel, viverra ante. Nunc in diam congue, tincidunt dolor id, lacinia neque. Proin at auctor lectus. Aenean vitae ipsum sit amet purus rhoncus egestas. Sed ultrices auctor sem id vehicula. Sed a aliquam justo, sed bibendum diam. Donec scelerisque nisl id mi dignissim, nec laoreet felis aliquet.
-          </p>
-        </div>
-      </div> */}
       <FooterUnconnected />
     </div>
   );
