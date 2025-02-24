@@ -208,33 +208,26 @@ export default function Dashboard({
                     </div>
                     <div className="flex items-center space-x-2">
                         <div className="grid w-full items-center gap-1.5">
-                            <TooltipProvider>
-                                <div className="flex w-full items-center justify-center relative gap-2">
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Label
-                                                htmlFor="input-file"
-                                                className="flex cursor-pointer flex-col items-center justify-center bg-transparent transition-all duration-300"
-                                            >
-                                                <div
-                                                    className={`inline-flex items-center justify-center px-4 py-[10px] bg-primary text-primary-foreground shadow font-medium rounded-lg focus:outline-none ${progress > 0 ? 'opacity-50 cursor-default' : 'hover:bg-primary/90 cursor-pointer'}`}
-                                                >
-                                                    <Upload className="w-4 h-4 me-2" />
-                                                    Upload
-                                                </div>
-                                                <Input
-                                                    id="input-file" className="hidden"
-                                                    ref={fileInputRef}
-                                                    disabled={progress > 0}
-                                                    type="file"
-                                                    multiple
-                                                    onChange={(e) => e.target.files?.[0] && uploadQueue.manage(Array.from(e.target.files))} />
-                                            </Label>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Upload files</p>
-                                        </TooltipContent>
-                                    </Tooltip>
+                            <div className="flex w-full items-center justify-center relative gap-2">
+                                <Label
+                                    htmlFor="input-file"
+                                    className="flex cursor-pointer flex-col items-center justify-center bg-transparent transition-all duration-300"
+                                >
+                                    <div
+                                        className={`inline-flex items-center justify-center px-4 py-[10px] bg-primary text-primary-foreground shadow font-medium rounded-lg focus:outline-none ${progress > 0 ? 'opacity-50 cursor-default' : 'hover:bg-primary/90 cursor-pointer'}`}
+                                    >
+                                        <Upload className="w-4 h-4 me-2" />
+                                        Upload
+                                    </div>
+                                    <Input
+                                        id="input-file" className="hidden"
+                                        ref={fileInputRef}
+                                        disabled={progress > 0}
+                                        type="file"
+                                        multiple
+                                        onChange={(e) => e.target.files?.[0] && uploadQueue.manage(Array.from(e.target.files))} />
+                                </Label>
+                                <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
                                             <Button size="icon" onClick={handleReloadList}>
@@ -245,8 +238,8 @@ export default function Dashboard({
                                             <p>Refresh list</p>
                                         </TooltipContent>
                                     </Tooltip>
-                                </div>
-                            </TooltipProvider>
+                                </TooltipProvider>
+                            </div>
                         </div>
                     </div>
                 </div>
