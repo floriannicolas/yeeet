@@ -1,5 +1,3 @@
-. "$(dirname "$0")/_/husky.sh"
-
 if git diff --staged --quiet backend/; then
   echo "No changes in backend directory, skipping backend build"
   exit 0
