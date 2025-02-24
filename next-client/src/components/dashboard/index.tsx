@@ -58,6 +58,7 @@ export default function Dashboard({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingButton, setIsLoadingButton] = useState(false);
     const handleUpload = async (file: File) => {
         if (progress > 0) {
             return;
@@ -131,6 +132,7 @@ export default function Dashboard({
             setFiles(newFiles);
             fetchStorageInfo();
             setIsLoading(false);
+            setIsLoadingButton(true);
         } catch (error) {
             toast({
                 title: 'Unexpected error',
@@ -151,10 +153,10 @@ export default function Dashboard({
     }, []);
 
     const handleReloadList = () => {
-        if (isLoading) {
+        if (isLoading || isLoadingButton) {
             return;
         }
-        setIsLoading(true);
+        setIsLoadingButton(true);
         fetchFiles(FILES_LIMIT);
     }
 
@@ -219,7 +221,7 @@ export default function Dashboard({
                                         onChange={(e) => e.target.files?.[0] && uploadQueue.manage(Array.from(e.target.files))} />
                                 </Label>
                                 <Button size="icon" onClick={handleReloadList}>
-                                    <RefreshCw className={isLoading ? 'animate-spin' : ''} />
+                                    <RefreshCw className={isLoadingButton ? 'animate-spin' : ''} />
                                 </Button>
                             </div>
                         </div>
