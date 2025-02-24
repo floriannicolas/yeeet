@@ -3,7 +3,7 @@
 import { useEffect, useOptimistic, useRef, useState } from 'react';
 import { FileInfo, FileReducerAction, StorageInfo } from '@/lib/definitions';
 import { useToast } from "@/hooks/use-toast";
-import { Upload } from 'lucide-react';
+import { RefreshCw, Upload } from 'lucide-react';
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { getUserStorageInfo, getUserFiles, uploadUserFileChunk } from '@/lib/actions';
@@ -14,6 +14,7 @@ import Loader from '@/components/ui/loader';
 import EmptyState from '@/components/dashboard/ui/empty-state';
 import FilesList from '@/components/dashboard/ui/files-list';
 import { useUploadQueue } from '@/hooks/use-upload-queue';
+import { Button } from '../ui/button';
 
 
 const FILES_LIMIT = 50;
@@ -149,6 +150,14 @@ export default function Dashboard({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const handleReloadList = () => {
+        if (isLoading) {
+            return;
+        }
+        setIsLoading(true);
+        fetchFiles(FILES_LIMIT);
+    }
+
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         setIsDragging(true);
@@ -191,13 +200,13 @@ export default function Dashboard({
                     </div>
                     <div className="flex items-center space-x-2">
                         <div className="grid w-full items-center gap-1.5">
-                            <div className="flex w-full items-center justify-center relative">
+                            <div className="flex w-full items-center justify-center relative gap-2">
                                 <Label
                                     htmlFor="input-file"
                                     className="flex cursor-pointer flex-col items-center justify-center bg-transparent transition-all duration-300"
                                 >
                                     <div
-                                        className={`inline-flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground shadow font-medium rounded-lg focus:outline-none ${progress > 0 ? 'opacity-50 cursor-default' : 'hover:bg-primary/90 cursor-pointer'}`}
+                                        className={`inline-flex items-center justify-center px-4 py-[10px] bg-primary text-primary-foreground shadow font-medium rounded-lg focus:outline-none ${progress > 0 ? 'opacity-50 cursor-default' : 'hover:bg-primary/90 cursor-pointer'}`}
                                     >
                                         <Upload className="w-4 h-4 me-2" />
                                         Upload
@@ -209,6 +218,9 @@ export default function Dashboard({
                                         type="file"
                                         onChange={(e) => e.target.files?.[0] && uploadQueue.manage(Array.from(e.target.files))} />
                                 </Label>
+                                <Button size="icon" onClick={handleReloadList}>
+                                    <RefreshCw className={isLoading ? 'animate-spin' : ''} />
+                                </Button>
                             </div>
                         </div>
                     </div>
