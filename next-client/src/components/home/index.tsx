@@ -102,9 +102,9 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {[
-              { number: "10M+", label: "Files Shared" },
-              { number: "99.9%", label: "Uptime" },
-              { number: "50K+", label: "Happy Users" },
+              { number: "50 MB", label: "Max file size" },
+              { number: "30 Days", label: "Storage" },
+              { number: "100%", label: "Free forever" },
             ].map((stat, index) => (
               <div key={index} className="text-center">
                 <div className="text-4xl md:text-5xl font-bold text-white mb-2">{stat.number}</div>
