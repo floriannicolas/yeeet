@@ -236,9 +236,7 @@ router.post('/upload', auth_1.requireAuth, upload.single('chunk'), async (req, r
         }
     }
     else {
-        res
-            .status(200)
-            .json({
+        res.status(200).json({
             message: 'Chunk uploaded',
             status: 'partial',
             uploadId,

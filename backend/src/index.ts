@@ -4,12 +4,7 @@ import cookieParser from 'cookie-parser';
 import express, { Request, Response } from 'express';
 import session from 'express-session';
 import http from 'http';
-import { 
-  CLIENT_URL,
-  TAURI_URL,
-  TAURI_URL_DEV,
-  API_PREFIX,
-} from './config/constants';
+import { CLIENT_URL, TAURI_URL, TAURI_URL_DEV, API_PREFIX } from './config/constants';
 import { requireAuth } from './middleware/auth';
 import authRoutes from './routes/auth';
 import cronRoutes from './routes/cron';

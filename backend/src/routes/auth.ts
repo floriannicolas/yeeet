@@ -137,12 +137,10 @@ router.post('/reset-password', async (req: Request, res: Response) => {
       .limit(1);
 
     if (resetToken.length === 0) {
-      res
-        .status(400)
-        .json({
-          message:
-            'Invalid or expired reset token. Please ask a new mail using the "forgot password?" feature.',
-        });
+      res.status(400).json({
+        message:
+          'Invalid or expired reset token. Please ask a new mail using the "forgot password?" feature.',
+      });
       return;
     }
 

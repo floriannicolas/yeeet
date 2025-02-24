@@ -3,12 +3,7 @@ import { eq } from 'drizzle-orm';
 import type { Response } from 'express';
 import { Request } from 'express';
 import { db } from './config/database';
-import { 
-	type User,
-	type Session,
-	sessionsTable,
-	usersTable,
-} from './db/schema';
+import { type User, type Session, sessionsTable, usersTable } from './db/schema';
 
 export function generateSessionToken(): string {
   return crypto.randomBytes(32).toString('hex');

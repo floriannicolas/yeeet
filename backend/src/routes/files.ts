@@ -270,15 +270,13 @@ router.post(
         return;
       }
     } else {
-      res
-        .status(200)
-        .json({
-          message: 'Chunk uploaded',
-          status: 'partial',
-          uploadId,
-          uploadedChunks,
-          totalChunks,
-        });
+      res.status(200).json({
+        message: 'Chunk uploaded',
+        status: 'partial',
+        uploadId,
+        uploadedChunks,
+        totalChunks,
+      });
     }
   }
 );

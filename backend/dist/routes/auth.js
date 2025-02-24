@@ -122,9 +122,7 @@ router.post('/reset-password', async (req, res) => {
             .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.passwordResetTokensTable.token, token), (0, drizzle_orm_1.isNull)(schema_1.passwordResetTokensTable.usedAt), (0, drizzle_orm_1.gt)(schema_1.passwordResetTokensTable.expiresAt, new Date())))
             .limit(1);
         if (resetToken.length === 0) {
-            res
-                .status(400)
-                .json({
+            res.status(400).json({
                 message: 'Invalid or expired reset token. Please ask a new mail using the "forgot password?" feature.',
             });
             return;
