@@ -19,9 +19,9 @@ export default function Home() {
   return (
     <div className="min-h-svh flex flex-col">
       <HeaderUnconnected />
-      <section className="bg-pattern pattern-size-4 pattern-opacity-20 flex flex-col gap-4 p-6 h-full flex-1 relative">
-        <div className="flex items-center justify-center text-center space-y-2 md:space-y-0">
-          <div className="flex flex-col items-center justify-center text-center py-6 sm:py-12 md:py-24 px-12">
+      <section className="bg-pattern flex flex-col gap-4 p-6 py-24 h-full flex-1 relative">
+        <div className="flex items-center justify-center text-center">
+          <div className="flex flex-col items-center justify-center text-center sm:py-12 md:py-24 px-12">
             <div className="gap-2 md:gap-12 hidden sm:flex items-center justify-center text-center mb-6 md:mb-12">
               <FileUp className="size-24" />
               <ArrowRight className="size-12" />
