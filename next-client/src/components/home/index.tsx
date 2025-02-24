@@ -22,14 +22,14 @@ export default function Home() {
       <section className="bg-pattern pattern-size-4 pattern-opacity-20 flex flex-col gap-4 p-6 h-full flex-1 relative">
         <div className="flex items-center justify-center text-center space-y-2 md:space-y-0">
           <div className="flex flex-col items-center justify-center text-center py-6 sm:py-12 md:py-24 px-12">
-            <div className="flex gap-2 md:gap-12 items-center justify-center text-center mb-6 md:mb-12">
+            <div className="gap-2 md:gap-12 hidden sm:flex items-center justify-center text-center mb-6 md:mb-12">
               <FileUp className="size-24" />
               <ArrowRight className="size-12" />
               <FlameKindling className="size-36" />
               <ArrowRight className="size-12" />
               <LinkIcon className="size-24" />
             </div>
-            <h2 className="text-7xl font-bold mb-6">Share instantly</h2>
+            <h2 className="text-5xl md:text-7xl font-bold mb-6">Share instantly</h2>
             <p className="text-xl font-light mb-6"><span className="font-bold">Yeeet</span> is a quick and simple way to share <span className="font-bold">screenshots</span> & <span className="font-bold">files</span>.</p>
             <div className='text-center'>
               <Link href="/register">
