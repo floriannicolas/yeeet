@@ -212,7 +212,7 @@ export default function Dashboard({ session }: { session: Session }) {
                   className="flex cursor-pointer flex-col items-center justify-center bg-transparent transition-all duration-300"
                 >
                   <div
-                    className={`inline-flex items-center justify-center px-4 py-[10px] bg-primary text-primary-foreground shadow font-medium rounded-lg focus:outline-none ${progress > 0 ? 'opacity-50 cursor-default' : 'hover:bg-primary/90 cursor-pointer'}`}
+                    className={`inline-flex items-center justify-center px-4 py-[10px] bg-primary text-primary-foreground shadow-sm font-medium rounded-lg focus:outline-hidden ${progress > 0 ? 'opacity-50 cursor-default' : 'hover:bg-primary/90 cursor-pointer'}`}
                   >
                     <Upload className="w-4 h-4 me-2" />
                     Upload

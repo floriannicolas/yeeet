@@ -55,7 +55,7 @@ export const HeaderUnconnected = () => {
                 <NavigationMenuList className="flex-col w-full max-w-full">
                   <SheetClose className="w-full block text-left">
                     <NavigationMenuItem className="w-full block cursor-pointer" onClick={() => { scrollToElement('getting-started') }}>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle() + " !w-full !block"}>
+                      <NavigationMenuLink className={navigationMenuTriggerStyle() + " w-full! block!"}>
                         Getting started
                       </NavigationMenuLink>
                     </NavigationMenuItem>

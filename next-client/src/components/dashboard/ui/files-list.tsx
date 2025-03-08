@@ -163,7 +163,7 @@ export default function FilesList({
             {isImageType(file.mimeType) ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                className={`w-full h-44 object-contain rounded-lg ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-125 transition-all duration-300`}
+                className={`w-full h-44 object-contain rounded-lg ${getFileBackground(file.mimeType)} group-hover:blur-xs group-hover:scale-125 transition-all duration-300`}
                 src={file.viewUrl}
                 alt=""
                 width={328}
@@ -171,7 +171,7 @@ export default function FilesList({
               />
             ) : (
               <div
-                className={`w-full h-44 rounded-lg flex items-center justify-center ${getFileBackground(file.mimeType)} group-hover:blur-sm group-hover:scale-125 transition-all duration-300`}
+                className={`w-full h-44 rounded-lg flex items-center justify-center ${getFileBackground(file.mimeType)} group-hover:blur-xs group-hover:scale-125 transition-all duration-300`}
               >
                 {getFileIcon(file.mimeType)}
               </div>

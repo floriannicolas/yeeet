@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import Metadata from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './styles/globals.css';
 import { Toaster } from '@/components/ui/toaster';
