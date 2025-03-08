@@ -53,6 +53,7 @@ export default function CookieConsent({
     } catch (e) {
       console.log('Error: ', e);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
