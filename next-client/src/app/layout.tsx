@@ -1,4 +1,4 @@
-import Metadata from 'next';
+import type { Metadata } from "next";
 import { Geist, Geist_Mono } from 'next/font/google';
 import './styles/globals.css';
 import { Toaster } from '@/components/ui/toaster';
@@ -26,8 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}>
+    <html lang="en" className="dark">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Analytics />
         {children}
         <Toaster />
